@@ -806,6 +806,7 @@
           commitDays: 0,
           lastCommitDay: null,
           lockedUntil: null,
+          zeroLockUsed: true,
           lifetimeByType: { PH:0, IQ:0, SP:0 },
           lifetimePotentialByType: { PH:0, IQ:0, SP:0 },
           commitHistory: [],
@@ -886,7 +887,18 @@
         const hp = clamp(prev.hp + delta, 0, 100);
 
         // Lock: if HP hits 0 at any close, lock from NOW for 24h
-        const lockedUntil = (hp === 0) ? (Date.now() + 24*60*60*1000) : prev.lockedUntil;
+        let lockedUntil = prev.lockedUntil;
+        let zeroLockUsed = (prev.zeroLockUsed === undefined) ? true : prev.zeroLockUsed;
+
+        if(hp > 0){
+          zeroLockUsed = false;
+          if(lockedUntil && Date.now() >= lockedUntil) lockedUntil = null;
+        }else{
+          if(!zeroLockUsed){
+            lockedUntil = Date.now() + 24*60*60*1000;
+            zeroLockUsed = true;
+          }
+        }
 
         // CommitDays
         const currentRank = rankFromStreak(prev.commitDays).key;
@@ -923,6 +935,7 @@
         return Object.assign({}, prev, {
           hp,
           lockedUntil,
+          zeroLockUsed,
           commitDays,
           lastCommitDay,
           lifetimeByType,
