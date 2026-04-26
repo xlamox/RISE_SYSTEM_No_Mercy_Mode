@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+  <title>RISE SYSTEM™ - تسجيل الدخول</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@200..800&family=IBM+Plex+Sans+Arabic:wght@100..700&display=swap" rel="stylesheet">
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: "IBM Plex Sans Arabic", system-ui, sans-serif;
+      background: #0a0c15;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow-x: hidden;
+    }
+    
+    .bg-anim {
+      position: fixed;
+      inset: -18%;
+      z-index: -2;
+      background: radial-gradient(1200px 900px at 20% 25%, rgba(0,229,255,0.22), transparent 60%),
+                  radial-gradient(1100px 850px at 80% 30%, rgba(168,85,247,0.22), transparent 62%),
+                  linear-gradient(to bottom, #0a0c15, #06070e);
+      background-size: 140% 140%;
+      animation: spaceDrift 18s ease-in-out infinite;
+    }
+    
+    @keyframes spaceDrift {
+      0% { background-position: 45% 55%; transform: scale(1); }
+      50% { background-position: 60% 40%; transform: scale(1.03); }
+      100% { background-position: 45% 55%; transform: scale(1); }
+    }
+    
+    .login-container {
+      width: 100%;
+      max-width: 440px;
+      padding: 20px;
+      z-index: 10;
+    }
+    
+    .login-card {
+      background: rgba(10, 12, 21, 0.85);
+      backdrop-filter: blur(12px);
+      border-radius: 32px;
+      border: 1px solid rgba(0, 229, 255, 0.25);
+      padding: 40px 32px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      transition: all 0.3s ease;
+    }
+    
+    .login-card:hover {
+      border-color: rgba(0, 229, 255, 0.5);
+      box-shadow: 0 0 30px rgba(0, 229, 255, 0.1);
+    }
+    
+    .logo {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    
+    .logo h1 {
+      font-family: "Oxanium", monospace;
+      font-size: 28px;
+      letter-spacing: 2px;
+      background: linear-gradient(135deg, #00e5ff, #a855f7);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    
+    .logo p {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 12px;
+      margin-top: 8px;
+    }
+    
+    .input-group {
+      margin-bottom: 20px;
+    }
+    
+    .input-group label {
+      display: block;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+    
+    .input-group input {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(0, 0, 0, 0.3);
+      color: white;
+      font-size: 16px;
+      transition: all 0.2s;
+    }
+    
+    .input-group input:focus {
+      outline: none;
+      border-color: #00e5ff;
+      box-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
+    }
+    
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 24px;
+      border: none;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #00e5ff, #0099cc);
+      color: #0a0c15;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px -5px rgba(0, 229, 255, 0.3);
+    }
+    
+    .btn-primary:disabled {
+      opacity: 0.5;
+      transform: none;
+      cursor: not-allowed;
+    }
+    
+    .error-message {
+      background: rgba(255, 50, 50, 0.15);
+      border: 1px solid rgba(255, 50, 50, 0.4);
+      border-radius: 12px;
+      padding: 12px;
+      margin-top: 16px;
+      color: #ff6b6b;
+      font-size: 13px;
+      text-align: center;
+    }
+    
+    .info-text {
+      text-align: center;
+      margin-top: 20px;
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 11px;
+    }
+    
+    .loading-spinner {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: #0a0c15;
+      animation: spin 0.6s linear infinite;
+      margin-right: 8px;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-anim"></div>
+  <div class="login-container">
+    <div class="login-card">
+      <div class="logo">
+        <h1>RISE SYSTEM™</h1>
+        <p>No-Mercy Mode</p>
+      </div>
+      
+      <form id="loginForm">
+        <div class="input-group">
+          <label>البريد الإلكتروني</label>
+          <input type="email" id="email" placeholder="example@domain.com" required>
+        </div>
+        
+        <div class="input-group">
+          <label>كلمة المرور</label>
+          <input type="password" id="password" placeholder="••••••••" required>
+        </div>
+        
+        <button type="submit" class="btn btn-primary" id="loginBtn">دخول إلى النظام</button>
+      </form>
+      
+      <div id="errorMsg" class="error-message" style="display: none;"></div>
+      <div class="info-text">
+        🔐 هذا النظام محمي | فقط الحسابات المصرح لها يمكنها الدخول
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    
+    const firebaseConfig = {
+      apiKey: "AIzaSyBPsgxpBN57IMOhCVaKQe2_bwkZ3aEahjA",
+      authDomain: "rise-system-a7135.firebaseapp.com",
+      databaseURL: "https://rise-system-a7135-default-rtdb.firebaseio.com",
+      projectId: "rise-system-a7135",
+      storageBucket: "rise-system-a7135.firebasestorage.app",
+      messagingSenderId: "934082504813",
+      appId: "1:934082504813:web:319df11b15b82deca3f764",
+      measurementId: "G-H0NTG6LWNJ"
+    };
+    
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    
+    const loginForm = document.getElementById('loginForm');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const loginBtn = document.getElementById('loginBtn');
+    const errorMsgDiv = document.getElementById('errorMsg');
+    
+    function showError(message) {
+      errorMsgDiv.textContent = message;
+      errorMsgDiv.style.display = 'block';
+      setTimeout(() => {
+        errorMsgDiv.style.display = 'none';
+      }, 4000);
+    }
+    
+    function setLoading(loading) {
+      if (loading) {
+        loginBtn.disabled = true;
+        loginBtn.innerHTML = '<span class="loading-spinner"></span> جاري الدخول...';
+      } else {
+        loginBtn.disabled = false;
+        loginBtn.innerHTML = 'دخول إلى النظام';
+      }
+    }
+    
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+      
+      if (!email || !password) {
+        showError('الرجاء إدخال البريد الإلكتروني وكلمة المرور');
+        return;
+      }
+      
+      setLoading(true);
+      
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+      } catch (error) {
+        console.error('خطأ في تسجيل الدخول:', error);
+        let errorMessage = 'فشل تسجيل الدخول. تأكد من بياناتك.';
+        if (error.code === 'auth/user-not-found') {
+          errorMessage = 'البريد الإلكتروني غير مسجل في النظام.';
+        } else if (error.code === 'auth/wrong-password') {
+          errorMessage = 'كلمة المرور غير صحيحة.';
+        } else if (error.code === 'auth/invalid-email') {
+          errorMessage = 'البريد الإلكتروني غير صالح.';
+        } else if (error.code === 'auth/too-many-requests') {
+          errorMessage = 'تم تعطيل هذا الحساب مؤقتًا بسبب محاولات كثيرة. حاول لاحقًا.';
+        }
+        showError(errorMessage);
+        setLoading(false);
+      }
+    });
+    
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        sessionStorage.setItem('rise_user_uid', user.uid);
+        sessionStorage.setItem('rise_user_email', user.email);
+        window.location.href = 'dashboard.html';
+      }
+    });
+  </script>
+</body>
+</html>
