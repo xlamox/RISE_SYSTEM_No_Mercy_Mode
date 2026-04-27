@@ -516,7 +516,6 @@
       .manual-grid{grid-template-columns:1fr}
     }
 
-    /* login form (only login) */
     .login-container{
       min-height: 100vh;
       display: flex;
@@ -588,6 +587,15 @@
       padding: 40px;
       font-size: 18px;
     }
+    .error-loading{
+      color: hsl(var(--chart-5));
+      text-align: center;
+      padding: 20px;
+      font-size: 14px;
+      background: rgba(0,0,0,0.5);
+      border-radius: 20px;
+      margin: 20px;
+    }
   </style>
 </head>
 
@@ -605,6 +613,7 @@
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 
   <script>
+    // Firebase configuration
     const firebaseConfig = {
       apiKey: "AIzaSyBPsgxpBN57IMOhCVaKQe2_bwkZ3aEahjA",
       authDomain: "rise-system-a7135.firebaseapp.com",
@@ -777,7 +786,7 @@
       return totals;
     }
 
-    // ---- Canvas components (same as before) ----
+    // ---- Canvas components -----
     function polygon(ctx, cx, cy, r, sides, rot){
       ctx.beginPath();
       for(let i=0;i<sides;i++){
@@ -1000,7 +1009,7 @@
       return h("div", {className:"chart-wrap"}, h("canvas", {ref, width:720, height:280}));
     }
 
-    // ---------------- Firebase state management ----------------
+    // ---------------- State management (core) ----------------
     function createInitialState() {
       return {
         day: todayKeyLocal(),
@@ -1111,7 +1120,7 @@
       return s;
     }
 
-    // ------------------ UI Components ------------------
+    // ------------------ UI Components (Dashboard & Manual) ------------------
     function DashboardPage(props){
       const { state, setState, level, computed, rank, isLocked, lockRemaining, countdownMs, quote, radarLive, commitPoints, expPoints, expPenaltyPreview,
         newTitle, setNewTitle, newTarget, setNewTarget, newImportance, setNewImportance, newType, setNewType, addTask, updateTask, removeTask } = props;
@@ -1226,7 +1235,7 @@
       );
     }
 
-    // Only Login page (no signup)
+    // ---------- Login page (only login, no signup) ----------
     function LoginPage({ onLoginSuccess }) {
       const [email, setEmail] = useState("");
       const [password, setPassword] = useState("");
@@ -1259,10 +1268,12 @@
       );
     }
 
+    // ---------- Main App (fixed persistence) ----------
     function App(){
       const [user, setUser] = useState(null);
       const [loading, setLoading] = useState(true);
-      const [state, setState] = useState(createInitialState());
+      const [loadError, setLoadError] = useState(null);
+      const [state, setState] = useState(null); // start null, wait data
       const [page, setPage] = useState("dashboard");
       const [countdownMs, setCountdownMs] = useState(msToMidnight());
       const [glitchIndex, setGlitchIndex] = useState(1);
@@ -1271,90 +1282,95 @@
       const [newImportance, setNewImportance] = useState(3);
       const [newType, setNewType] = useState("PH");
 
-     const forceSignOutIfDeleted = async (currentUser) => {
-  if (!currentUser) return;
-  try {
-    // محاولة إعادة تحميل بيانات المستخدم – تنجح فقط إذا كان الحساب لا يزال موجوداً
-    await currentUser.reload();
-  } catch (error) {
-    // إذا فشل reload لأن الحساب حُذف أو عُطل
-    if (error.code === 'auth/user-not-found' || error.code === 'auth/user-disabled') {
-      await auth.signOut();
-    }
-  }
-};
+      // check if account deleted (every 5 sec)
+      const forceSignOutIfDeleted = async (currentUser) => {
+        if (!currentUser) return;
+        try {
+          await currentUser.getIdToken(true);
+        } catch (error) {
+          if (error.code === 'auth/user-not-found' || error.code === 'auth/user-disabled') {
+            await auth.signOut();
+          }
+        }
+      };
 
-      // مراقبة حالة المصادقة
+      // Load user data once
       useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged(async (usr) => {
-          if(usr){
-            // تحقق إضافي: إذا كان الحساب لا يزال صالحًا
-            await forceSignOutIfDeleted(usr);
-            // إذا لم يتم تسجيل الخروج بسبب التحقق أعلاه، نكمل تحميل البيانات
-            if (auth.currentUser) {
+          setLoadError(null);
+          if (usr) {
+            try {
               setUser(usr);
               const userRef = db.ref(`users/${usr.uid}`);
               const snapshot = await userRef.once('value');
               const data = snapshot.val();
-              if(data && data.state){
-                let loadedState = data.state;
-                const todayNow = todayKeyLocal();
-                if(loadedState.day !== todayNow){
-                  loadedState = finalizeDayNoMercy(loadedState);
-                  loadedState.day = todayNow;
+              let loadedState;
+              if (data && data.state) {
+                loadedState = data.state;
+                if (loadedState.tasks && Array.isArray(loadedState.tasks)) {
+                  loadedState.tasks = loadedState.tasks.map(t => ({ ...t, done: t.done !== undefined ? t.done : 0 }));
                 }
-                setState(loadedState);
+                const today = todayKeyLocal();
+                if (loadedState.day !== today) {
+                  loadedState = finalizeDayNoMercy(loadedState);
+                  loadedState.day = today;
+                }
               } else {
-                const fresh = createInitialState();
-                setState(fresh);
-                await userRef.set({ state: fresh });
+                // first time user
+                loadedState = createInitialState();
+                await userRef.set({ state: loadedState });
               }
-            } else {
-              setUser(null);
+              setState(loadedState);
+            } catch (err) {
+              console.error("Load error:", err);
+              setLoadError("فشل تحميل البيانات. تأكد من الاتصال بالإنترنت وأعد تحميل الصفحة.");
+            } finally {
+              setLoading(false);
             }
           } else {
             setUser(null);
-            setState(createInitialState());
+            setState(null);
+            setLoading(false);
           }
-          setLoading(false);
         });
         return () => unsubscribe();
       }, []);
 
-      // فحص دوري كل 5 ثوانٍ للتأكد من أن الحساب لم يُحذف
+      // Save state to Firebase whenever it changes, only after loaded
+      const saveTimeout = useRef(null);
+      useEffect(() => {
+        if (!user || state === null) return;
+        if (saveTimeout.current) clearTimeout(saveTimeout.current);
+        saveTimeout.current = setTimeout(() => {
+          db.ref(`users/${user.uid}`).update({ state }).catch(err => {
+            console.error("Save error:", err);
+            if (err.code === 'PERMISSION_DENIED') auth.signOut();
+          });
+        }, 500);
+        return () => { if (saveTimeout.current) clearTimeout(saveTimeout.current); };
+      }, [state, user]);
+
+      // periodic account deletion check (5 sec)
       useEffect(() => {
         if (!user) return;
-        const interval = setInterval(async () => {
-          await forceSignOutIfDeleted(user);
-        }, 5000); // كل 5 ثوانٍ
+        const interval = setInterval(() => forceSignOutIfDeleted(user), 5000);
         return () => clearInterval(interval);
       }, [user]);
 
-      // حفظ البيانات مع التحقق من وجود المستخدم
-      const saveTimeout = useRef(null);
+      // timers & glitch
       useEffect(() => {
-        if(!user) return;
-        if(saveTimeout.current) clearTimeout(saveTimeout.current);
-        saveTimeout.current = setTimeout(async () => {
-          try {
-            await db.ref(`users/${user.uid}`).update({ state: state });
-          } catch (err) {
-            if (err.code === 'PERMISSION_DENIED' || err.message.includes('permission_denied')) {
-              await auth.signOut();
-            }
-          }
-        }, 500);
-        return () => { if(saveTimeout.current) clearTimeout(saveTimeout.current); };
-      }, [state, user]);
+        const t = setInterval(() => setCountdownMs(msToMidnight()), 1000);
+        return () => clearInterval(t);
+      }, []);
+      useEffect(() => {
+        const iv = setInterval(() => setGlitchIndex(prev => (prev + 1) % GLITCH_WORDS.length), 1800);
+        return () => clearInterval(iv);
+      }, []);
 
-      // timer & glitch
-      useEffect(() => { const t = setInterval(() => setCountdownMs(msToMidnight()), 1000); return () => clearInterval(t); }, []);
-      useEffect(() => { const iv = setInterval(() => setGlitchIndex(prev => (prev + 1) % GLITCH_WORDS.length), 1800); return () => clearInterval(iv); }, []);
-
-      // auto finalize day
+      // auto finalize day at midnight
       const finalizeRef = useRef(() => {});
       finalizeRef.current = () => {
-        setState(prev => finalizeDayNoMercy(prev));
+        if (state !== null) setState(prev => finalizeDayNoMercy(prev));
       };
       useEffect(() => {
         let to = null;
@@ -1364,65 +1380,86 @@
           to = setTimeout(() => { finalizeRef.current(); schedule(); }, ms + 120);
         }
         schedule();
-        const iv = setInterval(() => { if(todayKeyLocal() !== state.day) finalizeRef.current(); }, 20000);
-        const onVis = () => { if(document.visibilityState === "visible" && todayKeyLocal() !== state.day) finalizeRef.current(); };
-        const onFocus = () => { if(todayKeyLocal() !== state.day) finalizeRef.current(); };
+        const iv = setInterval(() => {
+          if (state !== null && todayKeyLocal() !== state.day) finalizeRef.current();
+        }, 20000);
+        const onVis = () => {
+          if (document.visibilityState === "visible" && state !== null && todayKeyLocal() !== state.day) finalizeRef.current();
+        };
+        const onFocus = () => {
+          if (state !== null && todayKeyLocal() !== state.day) finalizeRef.current();
+        };
         document.addEventListener("visibilitychange", onVis);
         window.addEventListener("focus", onFocus);
-        return () => { if(to) clearTimeout(to); clearInterval(iv); document.removeEventListener("visibilitychange", onVis); window.removeEventListener("focus", onFocus); };
-      }, [state.day]);
+        return () => {
+          if(to) clearTimeout(to);
+          clearInterval(iv);
+          document.removeEventListener("visibilitychange", onVis);
+          window.removeEventListener("focus", onFocus);
+        };
+      }, [state]);
 
-      const level = useMemo(() => expToLevel(state.totalExp), [state.totalExp]);
-      const computed = useMemo(() => computeToday(state.tasks, level.level), [state.tasks, level.level]);
-      const rank = useMemo(() => rankFromStreak(state.commitDays), [state.commitDays]);
-      const isLocked = useMemo(() => state.lockedUntil ? Date.now() < state.lockedUntil : false, [state.lockedUntil]);
-      const lockRemaining = useMemo(() => {
-        if(!state.lockedUntil) return null;
-        const ms = state.lockedUntil - Date.now();
-        if(ms <= 0) return null;
-        return { hh: Math.floor(ms/(3600000)), mm: Math.floor((ms%3600000)/60000) };
-      }, [state.lockedUntil]);
-      const quote = useMemo(() => randomQuote(state.day), [state.day]);
-      const radarLive = useMemo(() => {
-        const g = state.lifetimeByType, p = state.lifetimePotentialByType;
-        const liveGain = { PH: g.PH + computed.byType.PH, IQ: g.IQ + computed.byType.IQ, SP: g.SP + computed.byType.SP };
-        const livePot = { PH: p.PH + computed.byTypePotential.PH, IQ: p.IQ + computed.byTypePotential.IQ, SP: p.SP + computed.byTypePotential.SP };
-        const ph = livePot.PH>0 ? liveGain.PH/livePot.PH : 0;
-        const iq = livePot.IQ>0 ? liveGain.IQ/livePot.IQ : 0;
-        const sp = livePot.SP>0 ? liveGain.SP/livePot.SP : 0;
-        return { PH: Math.round(ph*100), IQ: Math.round(iq*100), SP: Math.round(sp*100) };
-      }, [state.lifetimeByType, state.lifetimePotentialByType, computed.byType, computed.byTypePotential]);
-      const commitPoints = useMemo(() => (state.commitHistory||[]).map((x,i)=>({ x:i, y:Number(x.v||0), d:x.d })), [state.commitHistory]);
-      const expPoints = useMemo(() => (state.expHistory||[]).map((x,i)=>({ x:i, y:Number(x.v||0), d:x.d })), [state.expHistory]);
-      const expPenaltyPreview = useMemo(() => expPenaltyByLevel(level.level), [level.level]);
-
-      function updateTask(id, patch){
-        setState(prev => ({...prev, tasks: prev.tasks.map(t => t.id===id ? {...t, ...patch} : t)}));
-      }
-      function removeTask(id){
-        setState(prev => ({...prev, tasks: prev.tasks.filter(t => t.id!==id)}));
-      }
-      function addTask(title, target, importance, type){
-        const clean = String(title||"").trim();
-        if(!clean) return;
-        setState(prev => ({...prev, tasks: prev.tasks.concat([{ id:`t${Math.random().toString(16).slice(2)}`, title: clean, target: clamp(Number(target)||1,1,9999), importance: Number(importance), type, done:0 }])}));
-      }
+      // task actions
+      const updateTask = (id, patch) => {
+        setState(prev => prev ? {...prev, tasks: prev.tasks.map(t => t.id===id ? {...t, ...patch} : t)} : prev);
+      };
+      const removeTask = (id) => {
+        setState(prev => prev ? {...prev, tasks: prev.tasks.filter(t => t.id !== id)} : prev);
+      };
+      const addTask = (title, target, importance, type) => {
+        const clean = String(title || "").trim();
+        if (!clean) return;
+        setState(prev => prev ? {
+          ...prev,
+          tasks: prev.tasks.concat([{ id:`t${Math.random().toString(16).slice(2)}`, title: clean, target: clamp(Number(target)||1,1,9999), importance: Number(importance), type, done:0 }])
+        } : prev);
+      };
 
       const handleLogout = async () => {
         await auth.signOut();
         setUser(null);
-        setState(createInitialState());
+        setState(null);
       };
 
-      if(loading){
+      // loading / error / not logged in
+      if (loading) {
         return h("div", {className:"loading"}, "جاري التحميل...");
       }
-      if(!user){
+      if (loadError) {
+        return h("div", {className:"error-loading"}, loadError);
+      }
+      if (!user || state === null) {
         return h(LoginPage, { onLoginSuccess: () => {} });
       }
 
+      // derived data
+      const level = expToLevel(state.totalExp);
+      const computed = computeToday(state.tasks, level.level);
+      const rank = rankFromStreak(state.commitDays);
+      const isLocked = state.lockedUntil ? Date.now() < state.lockedUntil : false;
+      const lockRemaining = (() => {
+        if (!state.lockedUntil) return null;
+        const ms = state.lockedUntil - Date.now();
+        if (ms <= 0) return null;
+        return { hh: Math.floor(ms / 3600000), mm: Math.floor((ms % 3600000) / 60000) };
+      })();
+      const quote = randomQuote(state.day);
+      const radarLive = (() => {
+        const g = state.lifetimeByType, p = state.lifetimePotentialByType;
+        const liveGain = { PH: g.PH + computed.byType.PH, IQ: g.IQ + computed.byType.IQ, SP: g.SP + computed.byType.SP };
+        const livePot = { PH: p.PH + computed.byTypePotential.PH, IQ: p.IQ + computed.byTypePotential.IQ, SP: p.SP + computed.byTypePotential.SP };
+        const ph = livePot.PH > 0 ? liveGain.PH / livePot.PH : 0;
+        const iq = livePot.IQ > 0 ? liveGain.IQ / livePot.IQ : 0;
+        const sp = livePot.SP > 0 ? liveGain.SP / livePot.SP : 0;
+        return { PH: Math.round(ph*100), IQ: Math.round(iq*100), SP: Math.round(sp*100) };
+      })();
+      const commitPoints = (state.commitHistory || []).map((x,i) => ({ x:i, y:Number(x.v||0), d:x.d }));
+      const expPoints = (state.expHistory || []).map((x,i) => ({ x:i, y:Number(x.v||0), d:x.d }));
+      const expPenaltyPreview = expPenaltyByLevel(level.level);
+
       const currentWord = GLITCH_WORDS[glitchIndex];
       const isSelfWord = currentWord === "نفسك";
+
       return h("div", {className:"wrap"},
         h("header", {className:"header"},
           h("div", {className:"hero-glow"}),
@@ -1430,7 +1467,7 @@
             h("div", null,
               h("div", {className:"badge"}, h("span", {className:"dot"}), h("span", {className:"brand-name"}, "RISE SYSTEM™"), h("span", {className:"brand-sub"}, "No-Mercy Mode")),
               h("h1", {className:"title"}, "طوّر شخصيتك… مثل ", h("span", {className:`glitch-word ${isSelfWord ? "self-word" : ""}`, "data-text": currentWord}, currentWord)),
-              h("p", {className:"subtitle"}, "لوحة التطوير اليومية مع قاعدة بيانات Firebase لكل مستخدم."),
+              h("p", {className:"subtitle"}, "لوحة التطوير اليومية – حفظ تلقائي في Firebase (لا يضيع مع الرفريش)."),
               h("div", {className:"chips"}, h("div", {className:"chip"}, h("span", null, "اليوم:"), h("span", {className:"chip-mono"}, state.day)), state.lastCommitDay ? h("div", {className:"chip"}, h("span", null, "آخر يوم محسوب:"), h("span", {className:"chip-mono"}, state.lastCommitDay)) : null),
               h("div", {className:"header-actions"},
                 h("button", {className:`nav-btn ${page==="dashboard" ? "active" : ""}`, onClick:()=>setPage("dashboard")}, "لوحة النظام"),
@@ -1446,9 +1483,14 @@
           )
         ),
         page === "dashboard"
-          ? h(DashboardPage, { state, setState, level, computed, rank, isLocked, lockRemaining, countdownMs, quote, radarLive, commitPoints, expPoints, expPenaltyPreview, newTitle, setNewTitle, newTarget, setNewTarget, newImportance, setNewImportance, newType, setNewType, addTask, updateTask, removeTask })
+          ? h(DashboardPage, {
+              state, setState, level, computed, rank, isLocked, lockRemaining, countdownMs, quote,
+              radarLive, commitPoints, expPoints, expPenaltyPreview,
+              newTitle, setNewTitle, newTarget, setNewTarget, newImportance, setNewImportance, newType, setNewType,
+              addTask, updateTask, removeTask
+            })
           : h(ManualPage),
-        h("footer", {className:"footer"}, h("div", null, `متصل كـ: ${user.email}`), h("div", null, "البيانات محفوظة في Firebase — يمكنك الدخول من أي جهاز."), h("div", null, "RISE SYSTEM™ — No-Mercy Mode."))
+        h("footer", {className:"footer"}, h("div", null, `متصل كـ: ${user.email}`), h("div", null, "البيانات محفوظة في Firebase — تدوم بعد الرفريش."), h("div", null, "RISE SYSTEM™ — No-Mercy Mode."))
       );
     }
 
