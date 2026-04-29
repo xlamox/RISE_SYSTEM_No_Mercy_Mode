@@ -8,8 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@200..800&family=IBM+Plex+Sans+Arabic:wght@100..700&display=swap" rel="stylesheet">
+
   <style>
-    /* جميع الأنماط كما هي ـ حذفتها للاختصار لكنها موجودة في الكود النهائي */
     :root{
       --background: 235 35% 6%;
       --foreground: 210 40% 96%;
@@ -604,15 +604,17 @@
   <div class="bg-anim"></div>
   <div id="root"></div>
 
-  <!-- Firebase SDKs -->
+  <!-- Firebase SDKs (Compat versions for Firestore) -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
+  <!-- React -->
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 
   <script>
+    // Firebase configuration
     const firebaseConfig = {
       apiKey: "AIzaSyBPsgxpBN57IMOhCVaKQe2_bwkZ3aEahjA",
       authDomain: "rise-system-a7135.firebaseapp.com",
@@ -624,158 +626,848 @@
     };
     const app = firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
+    // عدم حفظ الجلسة (تسجيل الدخول مطلوب في كل مرة)
     auth.setPersistence(firebase.auth.Auth.Persistence.NONE).catch(console.error);
     const db = firebase.firestore();
 
     const h = React.createElement;
     const { useEffect, useMemo, useRef, useState } = React;
 
-    // ========== Helper functions (unchanged) ==========
-    const TYPE_META = { PH: { label: "قوة جسدية", multiplier: 2.0 }, IQ: { label: "ذكاء وتعلّم", multiplier: 1.7 }, SP: { label: "انضباط وروحانية", multiplier: 1.5 }, XX: { label: "عادة سيئة", multiplier: 0 } };
+    // ---------- Helper functions (مثل السابق تماماً) ----------
+    const TYPE_META = {
+      PH: { label: "قوة جسدية", multiplier: 2.0 },
+      IQ: { label: "ذكاء وتعلّم", multiplier: 1.7 },
+      SP: { label: "انضباط وروحانية", multiplier: 1.5 },
+      XX: { label: "عادة سيئة", multiplier: 0 },
+    };
+
     const GLITCH_WORDS = ["الأبطال", "الأنمي", "قدوتك", "نفسك"];
-    const RANKS = [{ key: "E", days: 0, label: "E" },{ key: "D", days: 7, label: "D" },{ key: "C", days: 30, label: "C" },{ key: "B", days: 90, label: "B" },{ key: "A", days: 180, label: "A" },{ key: "S", days: 365, label: "S Elite" }];
+    const RANKS = [
+      { key: "E", days: 0,   label: "E" },
+      { key: "D", days: 7,   label: "D" },
+      { key: "C", days: 30,  label: "C" },
+      { key: "B", days: 90,  label: "B" },
+      { key: "A", days: 180, label: "A" },
+      { key: "S", days: 365, label: "S Elite" },
+    ];
     const RANK_PENALTY = { E:0, D:1, C:3, B:7, A:14, S:30 };
-    const QUOTES = ["أنت لا تبحث عن الحماس… أنت تبني الانضباط.","اليوم ليس اختبارًا لقوتك… بل لالتزامك.","خطوة واحدة يوميًا تُصنع منها الأساطير.","كل مهمة تُنجزها = مستوى جديد في شخصيتك.","لا تُفاوض على عاداتك الأساسية.","النتائج لا تأتي بسرعة… لكنّها تأتي بثبات.","الفارق بينك وبين هدفك: يوم واحد من الالتزام.","الضعف لحظة… والاستسلام قرار.","خفّف الضوضاء. زد التنفيذ.","إذا بدأت اليوم، ستشكر نفسك بعد أسبوع.","إلتزم عندما لا تشعر بالرغبة—هنا تتغير الشخصية.","كل مرة تقول (لاحقًا) أنت تسرق من مستقبلك.","لا تنتظر المزاج. المزاج يتبع الحركة.","أنت تبني (نظام)… وليس (قائمة مهام).","الضغط جزء من التطور. لا تهرب منه."];
-    function clamp(n,min,max){ return Math.max(min,Math.min(max,n)); }
-    function pct(n){ return Math.round(n*100); }
-    function todayKeyLocal(){ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
-    function randomQuote(seed){ let h=0; for(let i=0;i<seed.length;i++) h=(h*31+seed.charCodeAt(i))>>>0; return QUOTES[h%QUOTES.length]; }
-    function expToLevel(totalExp){ let a=120,level=1,expForNext=a,remaining=totalExp; while(remaining>=expForNext){ remaining-=expForNext; level+=1; expForNext=Math.round(a*Math.pow(level,1.15)); if(level>200) break; } return {level,expIntoLevel:remaining,expForNext}; }
-    function rankFromStreak(days){ let cur=RANKS[0]; for(const r of RANKS) if(days>=r.days) cur=r; return cur; }
-    function msToMidnight(){ const now=new Date(),midnight=new Date(now); midnight.setHours(24,0,0,0); return midnight.getTime()-now.getTime(); }
-    function formatCountdown(ms){ const total=Math.max(0,ms),s=Math.floor(total/1000),hh=Math.floor(s/3600),mm=Math.floor((s%3600)/60),ss=s%60; return `${String(hh).padStart(2,"0")}:${String(mm).padStart(2,"0")}:${String(ss).padStart(2,"0")}`; }
-    function parseKey(key){ const [y,m,d]=String(key).split("-").map(Number); const dt=new Date(y,(m||1)-1,d||1); dt.setHours(12,0,0,0); return dt; }
-    function formatKey(dt){ return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}-${String(dt.getDate()).padStart(2,"0")}`; }
-    function addDaysKey(key,days){ const dt=parseKey(key); dt.setDate(dt.getDate()+days); return formatKey(dt); }
-    function diffDaysKey(aKey,bKey){ const a=parseKey(aKey).getTime(),b=parseKey(bKey).getTime(); return Math.round((b-a)/(24*60*60*1000)); }
-    function dailyMaxExpByLevel(level){ return Math.round(220+18*Math.log2(level+1)+0.8*Math.sqrt(level)); }
-    function penaltyRatioByLevel(level){ return clamp(0.95+(Math.max(1,level)-1)*0.03,0.95,2.20); }
-    function expPenaltyByLevel(level){ return Math.round(dailyMaxExpByLevel(level)*penaltyRatioByLevel(level)); }
-    function computeToday(tasks,level){
-      const totals={scoreDone:0,scoreTotal:0,completion:0,exp:0,expMax:0,weightedProgress:0,byType:{PH:0,IQ:0,SP:0},byTypePotential:{PH:0,IQ:0,SP:0},xxTriggered:false};
-      const SCORE_UNIT=10;
-      let wSum=0;
-      for(const t of tasks){
-        const importance=Number(t.importance||1),weight=importance*SCORE_UNIT,target=Math.max(1,Number(t.target||1)),done=clamp(Number(t.done||0),0,target),ratio=target>0?done/target:0;
-        if(t.type==="XX"){ if(done>0) totals.xxTriggered=true; continue; }
-        totals.scoreTotal+=weight; totals.scoreDone+=weight*ratio; totals.byType[t.type]+=weight*ratio; totals.byTypePotential[t.type]+=weight; wSum+=importance*TYPE_META[t.type].multiplier;
+    const QUOTES = [
+      "أنت لا تبحث عن الحماس… أنت تبني الانضباط.",
+      "اليوم ليس اختبارًا لقوتك… بل لالتزامك.",
+      "خطوة واحدة يوميًا تُصنع منها الأساطير.",
+      "كل مهمة تُنجزها = مستوى جديد في شخصيتك.",
+      "لا تُفاوض على عاداتك الأساسية.",
+      "النتائج لا تأتي بسرعة… لكنّها تأتي بثبات.",
+      "الفارق بينك وبين هدفك: يوم واحد من الالتزام.",
+      "الضعف لحظة… والاستسلام قرار.",
+      "خفّف الضوضاء. زد التنفيذ.",
+      "إذا بدأت اليوم، ستشكر نفسك بعد أسبوع.",
+      "إلتزم عندما لا تشعر بالرغبة—هنا تتغير الشخصية.",
+      "كل مرة تقول (لاحقًا) أنت تسرق من مستقبلك.",
+      "لا تنتظر المزاج. المزاج يتبع الحركة.",
+      "أنت تبني (نظام)… وليس (قائمة مهام).",
+      "الضغط جزء من التطور. لا تهرب منه.",
+    ];
+
+    function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
+    function pct(n){ return Math.round(n * 100); }
+    function todayKeyLocal(){
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth()+1).padStart(2,"0");
+      const day = String(d.getDate()).padStart(2,"0");
+      return `${y}-${m}-${day}`;
+    }
+    function randomQuote(seed){
+      let hh = 0;
+      for(let i=0;i<seed.length;i++) hh = (hh*31 + seed.charCodeAt(i)) >>> 0;
+      return QUOTES[hh % QUOTES.length];
+    }
+    function expToLevel(totalExp){
+      const a = 120;
+      let level = 1;
+      let expForNext = a;
+      let remaining = totalExp;
+      while(remaining >= expForNext){
+        remaining -= expForNext;
+        level += 1;
+        expForNext = Math.round(a * Math.pow(level, 1.15));
+        if(level > 200) break;
       }
-      totals.completion=totals.scoreTotal>0?totals.scoreDone/totals.scoreTotal:0;
-      if(totals.xxTriggered) totals.completion=Math.max(0,totals.completion-0.5);
-      const dailyMax=dailyMaxExpByLevel(level);
-      totals.expMax=dailyMax; totals.weightedProgress=wSum>0?totals.completion:0; totals.exp=Math.round(totals.weightedProgress*dailyMax);
+      return { level, expIntoLevel: remaining, expForNext };
+    }
+    function rankFromStreak(days){
+      let cur = RANKS[0];
+      for(const r of RANKS) if(days >= r.days) cur = r;
+      return cur;
+    }
+    function msToMidnight(){
+      const now = new Date();
+      const midnight = new Date(now);
+      midnight.setHours(24,0,0,0);
+      return midnight.getTime() - now.getTime();
+    }
+    function formatCountdown(ms){
+      const total = Math.max(0, ms);
+      const s = Math.floor(total/1000);
+      const hh = Math.floor(s/3600);
+      const mm = Math.floor((s%3600)/60);
+      const ss = s%60;
+      return `${String(hh).padStart(2,"0")}:${String(mm).padStart(2,"0")}:${String(ss).padStart(2,"0")}`;
+    }
+    function parseKey(key){
+      const [y,m,d] = String(key).split("-").map(Number);
+      const dt = new Date(y, (m||1)-1, d||1);
+      dt.setHours(12,0,0,0);
+      return dt;
+    }
+    function formatKey(dt){
+      const y = dt.getFullYear();
+      const m = String(dt.getMonth()+1).padStart(2,"0");
+      const d = String(dt.getDate()).padStart(2,"0");
+      return `${y}-${m}-${d}`;
+    }
+    function addDaysKey(key, days){
+      const dt = parseKey(key);
+      dt.setDate(dt.getDate() + days);
+      return formatKey(dt);
+    }
+    function diffDaysKey(aKey, bKey){
+      const a = parseKey(aKey).getTime();
+      const b = parseKey(bKey).getTime();
+      return Math.round((b - a) / (24*60*60*1000));
+    }
+    function dailyMaxExpByLevel(level){
+      return Math.round(220 + 18 * Math.log2(level + 1) + 0.8 * Math.sqrt(level));
+    }
+    function penaltyRatioByLevel(level){
+      return clamp(0.95 + (Math.max(1, level) - 1) * 0.03, 0.95, 2.20);
+    }
+    function expPenaltyByLevel(level){
+      const dailyMax = dailyMaxExpByLevel(level);
+      return Math.round(dailyMax * penaltyRatioByLevel(level));
+    }
+    function computeToday(tasks, level){
+      const totals = {
+        scoreDone: 0,
+        scoreTotal: 0,
+        completion: 0,
+        exp: 0,
+        expMax: 0,
+        weightedProgress: 0,
+        byType: {PH:0, IQ:0, SP:0},
+        byTypePotential: {PH:0, IQ:0, SP:0},
+        xxTriggered: false,
+      };
+      const SCORE_UNIT = 10;
+      let wSum = 0;
+      for(const t of tasks){
+        const importance = Number(t.importance || 1);
+        const weight = importance * SCORE_UNIT;
+        const target = Math.max(1, Number(t.target || 1));
+        const done = clamp(Number(t.done || 0), 0, target);
+        const ratio = target > 0 ? (done / target) : 0;
+        if(t.type === "XX"){
+          if(done > 0) totals.xxTriggered = true;
+          continue;
+        }
+        totals.scoreTotal += weight;
+        totals.scoreDone += weight * ratio;
+        totals.byType[t.type] += weight * ratio;
+        totals.byTypePotential[t.type] += weight;
+        wSum += importance * TYPE_META[t.type].multiplier;
+      }
+      totals.completion = totals.scoreTotal > 0 ? (totals.scoreDone / totals.scoreTotal) : 0;
+      if(totals.xxTriggered){
+        totals.completion = Math.max(0, totals.completion - 0.5);
+      }
+      const dailyMax = dailyMaxExpByLevel(level);
+      totals.expMax = dailyMax;
+      totals.weightedProgress = wSum > 0 ? totals.completion : 0;
+      totals.exp = Math.round(totals.weightedProgress * dailyMax);
       return totals;
     }
 
-    // ========== Canvas components (unchanged) ==========
-    function polygon(ctx,cx,cy,r,sides,rot){ ctx.beginPath(); for(let i=0;i<sides;i++){ const a=rot+i*(2*Math.PI/sides),x=cx+Math.cos(a)*r,y=cy+Math.sin(a)*r; if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); } ctx.closePath(); }
-    function RadarCanvas(props){
-      const ref=useRef(null),prevRef=useRef({PH:0,IQ:0,SP:0}),animRef=useRef(null);
-      function draw(vals){
-        const canvas=ref.current; if(!canvas) return; const ctx=canvas.getContext("2d"),w=canvas.width,hh=canvas.height; ctx.clearRect(0,0,w,hh);
-        const cx=w/2,cy=hh/2+10,radius=Math.min(w,hh)*0.33; ctx.save(); ctx.strokeStyle="rgba(255,255,255,0.12)"; ctx.lineWidth=1;
-        for(let r=1;r<=4;r++){ polygon(ctx,cx,cy,radius*(r/4),3,-Math.PI/2); ctx.stroke(); }
-        const labels=["PH","IQ","SP"],angles=[-Math.PI/2,-Math.PI/2+2*Math.PI/3,-Math.PI/2+4*Math.PI/3];
-        labels.forEach((lab,i)=>{ const a=angles[i],x=cx+Math.cos(a)*radius,y=cy+Math.sin(a)*radius; ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(x,y); ctx.stroke(); ctx.fillStyle="rgba(255,255,255,0.78)"; ctx.font="16px 'IBM Plex Sans Arabic', sans-serif"; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.fillText(lab,cx+Math.cos(a)*(radius+26),cy+Math.sin(a)*(radius+18)); });
-        const pPH=(vals.PH||0)/100,pIQ=(vals.IQ||0)/100,pSP=(vals.SP||0)/100,arr=[pPH,pIQ,pSP].map((v,i)=>({x:cx+Math.cos(angles[i])*radius*v,y:cy+Math.sin(angles[i])*radius*v}));
-        ctx.beginPath(); ctx.moveTo(arr[0].x,arr[0].y); ctx.lineTo(arr[1].x,arr[1].y); ctx.lineTo(arr[2].x,arr[2].y); ctx.closePath(); ctx.fillStyle="rgba(0,229,255,0.20)"; ctx.fill(); ctx.strokeStyle="rgba(0,229,255,0.88)"; ctx.lineWidth=2; ctx.stroke(); ctx.fillStyle="rgba(0,229,255,0.95)"; arr.forEach(p=>{ ctx.beginPath(); ctx.arc(p.x,p.y,4,0,Math.PI*2); ctx.fill(); }); ctx.restore();
+    // ---- Canvas components ----
+    function polygon(ctx, cx, cy, r, sides, rot){
+      ctx.beginPath();
+      for(let i=0;i<sides;i++){
+        const a = rot + i*(2*Math.PI/sides);
+        const x = cx + Math.cos(a)*r;
+        const y = cy + Math.sin(a)*r;
+        if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
       }
-      useEffect(()=>{ const next=props.values||{PH:0,IQ:0,SP:0},from=prevRef.current; if(animRef.current) cancelAnimationFrame(animRef.current); const start=performance.now(),dur=320; function lerp(a,b,t){ return a+(b-a)*t; } function ease(t){ return 1-Math.pow(1-t,3); } function step(now){ const t=Math.min(1,(now-start)/dur),k=ease(t),cur={PH:lerp(from.PH,next.PH,k),IQ:lerp(from.IQ,next.IQ,k),SP:lerp(from.SP,next.SP,k)}; draw(cur); if(t<1) animRef.current=requestAnimationFrame(step); else prevRef.current={PH:next.PH,IQ:next.IQ,SP:next.SP}; } animRef.current=requestAnimationFrame(step); return ()=>{ if(animRef.current) cancelAnimationFrame(animRef.current); }; },[props.values]);
-      return h("div",{className:"radar-wrap"},h("canvas",{ref,width:520,height:420}));
+      ctx.closePath();
+    }
+    function RadarCanvas(props){
+      const ref = useRef(null);
+      const prevRef = useRef({PH:0, IQ:0, SP:0});
+      const animRef = useRef(null);
+      function draw(vals){
+        const canvas = ref.current;
+        if(!canvas) return;
+        const ctx = canvas.getContext("2d");
+        const w = canvas.width, hh = canvas.height;
+        ctx.clearRect(0,0,w,hh);
+        const cx = w/2, cy = hh/2 + 10;
+        const radius = Math.min(w, hh) * 0.33;
+        ctx.save();
+        ctx.strokeStyle = "rgba(255,255,255,0.12)";
+        ctx.lineWidth = 1;
+        for(let r=1;r<=4;r++){ polygon(ctx, cx, cy, radius*(r/4), 3, -Math.PI/2); ctx.stroke(); }
+        const labels = ["PH","IQ","SP"];
+        const angles = [ -Math.PI/2, -Math.PI/2 + (2*Math.PI/3), -Math.PI/2 + (4*Math.PI/3) ];
+        labels.forEach((lab,i)=>{
+          const a = angles[i];
+          const x = cx + Math.cos(a)*radius;
+          const y = cy + Math.sin(a)*radius;
+          ctx.beginPath();
+          ctx.moveTo(cx,cy);
+          ctx.lineTo(x,y);
+          ctx.stroke();
+          ctx.fillStyle = "rgba(255,255,255,0.78)";
+          ctx.font = "16px IBM Plex Sans Arabic, sans-serif";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(lab, cx + Math.cos(a)*(radius+26), cy + Math.sin(a)*(radius+18));
+        });
+        const pPH = (vals.PH||0)/100, pIQ = (vals.IQ||0)/100, pSP = (vals.SP||0)/100;
+        const arr = [pPH,pIQ,pSP].map((v,i)=>{
+          const a = angles[i];
+          return { x: cx + Math.cos(a)*radius*v, y: cy + Math.sin(a)*radius*v };
+        });
+        ctx.beginPath();
+        ctx.moveTo(arr[0].x, arr[0].y);
+        ctx.lineTo(arr[1].x, arr[1].y);
+        ctx.lineTo(arr[2].x, arr[2].y);
+        ctx.closePath();
+        ctx.fillStyle = "rgba(0,229,255,0.20)";
+        ctx.fill();
+        ctx.strokeStyle = "rgba(0,229,255,0.88)";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.fillStyle = "rgba(0,229,255,0.95)";
+        arr.forEach(p=>{ ctx.beginPath(); ctx.arc(p.x,p.y,4,0,Math.PI*2); ctx.fill(); });
+        ctx.restore();
+      }
+      useEffect(()=>{
+        const next = props.values || {PH:0, IQ:0, SP:0};
+        const from = prevRef.current;
+        if(animRef.current) cancelAnimationFrame(animRef.current);
+        const start = performance.now();
+        const dur = 320;
+        function lerp(a,b,t){ return a + (b-a)*t; }
+        function ease(t){ return 1 - Math.pow(1-t, 3); }
+        function step(now){
+          const t = Math.min(1, (now - start) / dur);
+          const k = ease(t);
+          const cur = { PH: lerp(from.PH, next.PH, k), IQ: lerp(from.IQ, next.IQ, k), SP: lerp(from.SP, next.SP, k) };
+          draw(cur);
+          if(t < 1) animRef.current = requestAnimationFrame(step);
+          else prevRef.current = {PH: next.PH, IQ: next.IQ, SP: next.SP};
+        }
+        animRef.current = requestAnimationFrame(step);
+        return ()=> { if(animRef.current) cancelAnimationFrame(animRef.current); };
+      }, [props.values]);
+      return h("div", {className:"radar-wrap"}, h("canvas", {ref, width:520, height:420}));
     }
     function CommitChart(props){
-      const ref=useRef(null),prevYRef=useRef(null),animRef=useRef(null);
-      function draw(points,t=1){
-        const canvas=ref.current; if(!canvas) return; const ctx=canvas.getContext("2d"),w=canvas.width,hh=canvas.height; ctx.clearRect(0,0,w,hh); const pad=18,innerW=w-pad*2,innerH=hh-pad*2; ctx.save(); ctx.strokeStyle="rgba(255,255,255,0.10)"; ctx.lineWidth=1; for(let i=0;i<=4;i++){ const y=pad+innerH*i/4; ctx.beginPath(); ctx.moveTo(pad,y); ctx.lineTo(w-pad,y); ctx.stroke(); } ctx.restore();
-        if(!points||points.length<2){ ctx.fillStyle="rgba(255,255,255,0.70)"; ctx.font="13px 'IBM Plex Sans Arabic', sans-serif"; ctx.textAlign="center"; ctx.fillText("سيظهر المنحنى بعد أول يوم حفظ تلقائي.",w/2,hh/2); return; }
-        const maxY=Math.max(1,...points.map(p=>p.y)),minY=Math.min(...points.map(p=>p.y)),range=Math.max(1,maxY-minY);
-        const xs=points.map((p,i)=>{ const x=pad+innerW*i/(points.length-1),yNorm=(p.y-minY)/range,y=pad+innerH-yNorm*innerH; return {x,y,yVal:p.y}; });
-        const prev=prevYRef.current; const ys=xs.map((p,i)=>{ const py=prev&&prev[i]!=null?prev[i]:p.y; return {x:p.x,y:py+(p.y-py)*t,yVal:p.yVal}; });
-        ctx.beginPath(); ctx.moveTo(ys[0].x,ys[0].y); for(let i=1;i<ys.length;i++) ctx.lineTo(ys[i].x,ys[i].y); ctx.lineTo(ys[ys.length-1].x,hh-pad); ctx.lineTo(ys[0].x,hh-pad); ctx.closePath(); ctx.fillStyle="rgba(0,229,255,0.10)"; ctx.fill(); ctx.beginPath(); ctx.moveTo(ys[0].x,ys[0].y); for(let i=1;i<ys.length;i++) ctx.lineTo(ys[i].x,ys[i].y); ctx.strokeStyle="rgba(0,229,255,0.92)"; ctx.lineWidth=2.2; ctx.stroke(); ctx.fillStyle="rgba(0,229,255,0.95)"; for(const p of ys){ ctx.beginPath(); ctx.arc(p.x,p.y,3.6,0,Math.PI*2); ctx.fill(); } ctx.fillStyle="rgba(255,255,255,0.70)"; ctx.font="12px 'IBM Plex Sans Arabic', sans-serif"; ctx.textAlign="right"; ctx.fillText(`الآن: ${points[points.length-1].y} يوم`,w-pad,pad+12); ctx.textAlign="left"; ctx.fillText(`البداية: ${points[0].y} يوم`,pad,pad+12); prevYRef.current=xs.map(p=>p.y);
+      const ref = useRef(null);
+      const prevYRef = useRef(null);
+      const animRef = useRef(null);
+      function draw(points, t=1){
+        const canvas = ref.current;
+        if(!canvas) return;
+        const ctx = canvas.getContext("2d");
+        const w = canvas.width, hh = canvas.height;
+        ctx.clearRect(0,0,w,hh);
+        const pad = 18;
+        const innerW = w - pad*2;
+        const innerH = hh - pad*2;
+        ctx.save();
+        ctx.strokeStyle = "rgba(255,255,255,0.10)";
+        ctx.lineWidth = 1;
+        for(let i=0;i<=4;i++){ const y = pad + (innerH * (i/4)); ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(w-pad, y); ctx.stroke(); }
+        ctx.restore();
+        if(!points || points.length < 2){
+          ctx.fillStyle = "rgba(255,255,255,0.70)";
+          ctx.font = "13px IBM Plex Sans Arabic, sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText("سيظهر المنحنى بعد أول يوم حفظ تلقائي.", w/2, hh/2);
+          return;
+        }
+        const maxY = Math.max(1, ...points.map(p=>p.y));
+        const minY = Math.min(...points.map(p=>p.y));
+        const range = Math.max(1, maxY - minY);
+        const xs = points.map((p, i)=>{
+          const x = pad + (innerW * (i/(points.length-1)));
+          const yNorm = (p.y - minY) / range;
+          const y = pad + innerH - (yNorm * innerH);
+          return {x,y, yVal:p.y};
+        });
+        const prev = prevYRef.current;
+        const ys = xs.map((p,i)=>{ const py = prev && prev[i] != null ? prev[i] : p.y; return { x:p.x, y: py + (p.y - py)*t, yVal:p.yVal }; });
+        ctx.beginPath();
+        ctx.moveTo(ys[0].x, ys[0].y);
+        for(let i=1;i<ys.length;i++) ctx.lineTo(ys[i].x, ys[i].y);
+        ctx.lineTo(ys[ys.length-1].x, hh-pad);
+        ctx.lineTo(ys[0].x, hh-pad);
+        ctx.closePath();
+        ctx.fillStyle = "rgba(0,229,255,0.10)";
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(ys[0].x, ys[0].y);
+        for(let i=1;i<ys.length;i++) ctx.lineTo(ys[i].x, ys[i].y);
+        ctx.strokeStyle = "rgba(0,229,255,0.92)";
+        ctx.lineWidth = 2.2;
+        ctx.stroke();
+        ctx.fillStyle = "rgba(0,229,255,0.95)";
+        for(const p of ys){ ctx.beginPath(); ctx.arc(p.x, p.y, 3.6, 0, Math.PI*2); ctx.fill(); }
+        ctx.fillStyle = "rgba(255,255,255,0.70)";
+        ctx.font = "12px IBM Plex Sans Arabic, sans-serif";
+        ctx.textAlign = "right";
+        ctx.fillText(`الآن: ${points[points.length-1].y} يوم`, w-pad, pad+12);
+        ctx.textAlign = "left";
+        ctx.fillText(`البداية: ${points[0].y} يوم`, pad, pad+12);
+        prevYRef.current = xs.map(p=>p.y);
       }
-      useEffect(()=>{ const points=props.points||[]; if(animRef.current) cancelAnimationFrame(animRef.current); const start=performance.now(),dur=420; function ease(t){ return 1-Math.pow(1-t,3); } function step(now){ const tt=Math.min(1,(now-start)/dur); draw(points,ease(tt)); if(tt<1) animRef.current=requestAnimationFrame(step); } animRef.current=requestAnimationFrame(step); return ()=>{ if(animRef.current) cancelAnimationFrame(animRef.current); }; },[props.points]);
-      return h("div",{className:"chart-wrap"},h("canvas",{ref,width:720,height:280}));
+      useEffect(()=>{
+        const points = props.points || [];
+        if(animRef.current) cancelAnimationFrame(animRef.current);
+        const start = performance.now();
+        const dur = 420;
+        function ease(t){ return 1 - Math.pow(1-t, 3); }
+        function step(now){ const tt = Math.min(1, (now - start) / dur); draw(points, ease(tt)); if(tt < 1) animRef.current = requestAnimationFrame(step); }
+        animRef.current = requestAnimationFrame(step);
+        return ()=>{ if(animRef.current) cancelAnimationFrame(animRef.current); };
+      }, [props.points]);
+      return h("div", {className:"chart-wrap"}, h("canvas", {ref, width:720, height:280}));
     }
     function ExpChart(props){
-      const ref=useRef(null),animRef=useRef(null);
-      function draw(points,t=1){
-        const canvas=ref.current; if(!canvas) return; const ctx=canvas.getContext("2d"),w=canvas.width,hh=canvas.height; ctx.clearRect(0,0,w,hh); const pad=18,innerW=w-pad*2,innerH=hh-pad*2; ctx.save(); ctx.strokeStyle="rgba(255,255,255,0.10)"; ctx.lineWidth=1; for(let i=0;i<=4;i++){ const y=pad+innerH*i/4; ctx.beginPath(); ctx.moveTo(pad,y); ctx.lineTo(w-pad,y); ctx.stroke(); } ctx.restore();
-        if(!points||points.length<2){ ctx.fillStyle="rgba(255,255,255,0.70)"; ctx.font="13px 'IBM Plex Sans Arabic', sans-serif"; ctx.textAlign="center"; ctx.fillText("سيظهر منحنى EXP بعد أول يوم حفظ تلقائي.",w/2,hh/2); return; }
-        const maxY=Math.max(1,...points.map(p=>p.y)),minY=Math.min(...points.map(p=>p.y)),range=Math.max(1,maxY-minY);
-        const pts=points.map((p,i)=>{ const x=pad+innerW*i/(points.length-1),yNorm=(p.y-minY)/range,y=pad+innerH-yNorm*innerH; return {x,y,yVal:p.y}; });
-        const shown=pts.map(p=>({x:p.x,y:pad+innerH-((pad+innerH-p.y)*t),yVal:p.yVal}));
-        ctx.beginPath(); ctx.moveTo(shown[0].x,shown[0].y); for(let i=1;i<shown.length;i++) ctx.lineTo(shown[i].x,shown[i].y); ctx.lineTo(shown[shown.length-1].x,hh-pad); ctx.lineTo(shown[0].x,hh-pad); ctx.closePath(); ctx.fillStyle="rgba(168,85,247,0.10)"; ctx.fill(); ctx.beginPath(); ctx.moveTo(shown[0].x,shown[0].y); for(let i=1;i<shown.length;i++) ctx.lineTo(shown[i].x,shown[i].y); ctx.strokeStyle="rgba(168,85,247,0.92)"; ctx.lineWidth=2.2; ctx.stroke(); ctx.fillStyle="rgba(168,85,247,0.95)"; for(const p of shown){ ctx.beginPath(); ctx.arc(p.x,p.y,3.6,0,Math.PI*2); ctx.fill(); } ctx.fillStyle="rgba(255,255,255,0.70)"; ctx.font="12px 'IBM Plex Sans Arabic', sans-serif"; ctx.textAlign="right"; ctx.fillText(`Net EXP الآن: ${Math.round(points[points.length-1].y)}`,w-pad,pad+12);
+      const ref = useRef(null);
+      const animRef = useRef(null);
+      function draw(points, t=1){
+        const canvas = ref.current;
+        if(!canvas) return;
+        const ctx = canvas.getContext("2d");
+        const w = canvas.width, hh = canvas.height;
+        ctx.clearRect(0,0,w,hh);
+        const pad = 18;
+        const innerW = w - pad*2;
+        const innerH = hh - pad*2;
+        ctx.save();
+        ctx.strokeStyle = "rgba(255,255,255,0.10)";
+        ctx.lineWidth = 1;
+        for(let i=0;i<=4;i++){ const y = pad + (innerH * (i/4)); ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(w-pad, y); ctx.stroke(); }
+        ctx.restore();
+        if(!points || points.length < 2){
+          ctx.fillStyle = "rgba(255,255,255,0.70)";
+          ctx.font = "13px IBM Plex Sans Arabic, sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText("سيظهر منحنى EXP بعد أول يوم حفظ تلقائي.", w/2, hh/2);
+          return;
+        }
+        const maxY = Math.max(1, ...points.map(p=>p.y));
+        const minY = Math.min(...points.map(p=>p.y));
+        const range = Math.max(1, maxY - minY);
+        const pts = points.map((p,i)=>{
+          const x = pad + (innerW * (i/(points.length-1)));
+          const yNorm = (p.y - minY) / range;
+          const y = pad + innerH - (yNorm * innerH);
+          return {x,y, yVal:p.y};
+        });
+        const shown = pts.map(p=>({x:p.x, y: pad + innerH - ((pad + innerH - p.y) * t), yVal:p.yVal}));
+        ctx.beginPath();
+        ctx.moveTo(shown[0].x, shown[0].y);
+        for(let i=1;i<shown.length;i++) ctx.lineTo(shown[i].x, shown[i].y);
+        ctx.lineTo(shown[shown.length-1].x, hh-pad);
+        ctx.lineTo(shown[0].x, hh-pad);
+        ctx.closePath();
+        ctx.fillStyle = "rgba(168,85,247,0.10)";
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(shown[0].x, shown[0].y);
+        for(let i=1;i<shown.length;i++) ctx.lineTo(shown[i].x, shown[i].y);
+        ctx.strokeStyle = "rgba(168,85,247,0.92)";
+        ctx.lineWidth = 2.2;
+        ctx.stroke();
+        ctx.fillStyle = "rgba(168,85,247,0.95)";
+        for(const p of shown){ ctx.beginPath(); ctx.arc(p.x, p.y, 3.6, 0, Math.PI*2); ctx.fill(); }
+        ctx.fillStyle = "rgba(255,255,255,0.70)";
+        ctx.font = "12px IBM Plex Sans Arabic, sans-serif";
+        ctx.textAlign = "right";
+        ctx.fillText(`Net EXP الآن: ${Math.round(points[points.length-1].y)}`, w-pad, pad+12);
       }
-      useEffect(()=>{ const points=props.points||[]; if(animRef.current) cancelAnimationFrame(animRef.current); const start=performance.now(),dur=420; function ease(t){ return 1-Math.pow(1-t,3); } function step(now){ const tt=Math.min(1,(now-start)/dur); draw(points,ease(tt)); if(tt<1) animRef.current=requestAnimationFrame(step); } animRef.current=requestAnimationFrame(step); return ()=>{ if(animRef.current) cancelAnimationFrame(animRef.current); }; },[props.points]);
-      return h("div",{className:"chart-wrap"},h("canvas",{ref,width:720,height:280}));
+      useEffect(()=>{
+        const points = props.points || [];
+        if(animRef.current) cancelAnimationFrame(animRef.current);
+        const start = performance.now();
+        const dur = 420;
+        function ease(t){ return 1 - Math.pow(1-t, 3); }
+        function step(now){ const tt = Math.min(1, (now - start) / dur); draw(points, ease(tt)); if(tt < 1) animRef.current = requestAnimationFrame(step); }
+        animRef.current = requestAnimationFrame(step);
+        return ()=>{ if(animRef.current) cancelAnimationFrame(animRef.current); };
+      }, [props.points]);
+      return h("div", {className:"chart-wrap"}, h("canvas", {ref, width:720, height:280}));
     }
 
-    // ========== State management ==========
+    // ---------------- State management (core) ----------------
     function createInitialState() {
       return {
         day: todayKeyLocal(),
         tasks: [
-          { id: "t1", title: "صلاة", target: 5, importance: 5, type: "SP", done: 0 },
-          { id: "t2", title: "Push-ups", target: 300, importance: 4, type: "PH", done: 0 },
-          { id: "t3", title: "قراءة", target: 30, importance: 3, type: "IQ", done: 0 }
+          { id:"t1", title:"صلاة", target:5, importance:5, type:"SP", done:0 },
+          { id:"t2", title:"Push-ups", target:300, importance:4, type:"PH", done:0 },
+          { id:"t3", title:"قراءة", target:30, importance:3, type:"IQ", done:0 },
         ],
-        totalExp: 0, hp: 100, commitDays: 0, shameDays: 0, perfectStreak: 0, lastCommitDay: null, lockedUntil: null, zeroLockUsed: true,
-        lifetimeByType: { PH: 0, IQ: 0, SP: 0 }, lifetimePotentialByType: { PH: 0, IQ: 0, SP: 0 }, commitHistory: [], expHistory: []
+        totalExp: 0,
+        hp: 100,
+        commitDays: 0,
+        shameDays: 0,
+        perfectStreak: 0,
+        lastCommitDay: null,
+        lockedUntil: null,
+        zeroLockUsed: true,
+        lifetimeByType: { PH:0, IQ:0, SP:0 },
+        lifetimePotentialByType: { PH:0, IQ:0, SP:0 },
+        commitHistory: [],
+        expHistory: [],
       };
     }
+
     function pushHistory(history, dateKey, value){
       const arr = Array.isArray(history) ? history.slice() : [];
-      if(arr.length && arr[arr.length-1].d === dateKey){ arr[arr.length-1] = { d: dateKey, v: value }; return arr; }
-      arr.push({ d: dateKey, v: value }); return arr;
+      if(arr.length && arr[arr.length-1].d === dateKey){
+        arr[arr.length-1] = { d: dateKey, v: value };
+        return arr;
+      }
+      arr.push({ d: dateKey, v: value });
+      return arr;
     }
     function closeOneDay(prev, dayKeyToClose, totals, qualifies, completion){
       const failHard = completion < 0.5;
       const delta = qualifies ? 6 : (failHard ? -12 : -4);
-      let hp = clamp(prev.hp + delta, 0, 100);
+      const hp = clamp(prev.hp + delta, 0, 100);
       let lockedUntil = prev.lockedUntil;
       let zeroLockUsed = (prev.zeroLockUsed === undefined) ? true : prev.zeroLockUsed;
-      if(hp > 0){ zeroLockUsed = false; if(lockedUntil && Date.now() >= lockedUntil) lockedUntil = null; }
-      else{ if(!zeroLockUsed){ lockedUntil = Date.now() + 24*60*60*1000; zeroLockUsed = true; } }
+      if(hp > 0){
+        zeroLockUsed = false;
+        if(lockedUntil && Date.now() >= lockedUntil) lockedUntil = null;
+      }else{
+        if(!zeroLockUsed){
+          lockedUntil = Date.now() + 24*60*60*1000;
+          zeroLockUsed = true;
+        }
+      }
       const currentRank = rankFromStreak(prev.commitDays).key;
       const penaltyDays = qualifies ? 0 : (RANK_PENALTY[currentRank] ?? 0);
       const commitDays = qualifies ? (prev.commitDays + 1) : Math.max(0, prev.commitDays - penaltyDays);
       const lastCommitDay = qualifies ? dayKeyToClose : prev.lastCommitDay;
-      const lifetimeByType = { PH: prev.lifetimeByType.PH + totals.byType.PH, IQ: prev.lifetimeByType.IQ + totals.byType.IQ, SP: prev.lifetimeByType.SP + totals.byType.SP };
-      const lifetimePotentialByType = { PH: prev.lifetimePotentialByType.PH + totals.byTypePotential.PH, IQ: prev.lifetimePotentialByType.IQ + totals.byTypePotential.IQ, SP: prev.lifetimePotentialByType.SP + totals.byTypePotential.SP };
+      const lifetimeByType = {
+        PH: prev.lifetimeByType.PH + totals.byType.PH,
+        IQ: prev.lifetimeByType.IQ + totals.byType.IQ,
+        SP: prev.lifetimeByType.SP + totals.byType.SP
+      };
+      const lifetimePotentialByType = {
+        PH: prev.lifetimePotentialByType.PH + totals.byTypePotential.PH,
+        IQ: prev.lifetimePotentialByType.IQ + totals.byTypePotential.IQ,
+        SP: prev.lifetimePotentialByType.SP + totals.byTypePotential.SP
+      };
       const currLevel = expToLevel(prev.totalExp).level;
       const expPenalty = expPenaltyByLevel(currLevel);
       const totalExp = qualifies ? (prev.totalExp + Math.round(totals.exp)) : Math.max(0, prev.totalExp - expPenalty);
       let shameDays = Number(prev.shameDays || 0);
       let perfectStreak = Number(prev.perfectStreak || 0);
-      if(completion <= 0){ shameDays += 1; perfectStreak = 0; }
-      else if(completion >= 1){ perfectStreak += 1; if(perfectStreak >= 10){ const removeCount = Math.floor(perfectStreak / 10); shameDays = Math.max(0, shameDays - removeCount); perfectStreak = perfectStreak % 10; } }
-      else { perfectStreak = 0; }
-      const tasks = prev.tasks.map(t => ({ ...t, done: 0 }));
+      if(completion <= 0){
+        shameDays += 1;
+        perfectStreak = 0;
+      }else if(completion >= 1){
+        perfectStreak += 1;
+        if(perfectStreak >= 10){
+          const removeCount = Math.floor(perfectStreak / 10);
+          shameDays = Math.max(0, shameDays - removeCount);
+          perfectStreak = perfectStreak % 10;
+        }
+      }else{
+        perfectStreak = 0;
+      }
+      const tasks = prev.tasks.map(t => ({...t, done:0}));
       const commitHistory = pushHistory(prev.commitHistory, dayKeyToClose, commitDays);
       const expHistory = pushHistory(prev.expHistory, dayKeyToClose, totalExp);
-      return { ...prev, hp, lockedUntil, zeroLockUsed, commitDays, shameDays, perfectStreak, lastCommitDay, lifetimeByType, lifetimePotentialByType, totalExp, tasks, commitHistory, expHistory };
+      return {...prev, hp, lockedUntil, zeroLockUsed, commitDays, shameDays, perfectStreak, lastCommitDay, lifetimeByType, lifetimePotentialByType, totalExp, tasks, commitHistory, expHistory};
     }
+
     function finalizeDayNoMercy(prevState){
       const today = todayKeyLocal();
       if(prevState.day === today) return prevState;
       const gap = diffDaysKey(prevState.day, today);
-      if(gap <= 0) return { ...prevState, day: today };
+      if(gap <= 0) return {...prevState, day: today};
       const MAX_CATCHUP = 90;
       const safeGap = Math.min(gap, MAX_CATCHUP);
-      let s = { ...prevState };
-      { const currLevel = expToLevel(s.totalExp).level; const totals = computeToday(s.tasks, currLevel); const completion = totals.completion; const qualifies = completion >= 0.7; s = closeOneDay(s, s.day, totals, qualifies, completion); }
-      for(let i=1;i<safeGap;i++){ const dayKey = addDaysKey(prevState.day, i); const currLevel = expToLevel(s.totalExp).level; const totals = computeToday(s.tasks, currLevel); s = closeOneDay(s, dayKey, totals, false, 0); }
-      s.day = today; return s;
+      let s = {...prevState};
+      {
+        const currLevel = expToLevel(s.totalExp).level;
+        const totals = computeToday(s.tasks, currLevel);
+        const completion = totals.completion;
+        const qualifies = completion >= 0.7;
+        s = closeOneDay(s, s.day, totals, qualifies, completion);
+      }
+      for(let i=1;i<safeGap;i++){
+        const dayKey = addDaysKey(prevState.day, i);
+        const currLevel = expToLevel(s.totalExp).level;
+        const totals = computeToday(s.tasks, currLevel);
+        s = closeOneDay(s, dayKey, totals, false, 0);
+      }
+      s.day = today;
+      return s;
     }
 
-    // ========== DashboardPage and ManualPage (unchanged) ==========
-    // (لن أعيد كتابتهما هنا للاختصار، لكن في الكود النهائي هما موجودان كما سبق)
-    // سأدمجهما كاملين...
+    // ------------------ UI Components (DashboardPage & ManualPage) ------------------
+    function DashboardPage(props){
+      const { state, setState, level, computed, rank, isLocked, lockRemaining, countdownMs, quote, radarLive, commitPoints, expPoints, expPenaltyPreview,
+        newTitle, setNewTitle, newTarget, setNewTarget, newImportance, setNewImportance, newType, setNewType, addTask, updateTask, removeTask } = props;
+      return h("main", {className:"main"},
+        h("section", null,
+          h("div", {className:"card"},
+            h("div", {className:"card-row"},
+              h("div", null, h("div", {className:"label"}, "QUOTE OF THE DAY"), h("div", {className:"quote"}, `“${quote}”`), h("div", {className:"muted", style:{marginTop:8}}, "اليوم يُغلق تلقائيًا عند 00:00. الغياب = عقوبة يومية.") )
+            )
+          ),
+          h("div", {className:"card"},
+            h("div", {className:"progress-row"},
+              h("div", null, h("div", {className:"label"}, "TODAY PROGRESS"), h("div", {className:"big"}, `${pct(computed.completion)}%`), h("div", {className:"muted"}, `EXP اليوم (إذا ≥70%): +${Math.round(computed.exp)} / سقف اليوم: ${Math.round(computed.expMax)}`), h("div", {className:"muted", style:{marginTop:6}}, `عقوبة Net EXP إذا <70% (قاسية حسب Level): -${expPenaltyPreview}`) ),
+              h("div", {className:"progress-side"}, h("div", {className:"bar"}, h("div", {className:"fill", style:{width:`${pct(computed.completion)}%`}})), h("div", {className:"tiny", style:{marginTop:8}}, h("span", null, "≥ 70% يزيد HP + يُحسب يوم"), h("span", null, "< 70% = خصم Net EXP")) )
+            ),
+            h("div", {className:"task-list"}, state.tasks.map(t=>{
+              const target = Math.max(1, Number(t.target||1));
+              const done = clamp(Number(t.done||0), 0, target);
+              const itemPct = target>0 ? (done/target)*100 : 0;
+              const typeClass = t.type==="PH" ? "ph" : (t.type==="IQ" ? "iq" : (t.type==="SP" ? "sp" : "xx"));
+              return h("div", {className:"task", key:t.id},
+                h("div", {className:"task-top"},
+                  h("div", {style:{minWidth:0}}, h("div", {style:{display:"flex", alignItems:"center", gap:10, flexWrap:"wrap"}}, h("span", {className:`tag ${typeClass}`}, `${t.type} • imp ${t.importance}/5`), h("div", {className:"task-title", title:t.title}, t.title)), h("div", {className:"task-meta"}, h("span", null, `Target: ${t.target}`), h("span", null, `Done: ${t.done}`), h("span", null, `Progress: ${pct(itemPct/100)}%`) )),
+                  h("div", {className:"task-controls"}, h("div", {className:"bar", style:{width:160}}, h("div", {className:"fill", style:{width:`${itemPct}%`}})), h("input", {className:"input small", type:"number", min:0, step:1, value:t.done, disabled:isLocked, onChange:(e)=>updateTask(t.id, {done: clamp(Number(e.target.value||0), 0, 999999)})}), h("button", {className:"btn", disabled:isLocked, onClick:()=>removeTask(t.id), title:"Remove"}, "✕") )
+                )
+              );
+            }))
+          ),
+          h("div", {className:"card"},
+            h("div", {className:"label"}, "ADD TASK"),
+            h("div", {className:"section-title"}, "مهمة جديدة"),
+            h("div", {className:"muted"}, "الأهمية هي التي تتحكم في الإنصاف."),
+            h("div", {className:"add-grid"},
+              h("input", {className:"input", value:newTitle, disabled:isLocked, placeholder:"مثال: دراسة / قرآن / جري", onChange:(e)=>setNewTitle(e.target.value)}),
+              h("input", {className:"input", type:"number", min:1, value:newTarget, disabled:isLocked, onChange:(e)=>setNewTarget(Number(e.target.value||1))}),
+              h("select", {className:"input", value:String(newImportance), disabled:isLocked, onChange:(e)=>setNewImportance(Number(e.target.value))}, [1,2,3,4,5].map(v=>h("option",{key:v,value:String(v)},String(v)))),
+              h("select", {className:"input", value:newType, disabled:isLocked, onChange:(e)=>setNewType(e.target.value)}, ["PH","IQ","SP","XX"].map(v=>h("option",{key:v,value:v},v))),
+              h("button", {className:"btn btn-green", disabled:isLocked, onClick:()=>{ addTask(newTitle, newTarget, newImportance, newType); setNewTitle(""); setNewTarget(10); setNewImportance(3); setNewType("PH"); }}, "+")
+            )
+          ),
+          h("div", {className:"card"},
+            h("div", {className:"label"}, "COMMIT STATS"),
+            h("div", {className:"section-title"}, "أيام الالتزام الحالية + منحناها"),
+            h("div", {className:"mini-stats"}, h("div", {className:"mini"}, h("div", {className:"mini-v"}, state.commitDays, h("span", null, " يوم")), h("div", {className:"mini-l"}, "Commit Days (Live)")), h("div", {className:"mini"}, h("div", {className:"mini-v"}, rank.label), h("div", {className:"mini-l"}, "RANK الحالي")), h("div", {className:"mini"}, h("div", {className:"mini-v"}, `${commitPoints.length}`, h("span", null, " يوم")), h("div", {className:"mini-l"}, "أيام مسجلة بالمنحنى")) ),
+            h(CommitChart, {points: commitPoints})
+          ),
+          h("div", {className:"card"},
+            h("div", {className:"label"}, "NET EXP"),
+            h("div", {className:"section-title"}, "صافي EXP المتراكمة + منحناها"),
+            h("div", {className:"muted"}, "تزيد إذا اليوم ≥70%، وتنقص إذا <70% بعقوبة قاسية + الغياب يُعاقَب يوميًا."),
+            h("div", {className:"mini-stats"}, h("div", {className:"mini"}, h("div", {className:"mini-v"}, Math.round(state.totalExp)), h("div", {className:"mini-l"}, "Net EXP (Live)")), h("div", {className:"mini"}, h("div", {className:"mini-v"}, level.level), h("div", {className:"mini-l"}, "Level (يتأثر مباشرة)")), h("div", {className:"mini"}, h("div", {className:"mini-v"}, `-${expPenaltyPreview}`), h("div", {className:"mini-l"}, "عقوبة اليوم إذا فشل")) ),
+            h(ExpChart, {points: expPoints})
+          )
+        ),
+        h("aside", null,
+          h("div", {className:"card"},
+            h("div", {className:"label"}, "LIVE STATUS"),
+            h("div", {className:"section-title"}, "ملخص فوري"),
+            h("div", {className:"countdown"}, h("div", {className:"muted"}, "تحت منتصف الليل:"), h("div", {className:"mono"}, formatCountdown(countdownMs))),
+            isLocked ? h("div", {className:"locked"}, h("div", {className:"locked-row"}, h("div", null, "تم قفل الدخول مؤقتًا بسبب HP = 0."), h("div", {className:"mono"}, lockRemaining ? `متبقي ${lockRemaining.hh}h ${lockRemaining.mm}m` : "..."))) : null,
+            h("div", {className:"mini-stats"}, h("div", {className:"mini"}, h("div", {className:"mini-v"}, `${state.hp}`), h("div", {className:"mini-l"}, "HP")), h("div", {className:"mini"}, h("div", {className:"mini-v"}, `${level.level}`), h("div", {className:"mini-l"}, "LEVEL")), h("div", {className:"mini"}, h("div", {className:"mini-v"}, rank.label), h("div", {className:"mini-l"}, "RANK")) )
+          ),
+          h("div", {className:"card"},
+            h("div", {className:"label"}, "RADAR"),
+            h("div", {className:"section-title"}, "إحصائياتك الكلية (Live)"),
+            h("div", {className:"muted"}, "All-time + Today live (يتحدّث فورًا)."),
+            h(RadarCanvas, {values: radarLive}),
+            h("div", {className:"mini-stats"}, h("div", {className:"mini"}, h("div", {className:"mini-v"}, radarLive.PH, h("span", null, "%")), h("div", {className:"mini-l"}, TYPE_META.PH.label)), h("div", {className:"mini"}, h("div", {className:"mini-v"}, radarLive.IQ, h("span", null, "%")), h("div", {className:"mini-l"}, TYPE_META.IQ.label)), h("div", {className:"mini"}, h("div", {className:"mini-v"}, radarLive.SP, h("span", null, "%")), h("div", {className:"mini-l"}, TYPE_META.SP.label)) )
+          ),
+          h("div", {className:"shame-panel"},
+            h("div", {className:"shame-head"}, h("div", {className:"shame-title"}, "SHAME DAYS"), h("div", {className:"shame-value"}, String(state.shameDays || 0))),
+            h("div", {className:"shame-sub"}, `سلسلة 100% الحالية: ${state.perfectStreak || 0}/10`),
+            h("div", {className:"note", style:{marginTop:"10px"}}, "• أيام العار: هي الأيام التي ينتهي فيها اليوم و TODAY PROGRESS = 0%."),
+            h("div", {className:"note"}, "• يزيد العداد +1 عند كل يوم عار، بما في ذلك الأيام التي لم يدخل فيها المستخدم للموقع عدة أيام."),
+            h("div", {className:"note"}, "• إذا حققت 10 أيام متتالية كاملة 100% TODAY PROGRESS، يتم حذف 1 من SHAME DAYS.")
+          ),
+          h("div", {className:"card"},
+            h("div", {className:"label"}, "SYSTEM NOTES"),
+            h("div", {className:"note"}, "• اليوم يُغلق تلقائيًا عند 00:00 ويحفظ النتائج."),
+            h("div", {className:"note"}, "• الغياب: يُحسب كفشل كامل لكل يوم فات (No-Mercy)، وهذا يشمل أيضًا SHAME DAYS."),
+            h("div", {className:"note"}, "• HP Rule: إذا ≥ 70% ⇒ +6 HP + يُحسب يوم التزام. إذا بين 50% و 69% ⇒ -4 HP. إذا < 50% ⇒ -12 HP."),
+            h("div", {className:"note"}, "• إذا HP وصل 0 ⇒ قفل 24 ساعة يبدأ عند عودتك."),
+            h("div", {className:"note"}, "• Net EXP: إذا ≥70% تُضاف EXP اليوم، وإذا <70% تُخصم EXP بعقوبة قاسية تزيد مع الـ Level."),
+            h("div", {className:"note"}, "• RANK حسب أيام الالتزام: D=7، C=30، B=90، A=180، S=365."),
+            h("div", {className:"note"}, "• عقوبة الرانك عند عدم الالتزام: تنقص أيام الالتزام حسب رتبتك (E=0, D=1, C=3, B=7, A=14, S=30)."),
+            h("div", {className:"note"}, "• XX: نوع مهام سيئ. عند تسجيله كمنجَز مرة واحدة على الأقل في نفس اليوم، يخصم 50% ثابتة مباشرة من TODAY PROGRESS.")
+          )
+        )
+      );
+    }
 
-    // ولكي لا يطول الرد أكثر، سأقدم الكود بشكل مباشر في رد نهائي قريب جداً.
-    // ولكن لإكمال الحل، سأضع الكود الكامل للـ App مع استخدام Firestore.
-    // يتبقى فقط تعريف DashboardPage و ManualPage و LoginPage و App.
-    // سأضعها في الرد التالي مباشرة.
+    function ManualPage(){
+      return h("div", {className:"manual-layout"},
+        h("section", null,
+          h("div", {className:"card"}, h("div", {className:"label"}, "MANUAL"), h("div", {className:"section-title"}, "كتيب التعليمات"), h("div", {className:"manual-highlight"}, "هذا النظام ليس تطبيق ملاحظات عادي، بل نظام تقييم يومي صارم. كل يوم يُقاس بالنسبة المئوية، ثم تتحول النتيجة إلى HP و EXP و Commit Days و Shame Days."),
+            h("div", {className:"manual-list"},
+              h("div", {className:"manual-step"}, h("div", {className:"manual-step-title"}, "▸ الخطوة الأولى: إضافة المهام"), h("div", {className:"manual-step-text"}, "في لوحة النظام، ستجد قسمًا بعنوان \"ADD TASK\". حدد اسم المهمة، العدد المستهدف (مثل عدد الصفحات أو التكرارات)، الأهمية (من 1 إلى 5، حيث 5 هي الأعلى وزنًا)، ثم النوع المناسب (PH للجسم، IQ للعقل، SP للروح، أو XX للعادة السيئة). اضغط على زر + الأخضر لإضافتها إلى قائمة مهام اليوم.") ),
+              h("div", {className:"manual-step"}, h("div", {className:"manual-step-title"}, "▸ الخطوة الثانية: تحديث الإنجاز اليومي"), h("div", {className:"manual-step-text"}, "خلال يومك، عدّل قيمة \"Done\" بجانب كل مهمة. القيمة تتراوح من صفر حتى الهدف المحدد. النظام يحسب تلقائيًا النسبة المئوية لإنجاز كل مهمة ويزنها حسب أهميتها. شريط التقدم ونسبة TODAY PROGRESS ستتغير في الوقت الفعلي لتعكس مدى تقدمك الحقيقي.") ),
+              h("div", {className:"manual-step"}, h("div", {className:"manual-step-title"}, "▸ الخطوة الثالثة: فهم تأثير المهمة السلبية (XX)"), h("div", {className:"manual-step-text"}, "إذا أضفت مهمة من نوع XX (عادة سيئة) وسجلت فيها أي إنجاز (أي جعلت Done أكبر من صفر)، فسيتم خصم 50% مباشرة من نسبة TODAY PROGRESS. هذا يمثل تأثير هذه العادة السلبية على تقدمك العام. استخدم هذا النوع بحذر.") ),
+              h("div", {className:"manual-step"}, h("div", {className:"manual-step-title"}, "▸ الخطوة الرابعة: إغلاق اليوم التلقائي والحساب"), h("div", {className:"manual-step-text"}, "لا تحتاج إلى الضغط على زر حفظ. النظام يراقب الساعة. عند منتصف الليل تمامًا (00:00)، يتم إغلاق اليوم الحالي تلقائيًا. يتم حساب النتيجة النهائية لتقدم اليوم، وتُطبق جميع القوانين (تغيير HP، EXP، أيام الالتزام، أيام العار). تظهر النتائج فورًا في البطاقات والإحصائيات. إذا غبت عن الموقع لعدة أيام، سيقوم النظام عند عودتك بمحاكاة كل الأيام الفائتة ويعتبرها أيام فشل كامل.") )
+            )
+          ),
+          h("div", {className:"card"}, h("div", {className:"label"}, "SCORING"), h("div", {className:"section-title"}, "آلية التقييم والنتائج"), h("div", {className:"manual-grid"}, h("div", {className:"note"}, "• الأهمية: تؤثر بشكل مباشر على وزن المهمة في حساب التقدم. مهمة بوزن 5 تساهم بخمسة أضعاف مهمة بوزن 1."), h("div", {className:"note"}, "• الهدف (Target): هو السقف الأعلى للإنجاز. أي زيادة عن الهدف لا تُحتسب."), h("div", {className:"note"}, "• الأنواع الإيجابية (PH, IQ, SP): تساهم في رفع نسبة التقدم وتُضاف إلى إحصائياتك الكلية في الرادار."), h("div", {className:"note"}, "• الأنواع السلبية (XX): لا تساهم في التقدم الإيجابي، بل تخصم من النسبة النهائية.") ), h("div", {className:"manual-highlight"}, "🔹 نقطة النجاح الحقيقية هي تحقيق 70% أو أكثر في TODAY PROGRESS. أي شيء أقل من ذلك يعتبر فشلًا يترتب عليه عقوبات على جميع الأصعدة (HP، EXP، أيام الالتزام).") ),
+          h("div", {className:"card"}, h("div", {className:"label"}, "HP / LOCK"), h("div", {className:"section-title"}, "نظام نقاط الحياة (HP) والقفل"), h("div", {className:"manual-list"}, h("div", {className:"manual-step"}, h("div", {className:"manual-step-title"}, "✓ النجاح (≥ 70%)"), h("div", {className:"manual-step-text"}, "يتم منحك +6 HP. وتزداد نقاط حياتك، مما يعكس استقرارك وتقدمك.") ), h("div", {className:"manual-step"}, h("div", {className:"manual-step-title"}, "⚠ الفشل المتوسط (50% - 69%)"), h("div", {className:"manual-step-text"}, "يتم خصم 4 HP. هذا مؤشر على وجود تقصير يحتاج إلى معالجة.") ), h("div", {className:"manual-step"}, h("div", {className:"manual-step-title"}, "❌ الفشل القاسي (< 50%)"), h("div", {className:"manual-step-text"}, "يتم خصم 12 HP. هذا يمثل انهيارًا في الأداء اليومي.") ), h("div", {className:"manual-step"}, h("div", {className:"manual-step-title"}, "🔒 القفل عند الوصول للصفر"), h("div", {className:"manual-step-text"}, "إذا وصلت HP إلى 0، يتم تفعيل القفل لمدة 24 ساعة كاملة. خلال هذه الفترة، لن تتمكن من تعديل أي مهمة أو إضافة مهام جديدة. ستظهر رسالة واضحة تخبرك بالوقت المتبقي لرفع القفل. هذه فترة إجبارية للتفكير والاستراحة.") ) ) )
+        ),
+        h("aside", null,
+          h("div", {className:"card"}, h("div", {className:"label"}, "EXP / LEVEL"), h("div", {className:"section-title"}, "الخبرة (EXP) والمستوى (Level)"), h("div", {className:"note"}, "• في حالة النجاح (≥70%): يتم إضافة قيمة EXP المحسوبة بناءً على تقدمك الفعلي إلى رصيد Net EXP الخاص بك."), h("div", {className:"note"}, "• في حالة الفشل (<70%): لا تُضاف EXP، بل يتم خصم عقوبة قاسية من Net EXP. قيمة هذه العقوبة تزداد كلما ارتفع مستواك، مما يجعل التقدم في المستويات العالية أكثر تحديًا."), h("div", {className:"note"}, "• المستوى (Level) يتم حسابه تلقائيًا بناءً على إجمالي Net EXP. كلما زاد EXP، ارتفع مستوى شخصيتك. الفشل المتكرر قد يؤدي إلى انخفاض المستوى.") ),
+          h("div", {className:"card"}, h("div", {className:"label"}, "COMMIT / RANK"), h("div", {className:"section-title"}, "أيام الالتزام والرتب"), h("div", {className:"note"}, "• عند تحقيق النجاح (≥70%)، يزداد رصيد Commit Days الخاص بك بمقدار يوم واحد."), h("div", {className:"note"}, "• عند الفشل (<70%)، لا تقتصر العقوبة على عدم إضافة يوم، بل يتم خصم أيام من Commit Days وفقًا لرتبتك الحالية:"), h("div", {className:"manual-grid"}, h("div", {className:"note"}, "الرتبة E ← خصم 0"), h("div", {className:"note"}, "الرتبة D ← خصم 1"), h("div", {className:"note"}, "الرتبة C ← خصم 3"), h("div", {className:"note"}, "الرتبة B ← خصم 7"), h("div", {className:"note"}, "الرتبة A ← خصم 14"), h("div", {className:"note"}, "الرتبة S ← خصم 30") ), h("div", {className:"manual-highlight"}, "كلما ارتفعت رتبتك، أصبح الحفاظ عليها أصعب. هذا يعني أن النجاح في الرتب العليا يتطلب التزامًا حقيقيًا وليس مجرد تقدم سطحي.") ),
+          h("div", {className:"card"}, h("div", {className:"label"}, "SHAME DAYS"), h("div", {className:"section-title"}, "أيام العار"), h("div", {className:"note"}, "• تُحتسب \"يوم عار\" (Shame Day) في حال انتهى اليوم وكانت نسبة TODAY PROGRESS صفرًا تمامًا (0%)."), h("div", {className:"note"}, "• أي غياب عن الموقع لعدة أيام سيؤدي إلى إضافة يوم عار عن كل يوم غياب، لأن النظام يعتبره يومًا بلا أي إنجاز."), h("div", {className:"note"}, "• يوجد نظام مكافأة لتقليص أيام العار: إذا استطعت تحقيق 10 أيام متتالية بنسبة 100% كاملة، سيتم حذف يوم عار واحد من سجلك."), h("div", {className:"manual-warning"}, "Shame Days ليست مجرد رقم. إنها تذكير صارم بعدد الأيام التي مرت دون أي جهد. الهدف هو تقليل هذا الرقم إلى أدنى حد.") ),
+          h("div", {className:"card"}, h("div", {className:"label"}, "STORAGE"), h("div", {className:"section-title"}, "حفظ البيانات"), h("div", {className:"note"}, "البيانات محفوظة في Cloud Firestore وتظل مرتبطة بحسابك."), h("div", {className:"note"}, "يمكنك تسجيل الدخول من أي جهاز واستعادة تقدمك بالكامل."), h("div", {className:"note"}, "لا يوجد حفظ محلي (localStorage)، كل شيء عبر السحابة.") )
+        )
+      );
+    }
+
+    // ---------- Login page (only login, no signup) ----------
+    function LoginPage({ onLoginSuccess }) {
+      const [email, setEmail] = useState("");
+      const [password, setPassword] = useState("");
+      const [error, setError] = useState("");
+      const [loading, setLoading] = useState(false);
+      const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError("");
+        setLoading(true);
+        try {
+          await auth.signInWithEmailAndPassword(email, password);
+          onLoginSuccess();
+        } catch(err){
+          setError(err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+      return h("div", {className:"login-container"},
+        h("div", {className:"login-card"},
+          h("div", {className:"login-title"}, "RISE SYSTEM™"),
+          h("div", {className:"login-sub"}, "تسجيل الدخول إلى حسابك"),
+          h("form", {onSubmit: handleSubmit},
+            h("input", {className:"login-input", type:"email", placeholder: "البريد الإلكتروني", value: email, onChange: e=>setEmail(e.target.value), required: true}),
+            h("input", {className:"login-input", type:"password", placeholder: "كلمة المرور", value: password, onChange: e=>setPassword(e.target.value), required: true}),
+            h("button", {className:"login-btn", type:"submit", disabled: loading}, loading ? "جاري..." : "دخول"),
+            error && h("div", {className:"login-error"}, error)
+          )
+        )
+      );
+    }
+
+    // ---------- Main App using Firestore ----------
+    function App(){
+      const [user, setUser] = useState(null);
+      const [loading, setLoading] = useState(true);
+      const [loadError, setLoadError] = useState(null);
+      const [state, setState] = useState(null);
+      const [page, setPage] = useState("dashboard");
+      const [countdownMs, setCountdownMs] = useState(msToMidnight());
+      const [glitchIndex, setGlitchIndex] = useState(1);
+      const [newTitle, setNewTitle] = useState("");
+      const [newTarget, setNewTarget] = useState(10);
+      const [newImportance, setNewImportance] = useState(3);
+      const [newType, setNewType] = useState("PH");
+
+      const forceSignOutIfDeleted = async (currentUser) => {
+        if (!currentUser) return;
+        try {
+          await currentUser.getIdToken(true);
+        } catch (error) {
+          if (error.code === 'auth/user-not-found' || error.code === 'auth/user-disabled') {
+            await auth.signOut();
+          }
+        }
+      };
+
+      useEffect(() => {
+        const unsubscribe = auth.onAuthStateChanged(async (usr) => {
+          setLoadError(null);
+          if (usr) {
+            try {
+              setUser(usr);
+              const docRef = db.collection("users").doc(usr.uid);
+              const docSnap = await docRef.get();
+              let loadedState;
+              if (docSnap.exists) {
+                loadedState = docSnap.data().state;
+                if (loadedState.tasks && Array.isArray(loadedState.tasks)) {
+                  loadedState.tasks = loadedState.tasks.map(t => ({ ...t, done: t.done !== undefined ? t.done : 0 }));
+                }
+                const today = todayKeyLocal();
+                if (loadedState.day !== today) {
+                  loadedState = finalizeDayNoMercy(loadedState);
+                  loadedState.day = today;
+                }
+              } else {
+                loadedState = createInitialState();
+                await docRef.set({ state: loadedState });
+              }
+              setState(loadedState);
+            } catch (err) {
+              console.error("Load error:", err);
+              setLoadError("فشل تحميل البيانات من Firestore. تأكد من الاتصال بالإنترنت.");
+            } finally {
+              setLoading(false);
+            }
+          } else {
+            setUser(null);
+            setState(null);
+            setLoading(false);
+          }
+        });
+        return () => unsubscribe();
+      }, []);
+
+      const saveTimeout = useRef(null);
+      useEffect(() => {
+        if (!user || state === null) return;
+        if (saveTimeout.current) clearTimeout(saveTimeout.current);
+        saveTimeout.current = setTimeout(async () => {
+          try {
+            await db.collection("users").doc(user.uid).update({ state: state });
+          } catch (err) {
+            console.error("Save error:", err);
+            if (err.code === 'permission-denied') auth.signOut();
+          }
+        }, 500);
+        return () => { if (saveTimeout.current) clearTimeout(saveTimeout.current); };
+      }, [state, user]);
+
+      useEffect(() => {
+        if (!user) return;
+        const interval = setInterval(() => forceSignOutIfDeleted(user), 5000);
+        return () => clearInterval(interval);
+      }, [user]);
+
+      useEffect(() => {
+        const t = setInterval(() => setCountdownMs(msToMidnight()), 1000);
+        return () => clearInterval(t);
+      }, []);
+      useEffect(() => {
+        const iv = setInterval(() => setGlitchIndex(prev => (prev + 1) % GLITCH_WORDS.length), 1800);
+        return () => clearInterval(iv);
+      }, []);
+
+      const finalizeRef = useRef(() => {});
+      finalizeRef.current = () => {
+        if (state !== null) setState(prev => finalizeDayNoMercy(prev));
+      };
+      useEffect(() => {
+        let to = null;
+        function schedule(){
+          if(to) clearTimeout(to);
+          const ms = msToMidnight();
+          to = setTimeout(() => { finalizeRef.current(); schedule(); }, ms + 120);
+        }
+        schedule();
+        const iv = setInterval(() => {
+          if (state !== null && todayKeyLocal() !== state.day) finalizeRef.current();
+        }, 20000);
+        const onVis = () => {
+          if (document.visibilityState === "visible" && state !== null && todayKeyLocal() !== state.day) finalizeRef.current();
+        };
+        const onFocus = () => {
+          if (state !== null && todayKeyLocal() !== state.day) finalizeRef.current();
+        };
+        document.addEventListener("visibilitychange", onVis);
+        window.addEventListener("focus", onFocus);
+        return () => {
+          if(to) clearTimeout(to);
+          clearInterval(iv);
+          document.removeEventListener("visibilitychange", onVis);
+          window.removeEventListener("focus", onFocus);
+        };
+      }, [state]);
+
+      const updateTask = (id, patch) => setState(prev => prev ? { ...prev, tasks: prev.tasks.map(t => t.id === id ? { ...t, ...patch } : t) } : prev);
+      const removeTask = (id) => setState(prev => prev ? { ...prev, tasks: prev.tasks.filter(t => t.id !== id) } : prev);
+      const addTask = (title, target, importance, type) => {
+        const clean = String(title || "").trim();
+        if (!clean) return;
+        setState(prev => prev ? { ...prev, tasks: [...prev.tasks, { id: `t${Math.random().toString(16).slice(2)}`, title: clean, target: clamp(Number(target)||1,1,9999), importance: Number(importance), type, done: 0 }] } : prev);
+      };
+      const handleLogout = async () => {
+        await auth.signOut();
+        setUser(null);
+        setState(null);
+      };
+
+      if (loading) return h("div", { className: "loading" }, "جاري التحميل...");
+      if (loadError) return h("div", { className: "error-loading" }, loadError);
+      if (!user || state === null) return h(LoginPage, { onLoginSuccess: () => {} });
+
+      const level = expToLevel(state.totalExp);
+      const computed = computeToday(state.tasks, level.level);
+      const rank = rankFromStreak(state.commitDays);
+      const isLocked = state.lockedUntil ? Date.now() < state.lockedUntil : false;
+      const lockRemaining = (() => {
+        if (!state.lockedUntil) return null;
+        const ms = state.lockedUntil - Date.now();
+        if (ms <= 0) return null;
+        return { hh: Math.floor(ms / 3600000), mm: Math.floor((ms % 3600000) / 60000) };
+      })();
+      const quote = randomQuote(state.day);
+      const radarLive = (() => {
+        const g = state.lifetimeByType, p = state.lifetimePotentialByType;
+        const liveGain = { PH: g.PH + computed.byType.PH, IQ: g.IQ + computed.byType.IQ, SP: g.SP + computed.byType.SP };
+        const livePot = { PH: p.PH + computed.byTypePotential.PH, IQ: p.IQ + computed.byTypePotential.IQ, SP: p.SP + computed.byTypePotential.SP };
+        const ph = livePot.PH > 0 ? liveGain.PH / livePot.PH : 0;
+        const iq = livePot.IQ > 0 ? liveGain.IQ / livePot.IQ : 0;
+        const sp = livePot.SP > 0 ? liveGain.SP / livePot.SP : 0;
+        return { PH: Math.round(ph * 100), IQ: Math.round(iq * 100), SP: Math.round(sp * 100) };
+      })();
+      const commitPoints = (state.commitHistory || []).map((x, i) => ({ x: i, y: Number(x.v || 0), d: x.d }));
+      const expPoints = (state.expHistory || []).map((x, i) => ({ x: i, y: Number(x.v || 0), d: x.d }));
+      const expPenaltyPreview = expPenaltyByLevel(level.level);
+      const currentWord = GLITCH_WORDS[glitchIndex];
+      const isSelfWord = currentWord === "نفسك";
+
+      return h("div", {className:"wrap"},
+        h("header", {className:"header"},
+          h("div", {className:"hero-glow"}),
+          h("div", {className:"top-row"},
+            h("div", null,
+              h("div", {className:"badge"}, h("span", {className:"dot"}), h("span", {className:"brand-name"}, "RISE SYSTEM™"), h("span", {className:"brand-sub"}, "No-Mercy Mode")),
+              h("h1", {className:"title"}, "طوّر شخصيتك… مثل ", h("span", {className:`glitch-word ${isSelfWord ? "self-word" : ""}`, "data-text": currentWord}, currentWord)),
+              h("p", {className:"subtitle"}, "لوحة التطوير اليومية – حفظ تلقائي في Cloud Firestore."),
+              h("div", {className:"chips"}, h("div", {className:"chip"}, h("span", null, "اليوم:"), h("span", {className:"chip-mono"}, state.day)), state.lastCommitDay ? h("div", {className:"chip"}, h("span", null, "آخر يوم محسوب:"), h("span", {className:"chip-mono"}, state.lastCommitDay)) : null),
+              h("div", {className:"header-actions"},
+                h("button", {className:`nav-btn ${page==="dashboard" ? "active" : ""}`, onClick:()=>setPage("dashboard")}, "لوحة النظام"),
+                h("button", {className:`nav-btn ${page==="manual" ? "active" : ""}`, onClick:()=>setPage("manual")}, "كتيب التعليمات"),
+                h("button", {className:"nav-btn", onClick:handleLogout}, "تسجيل الخروج")
+              )
+            ),
+            h("div", {className:"stats"},
+              h("div", {className:"stat stat-hp"}, h("div", {className:"stat-k"}, "HP"), h("div", {className:"stat-v"}, `${state.hp}/100`), h("div", {className:"stat-s"}, state.hp===0 ? "قفل 24 ساعة" : (state.hp>=70 ? "مستقر" : "خطر"))),
+              h("div", {className:"stat stat-level"}, h("div", {className:"stat-k"}, "LEVEL"), h("div", {className:"stat-v"}, String(level.level)), h("div", {className:"stat-s"}, `${level.expIntoLevel}/${level.expForNext} EXP`)),
+              h("div", {className:"stat stat-rank"}, h("div", {className:"stat-k"}, "RANK"), h("div", {className:"stat-v"}, rank.label), h("div", {className:"stat-s"}, `${state.commitDays} يوم التزام`))
+            )
+          )
+        ),
+        page === "dashboard"
+          ? h(DashboardPage, { state, setState, level, computed, rank, isLocked, lockRemaining, countdownMs, quote, radarLive, commitPoints, expPoints, expPenaltyPreview, newTitle, setNewTitle, newTarget, setNewTarget, newImportance, setNewImportance, newType, setNewType, addTask, updateTask, removeTask })
+          : h(ManualPage),
+        h("footer", {className:"footer"}, h("div", null, `متصل كـ: ${user.email}`), h("div", null, "البيانات محفوظة في Cloud Firestore — تدوم بعد الرفريش."), h("div", null, "RISE SYSTEM™ — No-Mercy Mode."))
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(h(App));
   </script>
 </body>
 </html>
