@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=yes, viewport-fit=cover" />
+  <title>RISE SYSTEM™ | No Mercy (Firestore)</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@200..800&family=IBM+Plex+Sans+Arabic:wght@100..700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ===== إعدادات ثابتة لجميع المتصفحات (تمنع التحرك) ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      height: 100%;
+      min-height: 100vh;
+      min-height: 100dvh;
+      overflow-x: hidden;
+      position: relative;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-sans);
+      color: hsl(var(--foreground));
+      background: hsl(var(--background));
+      overflow-x: hidden;
+      width: 100%;
+      position: relative;
+    }
+
+    #root {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
+      position: relative;
+      min-height: 100vh;
+      min-height: 100dvh;
+    }
+
+    :root{
+      --background: 235 35% 6%;
+      --foreground: 210 40% 96%;
+      --chart-1: 195 100% 55%;
+      --chart-2: 280 85% 64%;
+      --chart-3: 155 80% 48%;
+      --chart-4: 35 95% 58%;
+      --chart-5: 0 84% 60%;
+      --font-sans: "IBM Plex Sans Arabic", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      --font-display: "Oxanium", "IBM Plex Sans Arabic", system-ui, sans-serif;
+    }
+
+    .bg-anim{
+      position:fixed;
+      inset:-18%;
+      z-index:-2;
+      background:
+        radial-gradient(1200px 900px at 20% 25%, hsl(var(--chart-2) / 0.22), transparent 60%),
+        radial-gradient(1100px 850px at 80% 30%, hsl(var(--chart-1) / 0.22), transparent 62%),
+        radial-gradient(1000px 800px at 25% 85%, hsl(var(--chart-3) / 0.18), transparent 60%),
+        radial-gradient(900px 700px at 85% 80%, hsl(var(--chart-4) / 0.10), transparent 62%),
+        linear-gradient(to bottom, hsl(235 35% 6%), hsl(240 32% 7%));
+      background-size: 140% 140%;
+      animation: spaceDrift 18s ease-in-out infinite;
+      transform: translateZ(0);
+      will-change: transform, filter, background-position;
+      pointer-events: none;
+    }
+    .bg-anim::before{
+      content:"";
+      position:absolute; inset:0;
+      background:
+        conic-gradient(from 210deg at 50% 50%,
+          transparent 0deg,
+          hsl(var(--chart-1) / 0.07) 70deg,
+          transparent 140deg,
+          hsl(var(--chart-2) / 0.07) 220deg,
+          transparent 360deg);
+      filter: blur(20px);
+      opacity: .95;
+      animation: nebulaSpin 28s linear infinite;
+      mix-blend-mode: screen;
+      pointer-events:none;
+    }
+    .bg-anim::after{
+      content:"";
+      position:absolute; inset:0;
+      background:
+        radial-gradient(circle at 10% 20%, rgba(255,255,255,.12) 0 1px, transparent 2px),
+        radial-gradient(circle at 35% 40%, rgba(255,255,255,.10) 0 1px, transparent 2px),
+        radial-gradient(circle at 70% 25%, rgba(255,255,255,.12) 0 1px, transparent 2px),
+        radial-gradient(circle at 85% 55%, rgba(255,255,255,.10) 0 1px, transparent 2px),
+        radial-gradient(circle at 20% 80%, rgba(255,255,255,.10) 0 1px, transparent 2px),
+        radial-gradient(circle at 55% 78%, rgba(255,255,255,.08) 0 1px, transparent 2px);
+      opacity:.55;
+      filter: blur(.2px);
+      animation: starsFloat 14s ease-in-out infinite;
+      pointer-events:none;
+    }
+
+    @keyframes spaceDrift{
+      0%   { background-position: 45% 55%; transform: scale(1); filter: hue-rotate(0deg); }
+      50%  { background-position: 60% 40%; transform: scale(1.03); filter: hue-rotate(10deg); }
+      100% { background-position: 45% 55%; transform: scale(1); filter: hue-rotate(0deg); }
+    }
+    @keyframes nebulaSpin{ from{ transform: rotate(0deg); } to{ transform: rotate(360deg); } }
+    @keyframes starsFloat{
+      0%   { transform: translate(0px,0px); opacity:.50; }
+      50%  { transform: translate(14px,-10px); opacity:.60; }
+      100% { transform: translate(0px,0px); opacity:.50; }
+    }
+
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
+    .wrap{max-width:1200px; margin:0 auto; padding:28px 16px 40px; width:100%;}
+
+    .header{position:relative}
+    .hero-glow{
+      position:absolute; top:-40px; left:50%; transform:translateX(-50%);
+      width:760px; height:200px; border-radius:999px;
+      background: radial-gradient(circle at center, hsl(var(--chart-1) / 0.28), transparent 62%);
+      filter: blur(22px);
+      pointer-events:none;
+      opacity:.9;
+    }
+
+    .top-row{display:flex; gap:16px; align-items:flex-end; justify-content:space-between; flex-wrap:wrap;}
+
+    .badge{
+      display:inline-flex; align-items:center; gap:10px;
+      padding:8px 12px; border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.18);
+      font-size:12px; color: rgba(255,255,255,.92);
+    }
+    .dot{width:10px;height:10px;border-radius:50%; background:hsl(var(--chart-1)); box-shadow: 0 0 18px hsl(var(--chart-1) / .60);}
+    .brand-name{font-family:var(--font-display); letter-spacing:.6px}
+    .brand-sub{color:rgba(255,255,255,.60)}
+
+    .title{margin:12px 0 6px; font-family:var(--font-display); font-size:40px; line-height:1.1;}
+    .subtitle{margin:0; max-width:760px; color:rgba(255,255,255,.78); font-size:14.5px; line-height:1.7;}
+
+    .glitch-word{
+      position: relative;
+      display: inline-block;
+      color: hsl(var(--foreground));
+      text-shadow:
+        0 0 8px rgba(255,255,255,.08),
+        0 0 18px hsl(var(--chart-1) / .16);
+      animation: glitch-skew 2.6s infinite ease-in-out;
+      white-space: nowrap;
+    }
+
+    .glitch-word::before,
+    .glitch-word::after{
+      content: attr(data-text);
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: .9;
+    }
+
+    .glitch-word::before{
+      color: hsl(var(--chart-1));
+      transform: translate(-2px, 0);
+      clip-path: inset(0 0 55% 0);
+      animation: glitch-top 1.1s infinite linear alternate-reverse;
+      mix-blend-mode: screen;
+    }
+
+    .glitch-word::after{
+      color: hsl(var(--chart-5));
+      transform: translate(2px, 0);
+      clip-path: inset(45% 0 0 0);
+      animation: glitch-bottom 1.35s infinite linear alternate-reverse;
+      mix-blend-mode: screen;
+    }
+
+    .glitch-word.self-word{
+      text-shadow:
+        0 0 10px rgba(255,255,255,.10),
+        0 0 20px hsl(var(--chart-2) / .22),
+        0 0 28px hsl(var(--chart-5) / .16);
+      animation: self-glitch-skew .9s infinite steps(2,end);
+    }
+
+    .glitch-word.self-word::before{
+      color: hsl(var(--chart-2));
+      transform: translate(-4px, -1px);
+      clip-path: inset(0 0 62% 0);
+      animation: self-glitch-top .45s infinite steps(2,end);
+      opacity: .95;
+    }
+
+    .glitch-word.self-word::after{
+      color: hsl(var(--chart-5));
+      transform: translate(4px, 1px);
+      clip-path: inset(58% 0 0 0);
+      animation: self-glitch-bottom .38s infinite steps(2,end);
+      opacity: .95;
+    }
+
+    @keyframes glitch-top{
+      0%   { transform: translate(-2px, 0); }
+      20%  { transform: translate(-3px, -1px); }
+      40%  { transform: translate(-1px, 1px); }
+      60%  { transform: translate(-4px, 0); }
+      80%  { transform: translate(-2px, 1px); }
+      100% { transform: translate(-3px, -1px); }
+    }
+
+    @keyframes glitch-bottom{
+      0%   { transform: translate(2px, 0); }
+      20%  { transform: translate(4px, 1px); }
+      40%  { transform: translate(1px, -1px); }
+      60%  { transform: translate(3px, 0); }
+      80%  { transform: translate(2px, -1px); }
+      100% { transform: translate(4px, 1px); }
+    }
+
+    @keyframes glitch-skew{
+      0%, 100% { transform: skewX(0deg); }
+      20%      { transform: skewX(-2deg); }
+      21%      { transform: skewX(3deg); }
+      22%      { transform: skewX(0deg); }
+      65%      { transform: skewX(0deg); }
+      66%      { transform: skewX(-3deg); }
+      67%      { transform: skewX(2deg); }
+      68%      { transform: skewX(0deg); }
+    }
+
+    @keyframes self-glitch-top{
+      0%   { transform: translate(-5px,-1px); }
+      25%  { transform: translate(-1px,2px); }
+      50%  { transform: translate(-6px,0px); }
+      75%  { transform: translate(-2px,-2px); }
+      100% { transform: translate(-4px,1px); }
+    }
+
+    @keyframes self-glitch-bottom{
+      0%   { transform: translate(5px,1px); }
+      25%  { transform: translate(2px,-2px); }
+      50%  { transform: translate(6px,0px); }
+      75%  { transform: translate(3px,2px); }
+      100% { transform: translate(4px,-1px); }
+    }
+
+    @keyframes self-glitch-skew{
+      0%   { transform: skewX(0deg) scale(1); }
+      20%  { transform: skewX(5deg) scale(1.01); }
+      40%  { transform: skewX(-4deg) scale(.995); }
+      60%  { transform: skewX(3deg) scale(1.01); }
+      80%  { transform: skewX(-5deg) scale(.995); }
+      100% { transform: skewX(0deg) scale(1); }
+    }
+
+    .chips{margin-top:12px; display:flex; flex-wrap:wrap; gap:8px;}
+    .chip{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 12px; border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.18);
+      font-size:12px; color: rgba(255,255,255,.82);
+    }
+    .chip-mono{font-family: ui-monospace, monospace; color: rgba(255,255,255,.92)}
+
+    .header-actions{
+      margin-top:16px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+
+    .nav-btn{
+      cursor:pointer;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.96);
+      padding:10px 14px;
+      border-radius:16px;
+      font-size:13px;
+      transition:.15s;
+    }
+    .nav-btn:hover{background: rgba(255,255,255,.10)}
+    .nav-btn.active{
+      border-color:hsl(var(--chart-1)/.35);
+      background:hsl(var(--chart-1)/.16);
+      box-shadow:0 0 18px hsl(var(--chart-1)/.18);
+    }
+
+    .stats{display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; width:370px; max-width:100%;}
+    .stat{
+      border-radius:18px; padding:12px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.20);
+    }
+    .stat-k{font-size:11px; letter-spacing:2px; color: rgba(255,255,255,.72)}
+    .stat-v{margin-top:6px; font-family:var(--font-display); font-size:22px}
+    .stat-s{margin-top:4px; font-size:11px; color: rgba(255,255,255,.66)}
+    .stat-hp{border-color:hsl(var(--chart-3) / .35); background:hsl(var(--chart-3) / .12)}
+    .stat-level{border-color:hsl(var(--chart-1) / .35); background:hsl(var(--chart-1) / .12)}
+    .stat-rank{border-color:hsl(var(--chart-2) / .35); background:hsl(var(--chart-2) / .12)}
+
+    .locked{
+      margin-top:16px; border-radius:18px;
+      border:1px solid hsl(var(--chart-5) / .35);
+      background:hsl(var(--chart-5) / .12);
+      padding:10px 14px;
+    }
+    .locked-row{display:flex; justify-content:space-between; align-items:center; gap:10px; color: rgba(255,255,255,.95); font-size:13px;}
+
+    .main{margin-top:22px; display:grid; gap:14px; grid-template-columns:1.35fr .65fr;}
+    @media (max-width:980px){ .main{grid-template-columns:1fr} }
+
+    .card{
+      border-radius:24px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.20);
+      padding:14px;
+      width:100%;
+      overflow-x:hidden;
+    }
+
+    .label{font-size:11px; letter-spacing:2px; color: rgba(255,255,255,.70)}
+    .section-title{margin-top:6px; font-family:var(--font-display); font-size:18px}
+    .muted{color: rgba(255,255,255,.70); font-size:12px}
+    .tiny{display:flex; justify-content:space-between; gap:10px; color: rgba(255,255,255,.64); font-size:11px}
+
+    .card-row{display:flex; gap:12px; align-items:flex-end; justify-content:space-between; flex-wrap:wrap;}
+    .quote{margin-top:6px; font-family:var(--font-display); font-size:18px; color: rgba(255,255,255,.95);}
+
+    .progress-row{display:flex; gap:14px; align-items:flex-end; justify-content:space-between; flex-wrap:wrap;}
+    .big{margin-top:6px; font-family: var(--font-display); font-size:34px}
+
+    .progress-side{width:280px; max-width:100%}
+    .bar{width:100%; height:10px; border-radius:999px; background: rgba(255,255,255,.12); overflow:hidden;}
+    .fill{height:100%; width:0%; background:hsl(var(--chart-1)); box-shadow: 0 0 18px hsl(var(--chart-1)/.35); transition: width .25s ease; }
+
+    .task-list{margin-top:12px; display:grid; gap:10px;}
+    .task{border-radius:18px; border:1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.04); padding:12px;}
+    .task-top{display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;}
+
+    .tag{
+      display:inline-flex; align-items:center; gap:8px;
+      border-radius:999px; border:1px solid rgba(255,255,255,.18);
+      padding:6px 10px; font-size:11px;
+    }
+    .tag.ph{background:hsl(var(--chart-3)/.16); color:hsl(var(--chart-3)); border-color:hsl(var(--chart-3)/.28)}
+    .tag.iq{background:hsl(var(--chart-1)/.16); color:hsl(var(--chart-1)); border-color:hsl(var(--chart-1)/.28)}
+    .tag.sp{background:hsl(var(--chart-2)/.16); color:hsl(var(--chart-2)); border-color:hsl(var(--chart-2)/.28)}
+    .tag.xx{background:hsl(var(--chart-5)/.16); color:hsl(var(--chart-5)); border-color:hsl(var(--chart-5)/.28)}
+
+    .task-title{font-family:var(--font-display); font-size:15px; color: rgba(255,255,255,.96); max-width:360px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+    .task-meta{margin-top:6px; display:flex; flex-wrap:wrap; gap:10px; font-size:11px; color: rgba(255,255,255,.70)}
+
+    .task-controls{display:flex; align-items:center; gap:8px;}
+    .input{
+      width:100%; padding:10px 12px; border-radius:16px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.96);
+      outline:none;
+    }
+    .input:disabled{opacity:.6}
+    .small{width:92px; padding:8px 10px; border-radius:14px;}
+
+    .btn{
+      cursor:pointer; border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.96);
+      padding:10px 14px;
+      border-radius:18px;
+      transition:.15s;
+    }
+    .btn:hover{background: rgba(255,255,255,.10)}
+    .btn:disabled{opacity:.55; cursor:not-allowed}
+    .btn-green{
+      width:44px; padding:10px 0;
+      border-color:hsl(var(--chart-3)/.30);
+      background:hsl(var(--chart-3)/.18);
+    }
+    .btn-green:hover{background:hsl(var(--chart-3)/.24)}
+
+    .add-grid{margin-top:12px; display:grid; gap:10px; grid-template-columns: 1.4fr .6fr .6fr .6fr .2fr;}
+    @media (max-width:980px){ .add-grid{grid-template-columns:1fr 1fr;} .btn-green{width:100%} }
+
+    .radar-wrap{
+      margin-top:10px; width:100%;
+      border-radius:18px; border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+      overflow:hidden; display:flex; justify-content:center; align-items:center;
+      padding:8px;
+    }
+    .radar-wrap canvas{max-width:100%; height:auto; width:100%;}
+
+    .mini-stats{margin-top:10px; display:grid; grid-template-columns:repeat(3,1fr); gap:10px;}
+    .mini{border-radius:18px; border:1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.04); padding:10px;}
+    .mini-v{font-family:var(--font-display); font-size:20px;}
+    .mini-v span{font-size:12px; color: rgba(255,255,255,.55)}
+    .mini-l{margin-top:4px; font-size:11px; color: rgba(255,255,255,.68)}
+
+    .note{
+      margin-top:10px; border-radius:18px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+      padding:10px;
+      color: rgba(255,255,255,.78);
+      font-size:13px; line-height:1.65;
+    }
+
+    .chart-wrap{
+      margin-top:10px; width:100%;
+      border-radius:18px; border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+      overflow:hidden;
+      padding:10px;
+    }
+    .chart-wrap canvas{width:100%; height:auto; display:block;}
+
+    .footer{
+      margin-top:18px; padding-top:14px;
+      border-top:1px solid rgba(255,255,255,.14);
+      color: rgba(255,255,255,.70);
+      font-size:12px;
+      display:flex; flex-direction:column; gap:6px;
+    }
+
+    .countdown{
+      margin-top:10px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      padding:10px 12px;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.18);
+    }
+
+    .shame-panel{
+      margin-top:12px;
+      border-radius:18px;
+      border:1px solid hsl(var(--chart-5) / .35);
+      background:hsl(var(--chart-5) / .12);
+      padding:12px;
+    }
+    .shame-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .shame-title{
+      font-size:11px;
+      letter-spacing:2px;
+      color: rgba(255,255,255,.75);
+    }
+    .shame-value{
+      font-family:var(--font-display);
+      font-size:28px;
+      color:hsl(var(--chart-5));
+      text-shadow:0 0 16px hsl(var(--chart-5) / .30);
+      min-width:72px;
+      text-align:center;
+      margin-inline-start:auto;
+      padding-inline-start:10px;
+    }
+    .shame-sub{
+      margin-top:6px;
+      font-size:12px;
+      color: rgba(255,255,255,.72);
+    }
+
+    .manual-layout{
+      margin-top:22px;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+    }
+    @media (max-width:980px){
+      .manual-layout{grid-template-columns:1fr}
+    }
+
+    .manual-list{
+      display:grid;
+      gap:10px;
+      margin-top:12px;
+    }
+
+    .manual-step{
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+      padding:12px;
+    }
+
+    .manual-step-title{
+      font-family:var(--font-display);
+      font-size:15px;
+      margin-bottom:6px;
+      color:rgba(255,255,255,.96);
+    }
+
+    .manual-step-text{
+      color:rgba(255,255,255,.76);
+      font-size:13px;
+      line-height:1.75;
+    }
+
+    .manual-highlight{
+      border-radius:20px;
+      border:1px solid hsl(var(--chart-1)/.30);
+      background:hsl(var(--chart-1)/.10);
+      padding:14px;
+      margin-top:12px;
+      color:rgba(255,255,255,.88);
+      line-height:1.8;
+      font-size:13px;
+    }
+
+    .manual-warning{
+      border-radius:20px;
+      border:1px solid hsl(var(--chart-5)/.34);
+      background:hsl(var(--chart-5)/.12);
+      padding:14px;
+      margin-top:12px;
+      color:rgba(255,255,255,.88);
+      line-height:1.8;
+      font-size:13px;
+    }
+
+    .manual-grid{
+      margin-top:12px;
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:10px;
+    }
+    @media (max-width:700px){
+      .manual-grid{grid-template-columns:1fr}
+    }
+
+    .login-container{
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .login-card{
+      max-width: 420px;
+      width: 100%;
+      border-radius: 36px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(0,0,0,.55);
+      backdrop-filter: blur(8px);
+      padding: 32px 28px;
+      text-align: center;
+      box-shadow: 0 25px 45px rgba(0,0,0,.5);
+    }
+    .login-title{
+      font-family: var(--font-display);
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+    .login-sub{
+      color: rgba(255,255,255,.7);
+      font-size: 14px;
+      margin-bottom: 32px;
+    }
+    .login-input{
+      width: 100%;
+      margin-bottom: 18px;
+      padding: 14px 18px;
+      border-radius: 28px;
+      border: 1px solid rgba(255,255,255,.2);
+      background: rgba(255,255,255,.05);
+      color: white;
+      font-size: 15px;
+      outline: none;
+      transition: .2s;
+    }
+    .login-input:focus{
+      border-color: hsl(var(--chart-1)/.6);
+      background: rgba(255,255,255,.08);
+    }
+    .login-btn{
+      width: 100%;
+      padding: 12px;
+      border-radius: 40px;
+      background: hsl(var(--chart-1)/.2);
+      border: 1px solid hsl(var(--chart-1)/.5);
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: .2s;
+      font-family: var(--font-display);
+    }
+    .login-btn:hover{
+      background: hsl(var(--chart-1)/.4);
+      box-shadow: 0 0 14px hsl(var(--chart-1)/.3);
+    }
+    .login-error{
+      color: hsl(var(--chart-5));
+      margin-top: 12px;
+      font-size: 13px;
+    }
+    .loading{
+      text-align: center;
+      padding: 40px;
+      font-size: 18px;
+    }
+    .error-loading{
+      color: hsl(var(--chart-5));
+      text-align: center;
+      padding: 20px;
+      font-size: 14px;
+      background: rgba(0,0,0,0.5);
+      border-radius: 20px;
+      margin: 20px;
+    }
+
+    /* ===== تثبيت إضافي للشاشات الصغيرة ===== */
+    @media (max-width: 768px) {
+      .wrap {
+        width: 100%;
+        max-width: 100%;
+        padding: 16px 12px 32px;
+        margin: 0 auto;
+      }
+      .stats {
+        width: 100%;
+        grid-template-columns: 1fr;
+      }
+      .radar-wrap canvas,
+      .chart-wrap canvas {
+        width: 100% !important;
+        height: auto !important;
+        max-width: 100%;
+      }
+      .card {
+        width: 100%;
+        overflow-x: hidden;
+      }
+      .top-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .badge {
+        align-self: flex-start;
+      }
+      .header-actions {
+        justify-content: center;
+      }
+      .progress-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .progress-side {
+        width: 100%;
+      }
+      .add-grid {
+        grid-template-columns: 1fr;
+      }
+      .btn-green {
+        width: 100%;
+        padding: 10px;
+      }
+      .task-top {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .task-controls {
+        width: 100%;
+        justify-content: space-between;
+      }
+      .mini-stats {
+        grid-template-columns: 1fr;
+      }
+      .manual-layout {
+        grid-template-columns: 1fr;
+      }
+      .countdown {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .locked-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .title {
+        font-size: 24px;
+      }
+      .glitch-word {
+        font-size: 24px;
+      }
+      .card {
+        padding: 10px;
+      }
+      .stat-v {
+        font-size: 18px;
+      }
+      .mini-v {
+        font-size: 18px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg-anim"></div>
+  <div id="root"></div>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBPsgxpBN57IMOhCVaKQe2_bwkZ3aEahjA",
+      authDomain: "rise-system-a7135.firebaseapp.com",
+      projectId: "rise-system-a7135",
+      storageBucket: "rise-system-a7135.firebasestorage.app",
+      messagingSenderId: "934082504813",
+      appId: "1:934082504813:web:319df11b15b82deca3f764",
+      measurementId: "G-H0NTG6LWNJ"
+    };
+    const app = firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    auth.setPersistence(firebase.auth.Auth.Persistence.NONE).catch(console.error);
+    const db = firebase.firestore();
+
+    const h = React.createElement;
+    const { useEffect, useMemo, useRef, useState } = React;
+
+    // Helper functions
+    const TYPE_META = { PH: { label: "قوة جسدية", multiplier: 2.0 }, IQ: { label: "ذكاء وتعلّم", multiplier: 1.7 }, SP: { label: "انضباط وروحانية", multiplier: 1.5 }, XX: { label: "عادة سيئة", multiplier: 0 } };
+    const GLITCH_WORDS = ["الأبطال", "الأنمي", "قدوتك", "نفسك"];
+    const RANKS = [{ key: "E", days: 0, label: "E" },{ key: "D", days: 7, label: "D" },{ key: "C", days: 30, label: "C" },{ key: "B", days: 90, label: "B" },{ key: "A", days: 180, label: "A" },{ key: "S", days: 365, label: "S Elite" }];
+    const RANK_PENALTY = { E:0, D:1, C:3, B:7, A:14, S:30 };
+    const QUOTES = ["أنت لا تبحث عن الحماس… أنت تبني الانضباط.","اليوم ليس اختبارًا لقوتك… بل لالتزامك.","خطوة واحدة يوميًا تُصنع منها الأساطير.","كل مهمة تُنجزها = مستوى جديد في شخصيتك.","لا تُفاوض على عاداتك الأساسية.","النتائج لا تأتي بسرعة… لكنّها تأتي بثبات.","الفارق بينك وبين هدفك: يوم واحد من الالتزام.","الضعف لحظة… والاستسلام قرار.","خفّف الضوضاء. زد التنفيذ.","إذا بدأت اليوم، ستشكر نفسك بعد أسبوع.","إلتزم عندما لا تشعر بالرغبة—هنا تتغير الشخصية.","كل مرة تقول (لاحقًا) أنت تسرق من مستقبلك.","لا تنتظر المزاج. المزاج يتبع الحركة.","أنت تبني (نظام)… وليس (قائمة مهام).","الضغط جزء من التطور. لا تهرب منه."];
+    function clamp(n,min,max){ return Math.max(min,Math.min(max,n)); }
+    function pct(n){ return Math.round(n*100); }
+    function todayKeyLocal(){ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
+    function randomQuote(seed){ let h=0; for(let i=0;i<seed.length;i++) h=(h*31+seed.charCodeAt(i))>>>0; return QUOTES[h%QUOTES.length]; }
+    function expToLevel(totalExp){ let a=120,level=1,expForNext=a,remaining=totalExp; while(remaining>=expForNext){ remaining-=expForNext; level+=1; expForNext=Math.round(a*Math.pow(level,1.15)); if(level>200) break; } return {level,expIntoLevel:remaining,expForNext}; }
+    function rankFromStreak(days){ let cur=RANKS[0]; for(const r of RANKS) if(days>=r.days) cur=r; return cur; }
+    function msToMidnight(){ const now=new Date(),midnight=new Date(now); midnight.setHours(24,0,0,0); return midnight.getTime()-now.getTime(); }
+    function formatCountdown(ms){ const total=Math.max(0,ms),s=Math.floor(total/1000),hh=Math.floor(s/3600),mm=Math.floor((s%3600)/60),ss=s%60; return `${String(hh).padStart(2,"0")}:${String(mm).padStart(2,"0")}:${String(ss).padStart(2,"0")}`; }
+    function parseKey(key){ const [y,m,d]=String(key).split("-").map(Number); const dt=new Date(y,(m||1)-1,d||1); dt.setHours(12,0,0,0); return dt; }
+    function formatKey(dt){ return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}-${String(dt.getDate()).padStart(2,"0")}`; }
+    function addDaysKey(key,days){ const dt=parseKey(key); dt.setDate(dt.getDate()+days); return formatKey(dt); }
+    function diffDaysKey(aKey,bKey){ const a=parseKey(aKey).getTime(),b=parseKey(bKey).getTime(); return Math.round((b-a)/(24*60*60*1000)); }
+    function dailyMaxExpByLevel(level){ return Math.round(220+18*Math.log2(level+1)+0.8*Math.sqrt(level)); }
+    function penaltyRatioByLevel(level){ return clamp(0.95+(Math.max(1,level)-1)*0.03,0.95,2.20); }
+    function expPenaltyByLevel(level){ return Math.round(dailyMaxExpByLevel(level)*penaltyRatioByLevel(level)); }
+    function computeToday(tasks,level){
+      const totals={scoreDone:0,scoreTotal:0,completion:0,exp:0,expMax:0,weightedProgress:0,byType:{PH:0,IQ:0,SP:0},byTypePotential:{PH:0,IQ:0,SP:0},xxTriggered:false};
+      const SCORE_UNIT=10;
+      let wSum=0;
+      for(const t of tasks){
+        const importance=Number(t.importance||1),weight=importance*SCORE_UNIT,target=Math.max(1,Number(t.target||1)),done=clamp(Number(t.done||0),0,target),ratio=target>0?done/target:0;
+        if(t.type==="XX"){ if(done>0) totals.xxTriggered=true; continue; }
+        totals.scoreTotal+=weight; totals.scoreDone+=weight*ratio; totals.byType[t.type]+=weight*ratio; totals.byTypePotential[t.type]+=weight; wSum+=importance*TYPE_META[t.type].multiplier;
+      }
+      totals.completion=totals.scoreTotal>0?totals.scoreDone/totals.scoreTotal:0;
+      if(totals.xxTriggered) totals.completion=Math.max(0,totals.completion-0.5);
+      const dailyMax=dailyMaxExpByLevel(level);
+      totals.expMax=dailyMax; totals.weightedProgress=wSum>0?totals.completion:0; totals.exp=Math.round(totals.weightedProgress*dailyMax);
+      return totals;
+    }
+
+    // Canvas components
+    function polygon(ctx,cx,cy,r,sides,rot){ ctx.beginPath(); for(let i=0;i<sides;i++){ const a=rot+i*(2*Math.PI/sides),x=cx+Math.cos(a)*r,y=cy+Math.sin(a)*r; if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); } ctx.closePath(); }
+    function RadarCanvas(props){
+      const ref=useRef(null),prevRef=useRef({PH:0,IQ:0,SP:0}),animRef=useRef(null);
+      function draw(vals){
+        const canvas=ref.current; if(!canvas) return; const ctx=canvas.getContext("2d"),w=canvas.width,hh=canvas.height; ctx.clearRect(0,0,w,hh);
+        const cx=w/2,cy=hh/2+10,radius=Math.min(w,hh)*0.33; ctx.save(); ctx.strokeStyle="rgba(255,255,255,0.12)"; ctx.lineWidth=1;
+        for(let r=1;r<=4;r++){ polygon(ctx,cx,cy,radius*(r/4),3,-Math.PI/2); ctx.stroke(); }
+        const labels=["PH","IQ","SP"],angles=[-Math.PI/2,-Math.PI/2+2*Math.PI/3,-Math.PI/2+4*Math.PI/3];
+        labels.forEach((lab,i)=>{ const a=angles[i],x=cx+Math.cos(a)*radius,y=cy+Math.sin(a)*radius; ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(x,y); ctx.stroke(); ctx.fillStyle="rgba(255,255,255,0.78)"; ctx.font="16px 'IBM Plex Sans Arabic', sans-serif"; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.fillText(lab,cx+Math.cos(a)*(radius+26),cy+Math.sin(a)*(radius+18)); });
+        const pPH=(vals.PH||0)/100,pIQ=(vals.IQ||0)/100,pSP=(vals.SP||0)/100,arr=[pPH,pIQ,pSP].map((v,i)=>({x:cx+Math.cos(angles[i])*radius*v,y:cy+Math.sin(angles[i])*radius*v}));
+        ctx.beginPath(); ctx.moveTo(arr[0].x,arr[0].y); ctx.lineTo(arr[1].x,arr[1].y); ctx.lineTo(arr[2].x,arr[2].y); ctx.closePath(); ctx.fillStyle="rgba(0,229,255,0.20)"; ctx.fill(); ctx.strokeStyle="rgba(0,229,255,0.88)"; ctx.lineWidth=2; ctx.stroke(); ctx.fillStyle="rgba(0,229,255,0.95)"; arr.forEach(p=>{ ctx.beginPath(); ctx.arc(p.x,p.y,4,0,Math.PI*2); ctx.fill(); }); ctx.restore();
+      }
+      useEffect(()=>{ const next=props.values||{PH:0,IQ:0,SP:0},from=prevRef.current; if(animRef.current) cancelAnimationFrame(animRef.current); const start=performance.now(),dur=320; function lerp(a,b,t){ return a+(b-a)*t; } function ease(t){ return 1-Math.pow(1-t,3); } function step(now){ const t=Math.min(1,(now-start)/dur),k=ease(t),cur={PH:lerp(from.PH,next.PH,k),IQ:lerp(from.IQ,next.IQ,k),SP:lerp(from.SP,next.SP,k)}; draw(cur); if(t<1) animRef.current=requestAnimationFrame(step); else prevRef.current={PH:next.PH,IQ:next.IQ,SP:next.SP}; } animRef.current=requestAnimationFrame(step); return ()=>{ if(animRef.current) cancelAnimationFrame(animRef.current); }; },[props.values]);
+      return h("div",{className:"radar-wrap"},h("canvas",{ref,width:520,height:420,style:{width:"100%",height:"auto"}}));
+    }
+    function CommitChart(props){
+      const ref=useRef(null),prevYRef=useRef(null),animRef=useRef(null);
+      function draw(points,t=1){
+        const canvas=ref.current; if(!canvas) return; const ctx=canvas.getContext("2d"),w=canvas.width,hh=canvas.height; ctx.clearRect(0,0,w,hh); const pad=18,innerW=w-pad*2,innerH=hh-pad*2; ctx.save(); ctx.strokeStyle="rgba(255,255,255,0.10)"; ctx.lineWidth=1; for(let i=0;i<=4;i++){ const y=pad+innerH*i/4; ctx.beginPath(); ctx.moveTo(pad,y); ctx.lineTo(w-pad,y); ctx.stroke(); } ctx.restore();
+        if(!points||points.length<2){ ctx.fillStyle="rgba(255,255,255,0.70)"; ctx.font="13px 'IBM Plex Sans Arabic', sans-serif"; ctx.textAlign="center"; ctx.fillText("سيظهر المنحنى بعد أول يوم حفظ تلقائي.",w/2,hh/2); return; }
+        const maxY=Math.max(1,...points.map(p=>p.y)),minY=Math.min(...points.map(p=>p.y)),range=Math.max(1,maxY-minY);
+        const xs=points.map((p,i)=>{ const x=pad+innerW*i/(points.length-1),yNorm=(p.y-minY)/range,y=pad+innerH-yNorm*innerH; return {x,y,yVal:p.y}; });
+        const prev=prevYRef.current; const ys=xs.map((p,i)=>{ const py=prev&&prev[i]!=null?prev[i]:p.y; return {x:p.x,y:py+(p.y-py)*t,yVal:p.yVal}; });
+        ctx.beginPath(); ctx.moveTo(ys[0].x,ys[0].y); for(let i=1;i<ys.length;i++) ctx.lineTo(ys[i].x,ys[i].y); ctx.lineTo(ys[ys.length-1].x,hh-pad); ctx.lineTo(ys[0].x,hh-pad); ctx.closePath(); ctx.fillStyle="rgba(0,229,255,0.10)"; ctx.fill(); ctx.beginPath(); ctx.moveTo(ys[0].x,ys[0].y); for(let i=1;i<ys.length;i++) ctx.lineTo(ys[i].x,ys[i].y); ctx.strokeStyle="rgba(0,229,255,0.92)"; ctx.lineWidth=2.2; ctx.stroke(); ctx.fillStyle="rgba(0,229,255,0.95)"; for(const p of ys){ ctx.beginPath(); ctx.arc(p.x,p.y,3.6,0,Math.PI*2); ctx.fill(); } ctx.fillStyle="rgba(255,255,255,0.70)"; ctx.font="12px 'IBM Plex Sans Arabic', sans-serif"; ctx.textAlign="right"; ctx.fillText(`الآن: ${points[points.length-1].y} يوم`,w-pad,pad+12); ctx.textAlign="left"; ctx.fillText(`البداية: ${points[0].y} يوم`,pad,pad+12); prevYRef.current=xs.map(p=>p.y);
+      }
+      useEffect(()=>{ const points=props.points||[]; if(animRef.current) cancelAnimationFrame(animRef.current); const start=performance.now(),dur=420; function ease(t){ return 1-Math.pow(1-t,3); } function step(now){ const tt=Math.min(1,(now-start)/dur); draw(points,ease(tt)); if(tt<1) animRef.current=requestAnimationFrame(step); } animRef.current=requestAnimationFrame(step); return ()=>{ if(animRef.current) cancelAnimationFrame(animRef.current); }; },[props.points]);
+      return h("div",{className:"chart-wrap"},h("canvas",{ref,width:720,height:280,style:{width:"100%",height:"auto"}}));
+    }
+    function ExpChart(props){
+      const ref=useRef(null),animRef=useRef(null);
+      function draw(points,t=1){
+        const canvas=ref.current; if(!canvas) return; const ctx=canvas.getContext("2d"),w=canvas.width,hh=canvas.height; ctx.clearRect(0,0,w,hh); const pad=18,innerW=w-pad*2,innerH=hh-pad*2; ctx.save(); ctx.strokeStyle="rgba(255,255,255,0.10)"; ctx.lineWidth=1; for(let i=0;i<=4;i++){ const y=pad+innerH*i/4; ctx.beginPath(); ctx.moveTo(pad,y); ctx.lineTo(w-pad,y); ctx.stroke(); } ctx.restore();
+        if(!points||points.length<2){ ctx.fillStyle="rgba(255,255,255,0.70)"; ctx.font="13px 'IBM Plex Sans Arabic', sans-serif"; ctx.textAlign="center"; ctx.fillText("سيظهر منحنى EXP بعد أول يوم حفظ تلقائي.",w/2,hh/2); return; }
+        const maxY=Math.max(1,...points.map(p=>p.y)),minY=Math.min(...points.map(p=>p.y)),range=Math.max(1,maxY-minY);
+        const pts=points.map((p,i)=>{ const x=pad+innerW*i/(points.length-1),yNorm=(p.y-minY)/range,y=pad+innerH-yNorm*innerH; return {x,y,yVal:p.y}; });
+        const shown=pts.map(p=>({x:p.x,y:pad+innerH-((pad+innerH-p.y)*t),yVal:p.yVal}));
+        ctx.beginPath(); ctx.moveTo(shown[0].x,shown[0].y); for(let i=1;i<shown.length;i++) ctx.lineTo(shown[i].x,shown[i].y); ctx.lineTo(shown[shown.length-1].x,hh-pad); ctx.lineTo(shown[0].x,hh-pad); ctx.closePath(); ctx.fillStyle="rgba(168,85,247,0.10)"; ctx.fill(); ctx.beginPath(); ctx.moveTo(shown[0].x,shown[0].y); for(let i=1;i<shown.length;i++) ctx.lineTo(shown[i].x,shown[i].y); ctx.strokeStyle="rgba(168,85,247,0.92)"; ctx.lineWidth=2.2; ctx.stroke(); ctx.fillStyle="rgba(168,85,247,0.95)"; for(const p of shown){ ctx.beginPath(); ctx.arc(p.x,p.y,3.6,0,Math.PI*2); ctx.fill(); } ctx.fillStyle="rgba(255,255,255,0.70)"; ctx.font="12px 'IBM Plex Sans Arabic', sans-serif"; ctx.textAlign="right"; ctx.fillText(`Net EXP الآن: ${Math.round(points[points.length-1].y)}`,w-pad,pad+12);
+      }
+      useEffect(()=>{ const points=props.points||[]; if(animRef.current) cancelAnimationFrame(animRef.current); const start=performance.now(),dur=420; function ease(t){ return 1-Math.pow(1-t,3); } function step(now){ const tt=Math.min(1,(now-start)/dur); draw(points,ease(tt)); if(tt<1) animRef.current=requestAnimationFrame(step); } animRef.current=requestAnimationFrame(step); return ()=>{ if(animRef.current) cancelAnimationFrame(animRef.current); }; },[props.points]);
+      return h("div",{className:"chart-wrap"},h("canvas",{ref,width:720,height:280,style:{width:"100%",height:"auto"}}));
+    }
+
+    // State management
+    function createInitialState() {
+      return {
+        day: todayKeyLocal(),
+        tasks: [
+          { id:"t1", title:"صلاة", target:5, importance:5, type:"SP", done:0 },
+          { id:"t2", title:"Push-ups", target:300, importance:4, type:"PH", done:0 },
+          { id:"t3", title:"قراءة", target:30, importance:3, type:"IQ", done:0 },
+        ],
+        totalExp: 0, hp: 100, commitDays: 0, shameDays: 0, perfectStreak: 0, lastCommitDay: null, lockedUntil: null, zeroLockUsed: true,
+        lifetimeByType: { PH:0, IQ:0, SP:0 }, lifetimePotentialByType: { PH:0, IQ:0, SP:0 }, commitHistory: [], expHistory: [],
+      };
+    }
+    function pushHistory(history, dateKey, value){
+      const arr = Array.isArray(history) ? history.slice() : [];
+      if(arr.length && arr[arr.length-1].d === dateKey){ arr[arr.length-1] = { d: dateKey, v: value }; return arr; }
+      arr.push({ d: dateKey, v: value }); return arr;
+    }
+    function closeOneDay(prev, dayKeyToClose, totals, qualifies, completion){
+      const failHard = completion < 0.5;
+      const delta = qualifies ? 6 : (failHard ? -12 : -4);
+      const hp = clamp(prev.hp + delta, 0, 100);
+      let lockedUntil = prev.lockedUntil;
+      let zeroLockUsed = (prev.zeroLockUsed === undefined) ? true : prev.zeroLockUsed;
+      if(hp > 0){ zeroLockUsed = false; if(lockedUntil && Date.now() >= lockedUntil) lockedUntil = null; }
+      else{ if(!zeroLockUsed){ lockedUntil = Date.now() + 24*60*60*1000; zeroLockUsed = true; } }
+      const currentRank = rankFromStreak(prev.commitDays).key;
+      const penaltyDays = qualifies ? 0 : (RANK_PENALTY[currentRank] ?? 0);
+      const commitDays = qualifies ? (prev.commitDays + 1) : Math.max(0, prev.commitDays - penaltyDays);
+      const lastCommitDay = qualifies ? dayKeyToClose : prev.lastCommitDay;
+      const lifetimeByType = { PH: prev.lifetimeByType.PH + totals.byType.PH, IQ: prev.lifetimeByType.IQ + totals.byType.IQ, SP: prev.lifetimeByType.SP + totals.byType.SP };
+      const lifetimePotentialByType = { PH: prev.lifetimePotentialByType.PH + totals.byTypePotential.PH, IQ: prev.lifetimePotentialByType.IQ + totals.byTypePotential.IQ, SP: prev.lifetimePotentialByType.SP + totals.byTypePotential.SP };
+      const currLevel = expToLevel(prev.totalExp).level;
+      const expPenalty = expPenaltyByLevel(currLevel);
+      const totalExp = qualifies ? (prev.totalExp + Math.round(totals.exp)) : Math.max(0, prev.totalExp - expPenalty);
+      let shameDays = Number(prev.shameDays || 0);
+      let perfectStreak = Number(prev.perfectStreak || 0);
+      if(completion <= 0){ shameDays += 1; perfectStreak = 0; }
+      else if(completion >= 1){ perfectStreak += 1; if(perfectStreak >= 10){ const removeCount = Math.floor(perfectStreak / 10); shameDays = Math.max(0, shameDays - removeCount); perfectStreak = perfectStreak % 10; } }
+      else { perfectStreak = 0; }
+      const tasks = prev.tasks.map(t => ({...t, done:0}));
+      const commitHistory = pushHistory(prev.commitHistory, dayKeyToClose, commitDays);
+      const expHistory = pushHistory(prev.expHistory, dayKeyToClose, totalExp);
+      return {...prev, hp, lockedUntil, zeroLockUsed, commitDays, shameDays, perfectStreak, lastCommitDay, lifetimeByType, lifetimePotentialByType, totalExp, tasks, commitHistory, expHistory};
+    }
+    function finalizeDayNoMercy(prevState){
+      const today = todayKeyLocal();
+      if(prevState.day === today) return prevState;
+      const gap = diffDaysKey(prevState.day, today);
+      if(gap <= 0) return {...prevState, day: today};
+      const MAX_CATCHUP = 90;
+      const safeGap = Math.min(gap, MAX_CATCHUP);
+      let s = {...prevState};
+      { const currLevel = expToLevel(s.totalExp).level; const totals = computeToday(s.tasks, currLevel); const completion = totals.completion; const qualifies = completion >= 0.7; s = closeOneDay(s, s.day, totals, qualifies, completion); }
+      for(let i=1;i<safeGap;i++){ const dayKey = addDaysKey(prevState.day, i); const currLevel = expToLevel(s.totalExp).level; const totals = computeToday(s.tasks, currLevel); s = closeOneDay(s, dayKey, totals, false, 0); }
+      s.day = today; return s;
+    }
+
+    // DashboardPage, ManualPage, LoginPage, App (مثل الكود السابق ولكن مع التعديلات المطلوبة)
+    // ... (تم اختصار هذه الأقسام سابقاً ولكن في التطبيق النهائي هي كاملة)
+    // سأضعها الآن كاملة
+
+    function DashboardPage(props){
+      const { state, setState, level, computed, rank, isLocked, lockRemaining, countdownMs, quote, radarLive, commitPoints, expPoints, expPenaltyPreview,
+        newTitle, setNewTitle, newTarget, setNewTarget, newImportance, setNewImportance, newType, setNewType, addTask, updateTask, removeTask } = props;
+      return h("main", {className:"main"},
+        h("section", null,
+          h("div", {className:"card"},
+            h("div", {className:"card-row"},
+              h("div", null, h("div", {className:"label"}, "QUOTE OF THE DAY"), h("div", {className:"quote"}, `“${quote}”`), h("div", {className:"muted", style:{marginTop:8}}, "اليوم يُغلق تلقائيًا عند 00:00. الغياب = عقوبة يومية.") )
+            )
+          ),
+          h("div", {className:"card"},
+            h("div", {className:"progress-row"},
+              h("div", null, h("div", {className:"label"}, "TODAY PROGRESS"), h("div", {className:"big"}, `${pct(computed.completion)}%`), h("div", {className:"muted"}, `EXP اليوم (إذا ≥70%): +${Math.round(computed.exp)} / سقف اليوم: ${Math.round(computed.expMax)}`), h("div", {className:"muted", style:{marginTop:6}}, `عقوبة Net EXP إذا <70% (قاسية حسب Level): -${expPenaltyPreview}`) ),
+              h("div", {className:"progress-side"}, h("div", {className:"bar"}, h("div", {className:"fill", style:{width:`${pct(computed.completion)}%`}})), h("div", {className:"tiny", style:{marginTop:8}}, h("span", null, "≥ 70% يزيد HP + يُحسب يوم"), h("span", null, "< 70% = خصم Net EXP")) )
+            ),
+            h("div", {className:"task-list"}, state.tasks.map(t=>{
+              const target = Math.max(1, Number(t.target||1));
+              const done = clamp(Number(t.done||0), 0, target);
+              const itemPct = target>0 ? (done/target)*100 : 0;
+              const typeClass = t.type==="PH" ? "ph" : (t.type==="IQ" ? "iq" : (t.type==="SP" ? "sp" : "xx"));
+              return h("div", {className:"task", key:t.id},
+                h("div", {className:"task-top"},
+                  h("div", {style:{minWidth:0}}, h("div", {style:{display:"flex", alignItems:"center", gap:10, flexWrap:"wrap"}}, h("span", {className:`tag ${typeClass}`}, `${t.type} • imp ${t.importance}/5`), h("div", {className:"task-title", title:t.title}, t.title)), h("div", {className:"task-meta"}, h("span", null, `Target: ${t.target}`), h("span", null, `Done: ${t.done}`), h("span", null, `Progress: ${pct(itemPct/100)}%`) )),
+                  h("div", {className:"task-controls"}, h("div", {className:"bar", style:{width:160}}, h("div", {className:"fill", style:{width:`${itemPct}%`}})), h("input", {className:"input small", type:"number", min:0, step:1, value:t.done, disabled:isLocked, onChange:(e)=>updateTask(t.id, {done: clamp(Number(e.target.value||0), 0, 999999)})}), h("button", {className:"btn", disabled:isLocked, onClick:()=>removeTask(t.id), title:"Remove"}, "✕") )
+                )
+              );
+            }))
+          ),
+          h("div", {className:"card"},
+            h("div", {className:"label"}, "ADD TASK"),
+            h("div", {className:"section-title"}, "مهمة جديدة"),
+            h("div", {className:"muted"}, "الأهمية هي التي تتحكم في الإنصاف."),
+            h("div", {className:"add-grid"},
+              h("input", {className:"input", value:newTitle, disabled:isLocked, placeholder:"مثال: دراسة / قرآن / جري", onChange:(e)=>setNewTitle(e.target.value)}),
+              h("input", {className:"input", type:"number", min:1, value:newTarget === "" ? "" : newTarget, disabled:isLocked, placeholder:"الهدف", onChange:(e)=>setNewTarget(e.target.value === "" ? "" : Number(e.target.value))}),
+              h("select", {className:"input", value:String(newImportance), disabled:isLocked, onChange:(e)=>setNewImportance(Number(e.target.value))}, [1,2,3,4,5].map(v=>h("option",{key:v,value:String(v)},String(v)))),
+              h("select", {className:"input", value:newType, disabled:isLocked, onChange:(e)=>setNewType(e.target.value)}, ["PH","IQ","SP","XX"].map(v=>h("option",{key:v,value:v},v))),
+              h("button", {className:"btn btn-green", disabled:isLocked, onClick:()=>{ addTask(newTitle, newTarget === "" ? 1 : newTarget, newImportance, newType); setNewTitle(""); setNewTarget(1); setNewImportance(3); setNewType("PH"); }}, "+")
+            )
+          ),
+          h("div", {className:"card"},
+            h("div", {className:"label"}, "COMMIT STATS"),
+            h("div", {className:"section-title"}, "أيام الالتزام الحالية + منحناها"),
+            h("div", {className:"mini-stats"}, h("div", {className:"mini"}, h("div", {className:"mini-v"}, state.commitDays, h("span", null, " يوم")), h("div", {className:"mini-l"}, "Commit Days (Live)")), h("div", {className:"mini"}, h("div", {className:"mini-v"}, rank.label), h("div", {className:"mini-l"}, "RANK الحالي")), h("div", {className:"mini"}, h("div", {className:"mini-v"}, `${commitPoints.length}`, h("span", null, " يوم")), h("div", {className:"mini-l"}, "أيام مسجلة بالمنحنى")) ),
+            h(CommitChart, {points: commitPoints})
+          ),
+          h("div", {className:"card"},
+            h("div", {className:"label"}, "NET EXP"),
+            h("div", {className:"section-title"}, "صافي EXP المتراكمة + منحناها"),
+            h("div", {className:"muted"}, "تزيد إذا اليوم ≥70%، وتنقص إذا <70% بعقوبة قاسية + الغياب يُعاقَب يوميًا."),
+            h("div", {className:"mini-stats"}, h("div", {className:"mini"}, h("div", {className:"mini-v"}, Math.round(state.totalExp)), h("div", {className:"mini-l"}, "Net EXP (Live)")), h("div", {className:"mini"}, h("div", {className:"mini-v"}, level.level), h("div", {className:"mini-l"}, "Level (يتأثر مباشرة)")), h("div", {className:"mini"}, h("div", {className:"mini-v"}, `-${expPenaltyPreview}`), h("div", {className:"mini-l"}, "عقوبة اليوم إذا فشل")) ),
+            h(ExpChart, {points: expPoints})
+          )
+        ),
+        h("aside", null,
+          h("div", {className:"card"},
+            h("div", {className:"label"}, "LIVE STATUS"),
+            h("div", {className:"section-title"}, "ملخص فوري"),
+            h("div", {className:"countdown"}, h("div", {className:"muted"}, "تحت منتصف الليل:"), h("div", {className:"mono"}, formatCountdown(countdownMs))),
+            isLocked ? h("div", {className:"locked"}, h("div", {className:"locked-row"}, h("div", null, "تم قفل الدخول مؤقتًا بسبب HP = 0."), h("div", {className:"mono"}, lockRemaining ? `متبقي ${lockRemaining.hh}h ${lockRemaining.mm}m` : "..."))) : null,
+            h("div", {className:"mini-stats"}, h("div", {className:"mini"}, h("div", {className:"mini-v"}, `${state.hp}`), h("div", {className:"mini-l"}, "HP")), h("div", {className:"mini"}, h("div", {className:"mini-v"}, `${level.level}`), h("div", {className:"mini-l"}, "LEVEL")), h("div", {className:"mini"}, h("div", {className:"mini-v"}, rank.label), h("div", {className:"mini-l"}, "RANK")) )
+          ),
+          h("div", {className:"card"},
+            h("div", {className:"label"}, "RADAR"),
+            h("div", {className:"section-title"}, "إحصائياتك الكلية (Live)"),
+            h("div", {className:"muted"}, "All-time + Today live (يتحدّث فورًا)."),
+            h(RadarCanvas, {values: radarLive}),
+            h("div", {className:"mini-stats"}, h("div", {className:"mini"}, h("div", {className:"mini-v"}, radarLive.PH, h("span", null, "%")), h("div", {className:"mini-l"}, TYPE_META.PH.label)), h("div", {className:"mini"}, h("div", {className:"mini-v"}, radarLive.IQ, h("span", null, "%")), h("div", {className:"mini-l"}, TYPE_META.IQ.label)), h("div", {className:"mini"}, h("div", {className:"mini-v"}, radarLive.SP, h("span", null, "%")), h("div", {className:"mini-l"}, TYPE_META.SP.label)) )
+          ),
+          h("div", {className:"shame-panel"},
+            h("div", {className:"shame-head"}, h("div", {className:"shame-title"}, "SHAME DAYS"), h("div", {className:"shame-value"}, String(state.shameDays || 0))),
+            h("div", {className:"shame-sub"}, `سلسلة 100% الحالية: ${state.perfectStreak || 0}/10`),
+            h("div", {className:"note", style:{marginTop:"10px"}}, "• أيام العار: هي الأيام التي ينتهي فيها اليوم و TODAY PROGRESS = 0%."),
+            h("div", {className:"note"}, "• يزيد العداد +1 عند كل يوم عار، بما في ذلك الأيام التي لم يدخل فيها المستخدم للموقع عدة أيام."),
+            h("div", {className:"note"}, "• إذا حققت 10 أيام متتالية كاملة 100% TODAY PROGRESS، يتم حذف 1 من SHAME DAYS.")
+          ),
+          h("div", {className:"card"},
+            h("div", {className:"label"}, "SYSTEM NOTES"),
+            h("div", {className:"note"}, "• اليوم يُغلق تلقائيًا عند 00:00 ويحفظ النتائج."),
+            h("div", {className:"note"}, "• الغياب: يُحسب كفشل كامل لكل يوم فات (No-Mercy)، وهذا يشمل أيضًا SHAME DAYS."),
+            h("div", {className:"note"}, "• HP Rule: إذا ≥ 70% ⇒ +6 HP + يُحسب يوم التزام. إذا بين 50% و 69% ⇒ -4 HP. إذا < 50% ⇒ -12 HP."),
+            h("div", {className:"note"}, "• إذا HP وصل 0 ⇒ قفل 24 ساعة يبدأ عند عودتك."),
+            h("div", {className:"note"}, "• Net EXP: إذا ≥70% تُضاف EXP اليوم، وإذا <70% تُخصم EXP بعقوبة قاسية تزيد مع الـ Level."),
+            h("div", {className:"note"}, "• RANK حسب أيام الالتزام: D=7، C=30، B=90، A=180، S=365."),
+            h("div", {className:"note"}, "• عقوبة الرانك عند عدم الالتزام: تنقص أيام الالتزام حسب رتبتك (E=0, D=1, C=3, B=7, A=14, S=30)."),
+            h("div", {className:"note"}, "• XX: نوع مهام سيئ. عند تسجيله كمنجَز مرة واحدة على الأقل في نفس اليوم، يخصم 50% ثابتة مباشرة من TODAY PROGRESS.")
+          )
+        )
+      );
+    }
+
+    function ManualPage(){
+      return h("div", {className:"manual-layout"},
+        h("section", null,
+          h("div", {className:"card"}, h("div", {className:"label"}, "MANUAL"), h("div", {className:"section-title"}, "كتيب التعليمات"), h("div", {className:"manual-highlight"}, "هذا النظام ليس تطبيق ملاحظات عادي، بل نظام تقييم يومي صارم. كل يوم يُقاس بالنسبة المئوية، ثم تتحول النتيجة إلى HP و EXP و Commit Days و Shame Days."),
+            h("div", {className:"manual-list"},
+              h("div", {className:"manual-step"}, h("div", {className:"manual-step-title"}, "▸ الخطوة الأولى: إضافة المهام"), h("div", {className:"manual-step-text"}, "في لوحة النظام، ستجد قسمًا بعنوان \"ADD TASK\". حدد اسم المهمة، العدد المستهدف (مثل عدد الصفحات أو التكرارات)، الأهمية (من 1 إلى 5، حيث 5 هي الأعلى وزنًا)، ثم النوع المناسب (PH للجسم، IQ للعقل، SP للروح، أو XX للعادة السيئة). اضغط على زر + الأخضر لإضافتها إلى قائمة مهام اليوم.") ),
+              h("div", {className:"manual-step"}, h("div", {className:"manual-step-title"}, "▸ الخطوة الثانية: تحديث الإنجاز اليومي"), h("div", {className:"manual-step-text"}, "خلال يومك، عدّل قيمة \"Done\" بجانب كل مهمة. القيمة تتراوح من صفر حتى الهدف المحدد. النظام يحسب تلقائيًا النسبة المئوية لإنجاز كل مهمة ويزنها حسب أهميتها. شريط التقدم ونسبة TODAY PROGRESS ستتغير في الوقت الفعلي لتعكس مدى تقدمك الحقيقي.") ),
+              h("div", {className:"manual-step"}, h("div", {className:"manual-step-title"}, "▸ الخطوة الثالثة: فهم تأثير المهمة السلبية (XX)"), h("div", {className:"manual-step-text"}, "إذا أضفت مهمة من نوع XX (عادة سيئة) وسجلت فيها أي إنجاز (أي جعلت Done أكبر من صفر)، فسيتم خصم 50% مباشرة من نسبة TODAY PROGRESS. هذا يمثل تأثير هذه العادة السلبية على تقدمك العام. استخدم هذا النوع بحذر.") ),
+              h("div", {className:"manual-step"}, h("div", {className:"manual-step-title"}, "▸ الخطوة الرابعة: إغلاق اليوم التلقائي والحساب"), h("div", {className:"manual-step-text"}, "لا تحتاج إلى الضغط على زر حفظ. النظام يراقب الساعة. عند منتصف الليل تمامًا (00:00)، يتم إغلاق اليوم الحالي تلقائيًا. يتم حساب النتيجة النهائية لتقدم اليوم، وتُطبق جميع القوانين (تغيير HP، EXP، أيام الالتزام، أيام العار). تظهر النتائج فورًا في البطاقات والإحصائيات. إذا غبت عن الموقع لعدة أيام، سيقوم النظام عند عودتك بمحاكاة كل الأيام الفائتة ويعتبرها أيام فشل كامل.") )
+            )
+          ),
+          h("div", {className:"card"}, h("div", {className:"label"}, "SCORING"), h("div", {className:"section-title"}, "آلية التقييم والنتائج"), h("div", {className:"manual-grid"}, h("div", {className:"note"}, "• الأهمية: تؤثر بشكل مباشر على وزن المهمة في حساب التقدم. مهمة بوزن 5 تساهم بخمسة أضعاف مهمة بوزن 1."), h("div", {className:"note"}, "• الهدف (Target): هو السقف الأعلى للإنجاز. أي زيادة عن الهدف لا تُحتسب."), h("div", {className:"note"}, "• الأنواع الإيجابية (PH, IQ, SP): تساهم في رفع نسبة التقدم وتُضاف إلى إحصائياتك الكلية في الرادار."), h("div", {className:"note"}, "• الأنواع السلبية (XX): لا تساهم في التقدم الإيجابي، بل تخصم من النسبة النهائية.") ), h("div", {className:"manual-highlight"}, "🔹 نقطة النجاح الحقيقية هي تحقيق 70% أو أكثر في TODAY PROGRESS. أي شيء أقل من ذلك يعتبر فشلًا يترتب عليه عقوبات على جميع الأصعدة (HP، EXP، أيام الالتزام).") ),
+          h("div", {className:"card"}, h("div", {className:"label"}, "HP / LOCK"), h("div", {className:"section-title"}, "نظام نقاط الحياة (HP) والقفل"), h("div", {className:"manual-list"}, h("div", {className:"manual-step"}, h("div", {className:"manual-step-title"}, "✓ النجاح (≥ 70%)"), h("div", {className:"manual-step-text"}, "يتم منحك +6 HP. وتزداد نقاط حياتك، مما يعكس استقرارك وتقدمك.") ), h("div", {className:"manual-step"}, h("div", {className:"manual-step-title"}, "⚠ الفشل المتوسط (50% - 69%)"), h("div", {className:"manual-step-text"}, "يتم خصم 4 HP. هذا مؤشر على وجود تقصير يحتاج إلى معالجة.") ), h("div", {className:"manual-step"}, h("div", {className:"manual-step-title"}, "❌ الفشل القاسي (< 50%)"), h("div", {className:"manual-step-text"}, "يتم خصم 12 HP. هذا يمثل انهيارًا في الأداء اليومي.") ), h("div", {className:"manual-step"}, h("div", {className:"manual-step-title"}, "🔒 القفل عند الوصول للصفر"), h("div", {className:"manual-step-text"}, "إذا وصلت HP إلى 0، يتم تفعيل القفل لمدة 24 ساعة كاملة. خلال هذه الفترة، لن تتمكن من تعديل أي مهمة أو إضافة مهام جديدة. ستظهر رسالة واضحة تخبرك بالوقت المتبقي لرفع القفل. هذه فترة إجبارية للتفكير والاستراحة.") ) ) )
+        ),
+        h("aside", null,
+          h("div", {className:"card"}, h("div", {className:"label"}, "EXP / LEVEL"), h("div", {className:"section-title"}, "الخبرة (EXP) والمستوى (Level)"), h("div", {className:"note"}, "• في حالة النجاح (≥70%): يتم إضافة قيمة EXP المحسوبة بناءً على تقدمك الفعلي إلى رصيد Net EXP الخاص بك."), h("div", {className:"note"}, "• في حالة الفشل (<70%): لا تُضاف EXP، بل يتم خصم عقوبة قاسية من Net EXP. قيمة هذه العقوبة تزداد كلما ارتفع مستواك، مما يجعل التقدم في المستويات العالية أكثر تحديًا."), h("div", {className:"note"}, "• المستوى (Level) يتم حسابه تلقائيًا بناءً على إجمالي Net EXP. كلما زاد EXP، ارتفع مستوى شخصيتك. الفشل المتكرر قد يؤدي إلى انخفاض المستوى.") ),
+          h("div", {className:"card"}, h("div", {className:"label"}, "COMMIT / RANK"), h("div", {className:"section-title"}, "أيام الالتزام والرتب"), h("div", {className:"note"}, "• عند تحقيق النجاح (≥70%)، يزداد رصيد Commit Days الخاص بك بمقدار يوم واحد."), h("div", {className:"note"}, "• عند الفشل (<70%)، لا تقتصر العقوبة على عدم إضافة يوم، بل يتم خصم أيام من Commit Days وفقًا لرتبتك الحالية:"), h("div", {className:"manual-grid"}, h("div", {className:"note"}, "الرتبة E ← خصم 0"), h("div", {className:"note"}, "الرتبة D ← خصم 1"), h("div", {className:"note"}, "الرتبة C ← خصم 3"), h("div", {className:"note"}, "الرتبة B ← خصم 7"), h("div", {className:"note"}, "الرتبة A ← خصم 14"), h("div", {className:"note"}, "الرتبة S ← خصم 30") ), h("div", {className:"manual-highlight"}, "كلما ارتفعت رتبتك، أصبح الحفاظ عليها أصعب. هذا يعني أن النجاح في الرتب العليا يتطلب التزامًا حقيقيًا وليس مجرد تقدم سطحي.") ),
+          h("div", {className:"card"}, h("div", {className:"label"}, "SHAME DAYS"), h("div", {className:"section-title"}, "أيام العار"), h("div", {className:"note"}, "• تُحتسب \"يوم عار\" (Shame Day) في حال انتهى اليوم وكانت نسبة TODAY PROGRESS صفرًا تمامًا (0%)."), h("div", {className:"note"}, "• أي غياب عن الموقع لعدة أيام سيؤدي إلى إضافة يوم عار عن كل يوم غياب، لأن النظام يعتبره يومًا بلا أي إنجاز."), h("div", {className:"note"}, "• يوجد نظام مكافأة لتقليص أيام العار: إذا استطعت تحقيق 10 أيام متتالية بنسبة 100% كاملة، سيتم حذف يوم عار واحد من سجلك."), h("div", {className:"manual-warning"}, "Shame Days ليست مجرد رقم. إنها تذكير صارم بعدد الأيام التي مرت دون أي جهد. الهدف هو تقليل هذا الرقم إلى أدنى حد.") ),
+          h("div", {className:"card"}, h("div", {className:"label"}, "STORAGE"), h("div", {className:"section-title"}, "حفظ البيانات"), h("div", {className:"note"}, "البيانات محفوظة في Cloud Firestore وتظل مرتبطة بحسابك."), h("div", {className:"note"}, "يمكنك تسجيل الدخول من أي جهاز واستعادة تقدمك بالكامل."), h("div", {className:"note"}, "لا يوجد حفظ محلي (localStorage)، كل شيء عبر السحابة.") )
+        )
+      );
+    }
+
+    function LoginPage({ onLoginSuccess }) {
+      const [email, setEmail] = useState("");
+      const [password, setPassword] = useState("");
+      const [error, setError] = useState("");
+      const [loading, setLoading] = useState(false);
+      const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError("");
+        setLoading(true);
+        try {
+          await auth.signInWithEmailAndPassword(email, password);
+          onLoginSuccess();
+        } catch(err){
+          setError(err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+      return h("div", {className:"login-container"},
+        h("div", {className:"login-card"},
+          h("div", {className:"login-title"}, "RISE SYSTEM™"),
+          h("div", {className:"login-sub"}, "تسجيل الدخول إلى حسابك"),
+          h("form", {onSubmit: handleSubmit},
+            h("input", {className:"login-input", type:"email", placeholder: "البريد الإلكتروني", value: email, onChange: e=>setEmail(e.target.value), required: true}),
+            h("input", {className:"login-input", type:"password", placeholder: "كلمة المرور", value: password, onChange: e=>setPassword(e.target.value), required: true}),
+            h("button", {className:"login-btn", type:"submit", disabled: loading}, loading ? "جاري..." : "دخول"),
+            error && h("div", {className:"login-error"}, error)
+          )
+        )
+      );
+    }
+
+    function App(){
+      const [user, setUser] = useState(null);
+      const [loading, setLoading] = useState(true);
+      const [loadError, setLoadError] = useState(null);
+      const [state, setState] = useState(null);
+      const [page, setPage] = useState("dashboard");
+      const [countdownMs, setCountdownMs] = useState(msToMidnight());
+      const [glitchIndex, setGlitchIndex] = useState(1);
+      const [newTitle, setNewTitle] = useState("");
+      const [newTarget, setNewTarget] = useState(1);
+      const [newImportance, setNewImportance] = useState(3);
+      const [newType, setNewType] = useState("PH");
+
+      const forceSignOutIfDeleted = async (currentUser) => {
+        if (!currentUser) return;
+        try {
+          await currentUser.getIdToken(true);
+        } catch (error) {
+          if (error.code === 'auth/user-not-found' || error.code === 'auth/user-disabled') {
+            await auth.signOut();
+          }
+        }
+      };
+
+      useEffect(() => {
+        const unsubscribe = auth.onAuthStateChanged(async (usr) => {
+          setLoadError(null);
+          if (usr) {
+            try {
+              setUser(usr);
+              const docRef = db.collection("users").doc(usr.uid);
+              const docSnap = await docRef.get();
+              let loadedState;
+              if (docSnap.exists) {
+                loadedState = docSnap.data().state;
+                if (loadedState.tasks && Array.isArray(loadedState.tasks)) {
+                  loadedState.tasks = loadedState.tasks.map(t => ({ ...t, done: t.done !== undefined ? t.done : 0 }));
+                }
+                const today = todayKeyLocal();
+                if (loadedState.day !== today) {
+                  loadedState = finalizeDayNoMercy(loadedState);
+                  loadedState.day = today;
+                }
+              } else {
+                loadedState = createInitialState();
+                await docRef.set({ state: loadedState });
+              }
+              setState(loadedState);
+            } catch (err) {
+              console.error("Load error:", err);
+              setLoadError("فشل تحميل البيانات من Firestore. تأكد من الاتصال بالإنترنت.");
+            } finally {
+              setLoading(false);
+            }
+          } else {
+            setUser(null);
+            setState(null);
+            setLoading(false);
+          }
+        });
+        return () => unsubscribe();
+      }, []);
+
+      const saveTimeout = useRef(null);
+      useEffect(() => {
+        if (!user || state === null) return;
+        if (saveTimeout.current) clearTimeout(saveTimeout.current);
+        saveTimeout.current = setTimeout(async () => {
+          try {
+            await db.collection("users").doc(user.uid).update({ state: state });
+          } catch (err) {
+            console.error("Save error:", err);
+            if (err.code === 'permission-denied') auth.signOut();
+          }
+        }, 500);
+        return () => { if (saveTimeout.current) clearTimeout(saveTimeout.current); };
+      }, [state, user]);
+
+      useEffect(() => {
+        if (!user) return;
+        const interval = setInterval(() => forceSignOutIfDeleted(user), 5000);
+        return () => clearInterval(interval);
+      }, [user]);
+
+      useEffect(() => {
+        const t = setInterval(() => setCountdownMs(msToMidnight()), 1000);
+        return () => clearInterval(t);
+      }, []);
+      useEffect(() => {
+        const iv = setInterval(() => setGlitchIndex(prev => (prev + 1) % GLITCH_WORDS.length), 1800);
+        return () => clearInterval(iv);
+      }, []);
+
+      const finalizeRef = useRef(() => {});
+      finalizeRef.current = () => {
+        if (state !== null) setState(prev => finalizeDayNoMercy(prev));
+      };
+      useEffect(() => {
+        let to = null;
+        function schedule(){
+          if(to) clearTimeout(to);
+          const ms = msToMidnight();
+          to = setTimeout(() => { finalizeRef.current(); schedule(); }, ms + 120);
+        }
+        schedule();
+        const iv = setInterval(() => {
+          if (state !== null && todayKeyLocal() !== state.day) finalizeRef.current();
+        }, 20000);
+        const onVis = () => {
+          if (document.visibilityState === "visible" && state !== null && todayKeyLocal() !== state.day) finalizeRef.current();
+        };
+        const onFocus = () => {
+          if (state !== null && todayKeyLocal() !== state.day) finalizeRef.current();
+        };
+        document.addEventListener("visibilitychange", onVis);
+        window.addEventListener("focus", onFocus);
+        return () => {
+          if(to) clearTimeout(to);
+          clearInterval(iv);
+          document.removeEventListener("visibilitychange", onVis);
+          window.removeEventListener("focus", onFocus);
+        };
+      }, [state]);
+
+      const updateTask = (id, patch) => setState(prev => prev ? { ...prev, tasks: prev.tasks.map(t => t.id === id ? { ...t, ...patch } : t) } : prev);
+      const removeTask = (id) => setState(prev => prev ? { ...prev, tasks: prev.tasks.filter(t => t.id !== id) } : prev);
+      const addTask = (title, target, importance, type) => {
+        const clean = String(title || "").trim();
+        if (!clean) return;
+        const targetNum = typeof target === "number" ? target : 1;
+        setState(prev => prev ? { ...prev, tasks: [...prev.tasks, { id: `t${Math.random().toString(16).slice(2)}`, title: clean, target: clamp(targetNum,1,9999), importance: Number(importance), type, done: 0 }] } : prev);
+      };
+      const handleLogout = async () => {
+        await auth.signOut();
+        setUser(null);
+        setState(null);
+      };
+
+      if (loading) return h("div", { className: "loading" }, "جاري التحميل...");
+      if (loadError) return h("div", { className: "error-loading" }, loadError);
+      if (!user || state === null) return h(LoginPage, { onLoginSuccess: () => {} });
+
+      const level = expToLevel(state.totalExp);
+      const computed = computeToday(state.tasks, level.level);
+      const rank = rankFromStreak(state.commitDays);
+      const isLocked = state.lockedUntil ? Date.now() < state.lockedUntil : false;
+      const lockRemaining = (() => {
+        if (!state.lockedUntil) return null;
+        const ms = state.lockedUntil - Date.now();
+        if (ms <= 0) return null;
+        return { hh: Math.floor(ms / 3600000), mm: Math.floor((ms % 3600000) / 60000) };
+      })();
+      const quote = randomQuote(state.day);
+      const radarLive = (() => {
+        const g = state.lifetimeByType, p = state.lifetimePotentialByType;
+        const liveGain = { PH: g.PH + computed.byType.PH, IQ: g.IQ + computed.byType.IQ, SP: g.SP + computed.byType.SP };
+        const livePot = { PH: p.PH + computed.byTypePotential.PH, IQ: p.IQ + computed.byTypePotential.IQ, SP: p.SP + computed.byTypePotential.SP };
+        const ph = livePot.PH > 0 ? liveGain.PH / livePot.PH : 0;
+        const iq = livePot.IQ > 0 ? liveGain.IQ / livePot.IQ : 0;
+        const sp = livePot.SP > 0 ? liveGain.SP / livePot.SP : 0;
+        return { PH: Math.round(ph * 100), IQ: Math.round(iq * 100), SP: Math.round(sp * 100) };
+      })();
+      const commitPoints = (state.commitHistory || []).map((x, i) => ({ x: i, y: Number(x.v || 0), d: x.d }));
+      const expPoints = (state.expHistory || []).map((x, i) => ({ x: i, y: Number(x.v || 0), d: x.d }));
+      const expPenaltyPreview = expPenaltyByLevel(level.level);
+      const currentWord = GLITCH_WORDS[glitchIndex];
+      const isSelfWord = currentWord === "نفسك";
+
+      return h("div", {className:"wrap"},
+        h("header", {className:"header"},
+          h("div", {className:"hero-glow"}),
+          h("div", {className:"top-row"},
+            h("div", null,
+              h("div", {className:"badge"}, h("span", {className:"dot"}), h("span", {className:"brand-name"}, "RISE SYSTEM™"), h("span", {className:"brand-sub"}, "No-Mercy Mode")),
+              h("h1", {className:"title"}, "طوّر شخصيتك… مثل ", h("span", {className:`glitch-word ${isSelfWord ? "self-word" : ""}`, "data-text": currentWord}, currentWord)),
+              h("p", {className:"subtitle"}, "لوحة التطوير اليومية – حفظ تلقائي في Cloud Firestore."),
+              h("div", {className:"chips"}, h("div", {className:"chip"}, h("span", null, "اليوم:"), h("span", {className:"chip-mono"}, state.day)), state.lastCommitDay ? h("div", {className:"chip"}, h("span", null, "آخر يوم محسوب:"), h("span", {className:"chip-mono"}, state.lastCommitDay)) : null),
+              h("div", {className:"header-actions"},
+                h("button", {className:`nav-btn ${page==="dashboard" ? "active" : ""}`, onClick:()=>setPage("dashboard")}, "لوحة النظام"),
+                h("button", {className:`nav-btn ${page==="manual" ? "active" : ""}`, onClick:()=>setPage("manual")}, "كتيب التعليمات"),
+                h("button", {className:"nav-btn", onClick:handleLogout}, "تسجيل الخروج")
+              )
+            ),
+            h("div", {className:"stats"},
+              h("div", {className:"stat stat-hp"}, h("div", {className:"stat-k"}, "HP"), h("div", {className:"stat-v"}, `${state.hp}/100`), h("div", {className:"stat-s"}, state.hp===0 ? "قفل 24 ساعة" : (state.hp>=70 ? "مستقر" : "خطر"))),
+              h("div", {className:"stat stat-level"}, h("div", {className:"stat-k"}, "LEVEL"), h("div", {className:"stat-v"}, String(level.level)), h("div", {className:"stat-s"}, `${level.expIntoLevel}/${level.expForNext} EXP`)),
+              h("div", {className:"stat stat-rank"}, h("div", {className:"stat-k"}, "RANK"), h("div", {className:"stat-v"}, rank.label), h("div", {className:"stat-s"}, `${state.commitDays} يوم التزام`))
+            )
+          )
+        ),
+        page === "dashboard"
+          ? h(DashboardPage, { state, setState, level, computed, rank, isLocked, lockRemaining, countdownMs, quote, radarLive, commitPoints, expPoints, expPenaltyPreview, newTitle, setNewTitle, newTarget, setNewTarget, newImportance, setNewImportance, newType, setNewType, addTask, updateTask, removeTask })
+          : h(ManualPage),
+        h("footer", {className:"footer"}, h("div", null, `متصل كـ: ${user.email}`), h("div", null, "البيانات محفوظة في Cloud Firestore — تدوم بعد الرفريش."), h("div", null, "RISE SYSTEM™ — No-Mercy Mode."))
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(h(App));
+  </script>
+</body>
+</html>
