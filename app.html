@@ -547,6 +547,7 @@
       return live;
     }
 
+    // ⭐️ DashboardPage مع إضافة تنبيهات شرط المهام الأربعة
     function DashboardPage(props){
       const { state, setState, level, computed, rank, isLocked, lockRemaining, countdownMs, quote, radarLive, commitPoints, expPoints, expPenaltyPreview,
         newTitle, setNewTitle, newTarget, setNewTarget, newImportance, setNewImportance, newType, setNewType, addTask, updateTask, removeTask } = props;
@@ -559,8 +560,18 @@
           ),
           h("div", {className:"card"},
             h("div", {className:"progress-row"},
-              h("div", null, h("div", {className:"label"}, "TODAY PROGRESS"), h("div", {className:"big"}, `${pct(computed.completion)}%`), h("div", {className:"muted"}, `EXP اليوم (إذا ≥70%): +${Math.round(computed.exp)} / سقف اليوم: ${Math.round(computed.expMax)}`), h("div", {className:"muted", style:{marginTop:6}}, `عقوبة Net EXP إذا <70% (قاسية حسب Level): -${expPenaltyPreview}`) ),
-              h("div", {className:"progress-side"}, h("div", {className:"bar"}, h("div", {className:"fill", style:{width:`${pct(computed.completion)}%`}})), h("div", {className:"tiny", style:{marginTop:8}}, h("span", null, "≥ 70% يزيد HP + يُحسب يوم"), h("span", null, "< 70% = خصم Net EXP")) )
+              h("div", null,
+                h("div", {className:"label"}, "TODAY PROGRESS"),
+                h("div", {className:"big"}, `${pct(computed.completion)}%`),
+                h("div", {className:"muted"}, `EXP اليوم (إذا ≥70%): +${Math.round(computed.exp)} / سقف اليوم: ${Math.round(computed.expMax)}`),
+                h("div", {className:"muted", style:{marginTop:6}}, `عقوبة Net EXP إذا <70% (قاسية حسب Level): -${expPenaltyPreview}`),
+                // 🆕 تنبيه وردي لشرط المهام الأربعة
+                h("div", {style:{marginTop:8, color:"#f0b3ff", fontSize:12, background:"rgba(240,179,255,0.1)", padding:"6px 12px", borderRadius:"12px"}}, "⚠️ شرط أساسي: يجب أن يكون لديك مهمة واحدة على الأقل من كل نوع (PH, IQ, SP, XX) في قائمة اليوم، وإلا لن يُحتسب اليوم ناجحاً حتى لو وصلت 100%")
+              ),
+              h("div", {className:"progress-side"},
+                h("div", {className:"bar"}, h("div", {className:"fill", style:{width:`${pct(computed.completion)}%`}})),
+                h("div", {className:"tiny", style:{marginTop:8}}, h("span", null, "≥ 70% + كل الأنواع = يوم ناجح"), h("span", null, "أي نقص = خصم Net EXP"))
+              )
             ),
             h("div", {className:"task-list"}, state.tasks.map(t=>{
               const target = Math.max(1, Number(t.target||1));
@@ -633,6 +644,8 @@
             h("div", {className:"note"}, "• RANK حسب أيام الالتزام: D=7، C=30، B=90، A=180، S=365."),
             h("div", {className:"note"}, "• عقوبة الرانك عند عدم الالتزام: تنقص أيام الالتزام حسب رتبتك (E=0, D=1, C=3, B=7, A=14, S=30)."),
             h("div", {className:"note"}, "• XX: نوع مهام سيئ. عند تسجيله كمنجَز مرة واحدة على الأقل في نفس اليوم، يخصم 50% ثابتة مباشرة من TODAY PROGRESS."),
+            // 🆕 ملاحظة وردية في SYSTEM NOTES
+            h("div", {className:"note", style:{color:"#f0b3ff", borderColor:"rgba(240,179,255,0.5)", background:"rgba(240,179,255,0.08)"}}, "• شرط اليوم الناجح (مهم!): حتى لو تقدمك ≥70%، لن يُحتسب اليوم ناجحاً إذا لم يكن لديك مهمة واحدة على الأقل من كل نوع (PH, IQ, SP, XX) في قائمة اليوم."),
             h("div", {className:"note"}, "• الرادار الآن يعكس توقعات حية بناءً على ما أنجزته اليوم. الإهمال يظهر فوراً."),
           )
         )
@@ -656,7 +669,7 @@
         ),
         h("aside", null,
           h("div", {className:"card"}, h("div", {className:"label"}, "EXP / LEVEL"), h("div", {className:"section-title"}, "الخبرة (EXP) والمستوى (Level)"), h("div", {className:"note"}, "• في حالة النجاح (≥70%): يتم إضافة قيمة EXP المحسوبة بناءً على تقدمك الفعلي إلى رصيد Net EXP الخاص بك."), h("div", {className:"note"}, "• في حالة الفشل (<70%): لا تُضاف EXP، بل يتم خصم عقوبة قاسية من Net EXP. قيمة هذه العقوبة تزداد كلما ارتفع مستواك، مما يجعل التقدم في المستويات العالية أكثر تحديًا."), h("div", {className:"note"}, "• المستوى (Level) يتم حسابه تلقائيًا بناءً على إجمالي Net EXP. كلما زاد EXP، ارتفع مستوى شخصيتك. الفشل المتكرر قد يؤدي إلى انخفاض المستوى.") ),
-          h("div", {className:"card"}, h("div", {className:"label"}, "COMMIT / RANK"), h("div", {className:"section-title"}, "أيام الالتزام والرتب"), h("div", {className:"note"}, "• عند تحقيق النجاح (≥70%)، يزداد رصيد Commit Days الخاص بك بمقدار يوم واحد."), h("div", {className:"note"}, "• عند الفشل (<70%)، لا تقتصر العقوبة على عدم إضافة يوم، بل يتم خصم أيام من Commit Days وفقًا لرتبتك الحالية:"), h("div", {className:"manual-grid"}, h("div", {className:"note"}, "الرتبة E ← خصم 0"), h("div", {className:"note"}, "الرتبة D ← خصم 1"), h("div", {className:"note"}, "الرتبة C ← خصم 3"), h("div", {className:"note"}, "الرتبة B ← خصم 7"), h("div", {className:"note"}, "الرتبة A ← خصم 14"), h("div", {className:"note"}, "الرتبة S ← خصم 30") ), h("div", {className:"manual-highlight"}, "كلما ارتفعت رتبتك، أصبح الحفاظ عليها أصعب. هذا يعني أن النجاح في الرتب العليا يتطلب التزامًا حقيقيًا وليس مجرد تقدم سطحي.") ),
+          h("div", {className:"card"}, h("div", {className:"label"}, "COMMIT / RANK"), h("div", {className:"section-title"}, "أيام الالتزام والرتب"), h("div", {className:"note"}, "• عند تحقيق النجاح (≥70%): يزداد رصيد Commit Days الخاص بك بمقدار يوم واحد."), h("div", {className:"note"}, "• عند الفشل (<70%): لا تقتصر العقوبة على عدم إضافة يوم، بل يتم خصم أيام من Commit Days وفقًا لرتبتك الحالية:"), h("div", {className:"manual-grid"}, h("div", {className:"note"}, "الرتبة E ← خصم 0"), h("div", {className:"note"}, "الرتبة D ← خصم 1"), h("div", {className:"note"}, "الرتبة C ← خصم 3"), h("div", {className:"note"}, "الرتبة B ← خصم 7"), h("div", {className:"note"}, "الرتبة A ← خصم 14"), h("div", {className:"note"}, "الرتبة S ← خصم 30") ), h("div", {className:"manual-highlight"}, "كلما ارتفعت رتبتك، أصبح الحفاظ عليها أصعب. هذا يعني أن النجاح في الرتب العليا يتطلب التزامًا حقيقيًا وليس مجرد تقدم سطحي.") ),
           h("div", {className:"card"}, h("div", {className:"label"}, "SHAME DAYS"), h("div", {className:"section-title"}, "أيام العار"), h("div", {className:"note"}, "• تُحتسب \"يوم عار\" (Shame Day) في حال انتهى اليوم وكانت نسبة TODAY PROGRESS صفرًا تمامًا (0%)."), h("div", {className:"note"}, "• أي غياب عن الموقع لعدة أيام سيؤدي إلى إضافة يوم عار عن كل يوم غياب، لأن النظام يعتبره يومًا بلا أي إنجاز."), h("div", {className:"note"}, "• يوجد نظام مكافأة لتقليص أيام العار: إذا استطعت تحقيق 10 أيام متتالية بنسبة 100% كاملة، سيتم حذف يوم عار واحد من سجلك."), h("div", {className:"manual-warning"}, "Shame Days ليست مجرد رقم. إنها تذكير صارم بعدد الأيام التي مرت دون أي جهد. الهدف هو تقليل هذا الرقم إلى أدنى حد.") ),
           h("div", {className:"card"}, h("div", {className:"label"}, "STORAGE"), h("div", {className:"section-title"}, "حفظ البيانات"), h("div", {className:"note"}, "البيانات محفوظة في Cloud Firestore وتظل مرتبطة بحسابك."), h("div", {className:"note"}, "يمكنك تسجيل الدخول من أي جهاز واستعادة تقدمك بالكامل."), h("div", {className:"note"}, "لا يوجد حفظ محلي (localStorage)، كل شيء عبر السحابة.") )
         )
