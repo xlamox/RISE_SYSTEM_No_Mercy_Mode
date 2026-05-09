@@ -55,8 +55,8 @@
   </div>
 
   <script>
-    // رابط لوحة التحكم (التطبيق الرئيسي)
-    const DASHBOARD_URL = "index.html";
+    // ✅ المسار الصحيح لملف التطبيق الرئيسي
+    const DASHBOARD_URL = "app.html";
     const OUO_DOMAIN = "ouo.io";
 
     const referrer = document.referrer;
@@ -67,6 +67,7 @@
         <h2>✅ تم التحقق</h2>
         <p>جاري توجيهك إلى لوحة التطوير...</p>
       `;
+      // ينتظر لحظة ثم يذهب للتطبيق
       setTimeout(() => { window.location.href = DASHBOARD_URL; }, 800);
     } else {
       gateCard.innerHTML = `
