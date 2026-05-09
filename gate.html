@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>بوابة الدخول | RISE SYSTEM</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'IBM Plex Sans Arabic', sans-serif;
+      background: #05060f;
+      color: #eef5ff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      text-align: center;
+    }
+    .gate-card {
+      background: rgba(0,229,255,0.03);
+      border: 1px solid rgba(0,229,255,0.3);
+      border-radius: 28px;
+      padding: 40px 28px;
+      max-width: 520px;
+      width: 90%;
+    }
+    h2 { font-family: 'Oxanium', sans-serif; color: #0af; margin-bottom: 10px; }
+    p { color: rgba(255,255,255,0.7); margin-bottom: 20px; line-height: 1.7; font-size: 15px; }
+    .btn {
+      display: inline-block;
+      background: linear-gradient(135deg, #0af, #a855f7);
+      color: #fff;
+      padding: 14px 32px;
+      border-radius: 50px;
+      font-size: 16px;
+      font-weight: bold;
+      text-decoration: none;
+      box-shadow: 0 0 30px rgba(0,229,255,0.4);
+    }
+    .error-box {
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: 16px;
+      padding: 20px;
+      margin-top: 16px;
+      color: #ef4444;
+    }
+    .error-box a { color: #fbbf24; text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="gate-card" id="gateCard">
+    <h2>⚡ جاري التحقق...</h2>
+    <p>يرجى الانتظار لحظة...</p>
+  </div>
+
+  <script>
+    const DASHBOARD_URL = "index.html";        // صفحة التطبيق
+    const OUO_DOMAIN = "ouo.io";
+
+    const referrer = document.referrer;
+    const gateCard = document.getElementById('gateCard');
+
+    if (referrer.includes(OUO_DOMAIN)) {
+      // ✅ قادم من Ouo.io
+      gateCard.innerHTML = `
+        <h2>✅ تم التحقق</h2>
+        <p>جاري توجيهك إلى لوحة التطوير...</p>
+      `;
+      setTimeout(() => { window.location.href = DASHBOARD_URL; }, 800);
+    } else {
+      // ❌ دخل مباشرة
+      gateCard.innerHTML = `
+        <h2>🚫 وصول غير مصرح به</h2>
+        <p>يجب المرور عبر بوابة الدخول الرسمية.</p>
+        <div class="error-box">
+          <p>الرجاء استخدام الرابط الرسمي:</p>
+          <a href="https://ouo.io/Vx8JTrM">https://ouo.io/Vx8JTrM</a>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>
