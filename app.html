@@ -4,9 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=yes, viewport-fit=cover" />
   <title>RISE SYSTEM™ | No Mercy (Firestore)</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@200..800&family=IBM+Plex+Sans+Arabic:wght@100..700&display=swap" rel="stylesheet">
+
   <style>
     * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
     html,body { height:100%; min-height:100vh; min-height:100dvh; overflow-x:hidden; position:relative; scroll-behavior:smooth; }
@@ -337,15 +339,19 @@
     }
   </style>
 </head>
+
 <body>
   <div class="bg-anim"></div>
   <div id="root"></div>
+
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyBPsgxpBN57IMOhCVaKQe2_bwkZ3aEahjA",
@@ -360,8 +366,31 @@
     const auth = firebase.auth();
     auth.setPersistence(firebase.auth.Auth.Persistence.NONE).catch(console.error);
     const db = firebase.firestore();
+
     const h = React.createElement;
     const { useEffect, useMemo, useRef, useState } = React;
+
+    // ---------- ثوابت الجلسة المؤقتة ----------
+    const SESSION_DURATION_MS = 60 * 60 * 1000; // ساعة واحدة
+    const LOGIN_TIMESTAMP_KEY = "rise_login_timestamp";
+
+    function storeLoginTimestamp() {
+      localStorage.setItem(LOGIN_TIMESTAMP_KEY, Date.now().toString());
+    }
+
+    function isSessionValid() {
+      const stored = localStorage.getItem(LOGIN_TIMESTAMP_KEY);
+      if (!stored) return false;
+      const loginTime = parseInt(stored, 10);
+      const now = Date.now();
+      return (now - loginTime) < SESSION_DURATION_MS;
+    }
+
+    function clearSession() {
+      localStorage.removeItem(LOGIN_TIMESTAMP_KEY);
+    }
+
+    // Helper functions
     const TYPE_META = { PH: { label: "قوة جسدية", multiplier: 2.0 }, IQ: { label: "ذكاء وتعلّم", multiplier: 1.7 }, SP: { label: "انضباط وروحانية", multiplier: 1.5 }, XX: { label: "عادة سيئة", multiplier: 0 } };
     const GLITCH_WORDS = ["الأبطال", "الأنمي", "قدوتك", "نفسك"];
     const RANKS = [{ key: "E", days: 0, label: "E" },{ key: "D", days: 7, label: "D" },{ key: "C", days: 30, label: "C" },{ key: "B", days: 90, label: "B" },{ key: "A", days: 180, label: "A" },{ key: "S", days: 365, label: "S Elite" }];
@@ -397,6 +426,7 @@
       totals.expMax=dailyMax; totals.weightedProgress=wSum>0?totals.completion:0; totals.exp=Math.round(totals.weightedProgress*dailyMax);
       return totals;
     }
+
     function polygon(ctx,cx,cy,r,sides,rot){ ctx.beginPath(); for(let i=0;i<sides;i++){ const a=rot+i*(2*Math.PI/sides),x=cx+Math.cos(a)*r,y=cy+Math.sin(a)*r; if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); } ctx.closePath(); }
     function RadarCanvas(props){
       const ref=useRef(null),prevRef=useRef({PH:0,IQ:0,SP:0}),animRef=useRef(null);
@@ -438,6 +468,7 @@
       useEffect(()=>{ const points=props.points||[]; if(animRef.current) cancelAnimationFrame(animRef.current); const start=performance.now(),dur=420; function ease(t){ return 1-Math.pow(1-t,3); } function step(now){ const tt=Math.min(1,(now-start)/dur); draw(points,ease(tt)); if(tt<1) animRef.current=requestAnimationFrame(step); } animRef.current=requestAnimationFrame(step); return ()=>{ if(animRef.current) cancelAnimationFrame(animRef.current); }; },[props.points]);
       return h("div",{className:"chart-wrap"},h("canvas",{ref,width:720,height:280,style:{width:"100%",height:"auto"}}));
     }
+
     function createInitialState() {
       return {
         day: todayKeyLocal(),
@@ -519,6 +550,7 @@
       for(let i=1;i<safeGap;i++){ const dayKey = addDaysKey(prevState.day, i); const currLevel = expToLevel(s.totalExp).level; const totals = computeToday(s.tasks, currLevel); s = closeOneDay(s, dayKey, totals, false, 0); }
       s.day = today; return s;
     }
+
     function computeLiveMomentum(state, computed) {
       const types = ['PH', 'IQ', 'SP'];
       const base = state.currentMomentum || { PH:0, IQ:0, SP:0 };
@@ -543,6 +575,7 @@
       }
       return live;
     }
+
     // ⭐️ DashboardPage
     function DashboardPage(props){
       const { state, setState, level, computed, rank, isLocked, lockRemaining, countdownMs, quote, radarLive, commitPoints, expPoints, expPenaltyPreview,
@@ -633,6 +666,7 @@
         )
       );
     }
+
     function ManualPage(){
       return h("div", {className:"manual-layout"},
         h("section", null,
@@ -656,26 +690,37 @@
         )
       );
     }
-    // ✅ صفحة تسجيل الدخول (نظيفة، تستخدم Ouo.io فقط)
+
+    // ✅ صفحة تسجيل الدخول (منظّفة من أي إعلانات، تستخدم Ouo.io فقط)
     function LoginPage({ onLoginSuccess }) {
       const [email, setEmail] = useState("");
       const [password, setPassword] = useState("");
       const [error, setError] = useState("");
       const [loading, setLoading] = useState(false);
+
       const OUO_GATE = "https://ouo.io/ZtsnI7";
 
       const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
+
         if (!email || !password) {
           setError("يرجى إدخال البريد الإلكتروني وكلمة المرور");
           return;
         }
+
         setLoading(true);
+
         try {
+          // 1. تسجيل الدخول عبر Firebase
           await auth.signInWithEmailAndPassword(email, password);
-          // نجاح الدخول: التوجيه إلى Ouo.io الذي سيمرر المستخدم للإعلانات ثم يعيده إلى gate.html
+
+          // 2. حفظ توقيت الجلسة
+          storeLoginTimestamp();
+
+          // 3. توجيه إلى بوابة Ouo.io
           window.location.href = OUO_GATE;
+
         } catch (err) {
           setError("فشل تسجيل الدخول: " + err.message);
           setLoading(false);
@@ -696,6 +741,7 @@
       );
     }
 
+    // ⭐️ مكوّن App الرئيسي المعدّل (مع الجلسة المؤقتة)
     function App(){
       const [user, setUser] = useState(null);
       const [loading, setLoading] = useState(true);
@@ -740,6 +786,27 @@
       useEffect(()=>{ const t=setInterval(()=>setCountdownMs(msToMidnight()),1000); return ()=>clearInterval(t); }, []);
       useEffect(()=>{ const iv=setInterval(()=>setGlitchIndex(prev=>(prev+1)%GLITCH_WORDS.length),1800); return ()=>clearInterval(iv); }, []);
 
+      // ✅ مؤقت تسجيل الخروج التلقائي بعد ساعة
+      useEffect(() => {
+        if (!user) return;
+        const stored = localStorage.getItem(LOGIN_TIMESTAMP_KEY);
+        if (!stored) {
+          storeLoginTimestamp();
+        }
+        const loginTime = parseInt(stored || Date.now().toString(), 10);
+        const elapsed = Date.now() - loginTime;
+        const remaining = Math.max(SESSION_DURATION_MS - elapsed, 0);
+
+        const timeout = setTimeout(() => {
+          auth.signOut();
+          clearSession();
+          setUser(null);
+          setState(null);
+        }, remaining);
+
+        return () => clearTimeout(timeout);
+      }, [user]);
+
       const finalizeRef = useRef(()=>{});
       finalizeRef.current = ()=>{ if(state!==null) setState(prev=>finalizeDayNoMercy(prev)); };
       useEffect(()=>{ let to=null; function schedule(){ if(to)clearTimeout(to); const ms=msToMidnight(); to=setTimeout(()=>{finalizeRef.current();schedule();},ms+120); } schedule(); const iv=setInterval(()=>{ if(state!==null&&todayKeyLocal()!==state.day) finalizeRef.current(); },20000); const onVis=()=>{ if(document.visibilityState==="visible"&&state!==null&&todayKeyLocal()!==state.day) finalizeRef.current(); }; const onFocus=()=>{ if(state!==null&&todayKeyLocal()!==state.day) finalizeRef.current(); }; document.addEventListener("visibilitychange",onVis); window.addEventListener("focus",onFocus); return ()=>{ if(to)clearTimeout(to); clearInterval(iv); document.removeEventListener("visibilitychange",onVis); window.removeEventListener("focus",onFocus); }; },[state]);
@@ -747,10 +814,20 @@
       const updateTask = (id,patch) => setState(prev=>prev?{...prev, tasks:prev.tasks.map(t=>t.id===id?{...t,...patch}:t)}:prev);
       const removeTask = (id) => setState(prev=>prev?{...prev, tasks:prev.tasks.filter(t=>t.id!==id)}:prev);
       const addTask = (title,target,importance,type) => { const clean=String(title||"").trim(); if(!clean) return; const targetNum = typeof target==="number"?target:1; setState(prev=>prev?{...prev, tasks:[...prev.tasks, {id:`t${Math.random().toString(16).slice(2)}`, title:clean, target:clamp(targetNum,1,9999), importance:Number(importance), type, done:0}]}:prev); };
-      const handleLogout = async () => { await auth.signOut(); setUser(null); setState(null); };
+      const handleLogout = async () => { await auth.signOut(); clearSession(); setUser(null); setState(null); };
 
       if(loading) return h("div",{className:"loading"},"جاري التحميل...");
       if(loadError) return h("div",{className:"error-loading"},loadError);
+      
+      // ✅ فحص الجلسة المؤقتة (إذا كان هناك مستخدم من Firebase لكن الجلسة منتهية)
+      if (user && !isSessionValid()) {
+        auth.signOut();
+        clearSession();
+        setUser(null);
+        setState(null);
+        return h("div",{className:"loading"},"انتهت الجلسة...");
+      }
+      
       if(!user||state===null) return h(LoginPage,{onLoginSuccess:()=>{}});
 
       const level = expToLevel(state.totalExp);
