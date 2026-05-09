@@ -45,7 +45,7 @@
       margin-top: 16px;
       color: #ef4444;
     }
-    .error-box a { color: #fbbf24; text-decoration: underline; }
+    .error-box a { color: #fbbf24; text-decoration: underline; font-size: 14px; word-break: break-all; }
   </style>
 </head>
 <body>
@@ -55,27 +55,25 @@
   </div>
 
   <script>
-    const DASHBOARD_URL = "index.html";        // صفحة التطبيق
+    const DASHBOARD_URL = "index.html";
     const OUO_DOMAIN = "ouo.io";
 
     const referrer = document.referrer;
     const gateCard = document.getElementById('gateCard');
 
     if (referrer.includes(OUO_DOMAIN)) {
-      // ✅ قادم من Ouo.io
       gateCard.innerHTML = `
         <h2>✅ تم التحقق</h2>
         <p>جاري توجيهك إلى لوحة التطوير...</p>
       `;
       setTimeout(() => { window.location.href = DASHBOARD_URL; }, 800);
     } else {
-      // ❌ دخل مباشرة
       gateCard.innerHTML = `
         <h2>🚫 وصول غير مصرح به</h2>
         <p>يجب المرور عبر بوابة الدخول الرسمية.</p>
         <div class="error-box">
           <p>الرجاء استخدام الرابط الرسمي:</p>
-          <a href="https://ouo.io/Vx8JTrM">https://ouo.io/Vx8JTrM</a>
+          <a href="https://ouo.io/ZtsnI7">https://ouo.io/ZtsnI7</a>
         </div>
       `;
     }
