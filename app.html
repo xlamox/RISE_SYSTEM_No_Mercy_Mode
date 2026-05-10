@@ -5,13 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=yes, viewport-fit=cover" />
   <title>RISE SYSTEM™ | No Mercy (Firestore)</title>
 
-  <!-- الخطوط والأنماط (كما هي دون تغيير) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@200..800&family=IBM+Plex+Sans+Arabic:wght@100..700&display=swap" rel="stylesheet">
 
   <style>
-    /* ===== جميع الأنماط كما هي بدون تعديل ===== */
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     html, body { height: 100%; min-height: 100vh; min-height: 100dvh; overflow-x: hidden; position: relative; scroll-behavior: smooth; }
     body { margin: 0; padding: 0; font-family: var(--font-sans); color: hsl(var(--foreground)); background: hsl(var(--background)); overflow-x: hidden; width: 100%; position: relative; }
@@ -27,127 +25,375 @@
       --font-sans: "IBM Plex Sans Arabic", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       --font-display: "Oxanium", "IBM Plex Sans Arabic", system-ui, sans-serif;
     }
-    /* جميع الأنماط الأخرى كما هي، لم نحذف شيئاً */
-    .bg-anim{ /* ... */ }
-    /* ... أكمل جميع الأنماط هنا بدون تغيير ... */
-
-    /* إضافة نمط شاشة القفل */
-    .lock-screen {
-      position: fixed;
-      inset: 0;
-      background: #05060f;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 99999;
-      flex-direction: column;
-      text-align: center;
-      padding: 20px;
+    .bg-anim{
+      position:fixed; inset:-18%; z-index:-2;
+      background:
+        radial-gradient(1200px 900px at 20% 25%, hsl(var(--chart-2) / 0.22), transparent 60%),
+        radial-gradient(1100px 850px at 80% 30%, hsl(var(--chart-1) / 0.22), transparent 62%),
+        radial-gradient(1000px 800px at 25% 85%, hsl(var(--chart-3) / 0.18), transparent 60%),
+        radial-gradient(900px 700px at 85% 80%, hsl(var(--chart-4) / 0.10), transparent 62%),
+        linear-gradient(to bottom, hsl(235 35% 6%), hsl(240 32% 7%));
+      background-size: 140% 140%;
+      animation: spaceDrift 18s ease-in-out infinite;
+      transform: translateZ(0);
+      will-change: transform, filter, background-position;
+      pointer-events: none;
     }
-    .lock-card {
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(0,229,255,0.3);
-      border-radius: 24px;
-      padding: 40px 30px;
-      max-width: 480px;
-      width: 90%;
-      backdrop-filter: blur(10px);
+    .bg-anim::before{
+      content:"";
+      position:absolute; inset:0;
+      background:
+        conic-gradient(from 210deg at 50% 50%,
+          transparent 0deg,
+          hsl(var(--chart-1) / 0.07) 70deg,
+          transparent 140deg,
+          hsl(var(--chart-2) / 0.07) 220deg,
+          transparent 360deg);
+      filter: blur(20px);
+      opacity: .95;
+      animation: nebulaSpin 28s linear infinite;
+      mix-blend-mode: screen;
+      pointer-events:none;
     }
-    .lock-title {
-      font-family: 'Oxanium', sans-serif;
-      color: #0af;
-      font-size: 28px;
-      margin-bottom: 10px;
+    .bg-anim::after{
+      content:"";
+      position:absolute; inset:0;
+      background:
+        radial-gradient(circle at 10% 20%, rgba(255,255,255,.12) 0 1px, transparent 2px),
+        radial-gradient(circle at 35% 40%, rgba(255,255,255,.10) 0 1px, transparent 2px),
+        radial-gradient(circle at 70% 25%, rgba(255,255,255,.12) 0 1px, transparent 2px),
+        radial-gradient(circle at 85% 55%, rgba(255,255,255,.10) 0 1px, transparent 2px),
+        radial-gradient(circle at 20% 80%, rgba(255,255,255,.10) 0 1px, transparent 2px),
+        radial-gradient(circle at 55% 78%, rgba(255,255,255,.08) 0 1px, transparent 2px);
+      opacity:.55;
+      filter: blur(.2px);
+      animation: starsFloat 14s ease-in-out infinite;
+      pointer-events:none;
     }
-    .lock-sub {
-      color: rgba(255,255,255,0.7);
-      font-size: 14px;
-      margin-bottom: 30px;
-      line-height: 1.7;
+    @keyframes spaceDrift{
+      0%   { background-position: 45% 55%; transform: scale(1); filter: hue-rotate(0deg); }
+      50%  { background-position: 60% 40%; transform: scale(1.03); filter: hue-rotate(10deg); }
+      100% { background-position: 45% 55%; transform: scale(1); filter: hue-rotate(0deg); }
     }
-    .lock-btn {
+    @keyframes nebulaSpin{ from{ transform: rotate(0deg); } to{ transform: rotate(360deg); } }
+    @keyframes starsFloat{
+      0%   { transform: translate(0px,0px); opacity:.50; }
+      50%  { transform: translate(14px,-10px); opacity:.60; }
+      100% { transform: translate(0px,0px); opacity:.50; }
+    }
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
+    .wrap{max-width:1200px; margin:0 auto; padding:28px 16px 40px; width:100%;}
+    .header{position:relative}
+    .hero-glow{
+      position:absolute; top:-40px; left:50%; transform:translateX(-50%);
+      width:760px; height:200px; border-radius:999px;
+      background: radial-gradient(circle at center, hsl(var(--chart-1) / 0.28), transparent 62%);
+      filter: blur(22px);
+      pointer-events:none;
+      opacity:.9;
+    }
+    .top-row{display:flex; gap:16px; align-items:flex-end; justify-content:space-between; flex-wrap:wrap;}
+    .badge{
+      display:inline-flex; align-items:center; gap:10px;
+      padding:8px 12px; border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.18);
+      font-size:12px; color: rgba(255,255,255,.92);
+    }
+    .dot{width:10px;height:10px;border-radius:50%; background:hsl(var(--chart-1)); box-shadow: 0 0 18px hsl(var(--chart-1) / .60);}
+    .brand-name{font-family:var(--font-display); letter-spacing:.6px}
+    .brand-sub{color:rgba(255,255,255,.60)}
+    .title{margin:12px 0 6px; font-family:var(--font-display); font-size:40px; line-height:1.1;}
+    .subtitle{margin:0; max-width:760px; color:rgba(255,255,255,.78); font-size:14.5px; line-height:1.7;}
+    .glitch-word{
+      position: relative;
       display: inline-block;
-      background: linear-gradient(135deg, #0af, #a855f7);
-      color: #fff;
-      padding: 16px 36px;
-      border-radius: 50px;
-      font-size: 18px;
-      font-weight: bold;
-      text-decoration: none;
-      box-shadow: 0 0 30px rgba(0,229,255,0.4);
-      transition: 0.3s;
-      font-family: 'Oxanium', sans-serif;
-      letter-spacing: 1px;
+      color: hsl(var(--foreground));
+      text-shadow:
+        0 0 8px rgba(255,255,255,.08),
+        0 0 18px hsl(var(--chart-1) / .16);
+      animation: glitch-skew 2.6s infinite ease-in-out;
+      white-space: nowrap;
     }
-    .lock-btn:hover {
-      box-shadow: 0 0 50px rgba(0,229,255,0.7);
-      transform: translateY(-2px);
+    .glitch-word::before,
+    .glitch-word::after{
+      content: attr(data-text);
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: .9;
+    }
+    .glitch-word::before{
+      color: hsl(var(--chart-1));
+      transform: translate(-2px, 0);
+      clip-path: inset(0 0 55% 0);
+      animation: glitch-top 1.1s infinite linear alternate-reverse;
+      mix-blend-mode: screen;
+    }
+    .glitch-word::after{
+      color: hsl(var(--chart-5));
+      transform: translate(2px, 0);
+      clip-path: inset(45% 0 0 0);
+      animation: glitch-bottom 1.35s infinite linear alternate-reverse;
+      mix-blend-mode: screen;
+    }
+    .glitch-word.self-word{
+      text-shadow:
+        0 0 10px rgba(255,255,255,.10),
+        0 0 20px hsl(var(--chart-2) / .22),
+        0 0 28px hsl(var(--chart-5) / .16);
+      animation: self-glitch-skew .9s infinite steps(2,end);
+    }
+    .glitch-word.self-word::before{
+      color: hsl(var(--chart-2));
+      transform: translate(-4px, -1px);
+      clip-path: inset(0 0 62% 0);
+      animation: self-glitch-top .45s infinite steps(2,end);
+      opacity: .95;
+    }
+    .glitch-word.self-word::after{
+      color: hsl(var(--chart-5));
+      transform: translate(4px, 1px);
+      clip-path: inset(58% 0 0 0);
+      animation: self-glitch-bottom .38s infinite steps(2,end);
+      opacity: .95;
+    }
+    @keyframes glitch-top{
+      0%   { transform: translate(-2px, 0); }
+      20%  { transform: translate(-3px, -1px); }
+      40%  { transform: translate(-1px, 1px); }
+      60%  { transform: translate(-4px, 0); }
+      80%  { transform: translate(-2px, 1px); }
+      100% { transform: translate(-3px, -1px); }
+    }
+    @keyframes glitch-bottom{
+      0%   { transform: translate(2px, 0); }
+      20%  { transform: translate(4px, 1px); }
+      40%  { transform: translate(1px, -1px); }
+      60%  { transform: translate(3px, 0); }
+      80%  { transform: translate(2px, -1px); }
+      100% { transform: translate(4px, 1px); }
+    }
+    @keyframes glitch-skew{
+      0%, 100% { transform: skewX(0deg); }
+      20%      { transform: skewX(-2deg); }
+      21%      { transform: skewX(3deg); }
+      22%      { transform: skewX(0deg); }
+      65%      { transform: skewX(0deg); }
+      66%      { transform: skewX(-3deg); }
+      67%      { transform: skewX(2deg); }
+      68%      { transform: skewX(0deg); }
+    }
+    @keyframes self-glitch-top{
+      0%   { transform: translate(-5px,-1px); }
+      25%  { transform: translate(-1px,2px); }
+      50%  { transform: translate(-6px,0px); }
+      75%  { transform: translate(-2px,-2px); }
+      100% { transform: translate(-4px,1px); }
+    }
+    @keyframes self-glitch-bottom{
+      0%   { transform: translate(5px,1px); }
+      25%  { transform: translate(2px,-2px); }
+      50%  { transform: translate(6px,0px); }
+      75%  { transform: translate(3px,2px); }
+      100% { transform: translate(4px,-1px); }
+    }
+    @keyframes self-glitch-skew{
+      0%   { transform: skewX(0deg) scale(1); }
+      20%  { transform: skewX(5deg) scale(1.01); }
+      40%  { transform: skewX(-4deg) scale(.995); }
+      60%  { transform: skewX(3deg) scale(1.01); }
+      80%  { transform: skewX(-5deg) scale(.995); }
+      100% { transform: skewX(0deg) scale(1); }
+    }
+    .chips{margin-top:12px; display:flex; flex-wrap:wrap; gap:8px;}
+    .chip{ display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px; border:1px solid rgba(255,255,255,.14); background: rgba(0,0,0,.18); font-size:12px; color: rgba(255,255,255,.82); }
+    .chip-mono{font-family: ui-monospace, monospace; color: rgba(255,255,255,.92)}
+    .header-actions{ margin-top:16px; display:flex; flex-wrap:wrap; gap:10px; }
+    .nav-btn{ cursor:pointer; border:1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); color: rgba(255,255,255,.96); padding:10px 14px; border-radius:16px; font-size:13px; transition:.15s; }
+    .nav-btn:hover{background: rgba(255,255,255,.10)}
+    .nav-btn.active{ border-color:hsl(var(--chart-1)/.35); background:hsl(var(--chart-1)/.16); box-shadow:0 0 18px hsl(var(--chart-1)/.18); }
+    .stats{display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; width:370px; max-width:100%;}
+    .stat{ border-radius:18px; padding:12px; border:1px solid rgba(255,255,255,.14); background: rgba(0,0,0,.20); }
+    .stat-k{font-size:11px; letter-spacing:2px; color: rgba(255,255,255,.72)}
+    .stat-v{margin-top:6px; font-family:var(--font-display); font-size:22px}
+    .stat-s{margin-top:4px; font-size:11px; color: rgba(255,255,255,.66)}
+    .stat-hp{border-color:hsl(var(--chart-3) / .35); background:hsl(var(--chart-3) / .12)}
+    .stat-level{border-color:hsl(var(--chart-1) / .35); background:hsl(var(--chart-1) / .12)}
+    .stat-rank{border-color:hsl(var(--chart-2) / .35); background:hsl(var(--chart-2) / .12)}
+    .locked{ margin-top:16px; border-radius:18px; border:1px solid hsl(var(--chart-5) / .35); background:hsl(var(--chart-5) / .12); padding:10px 14px; }
+    .locked-row{display:flex; justify-content:space-between; align-items:center; gap:10px; color: rgba(255,255,255,.95); font-size:13px;}
+    .main{margin-top:22px; display:grid; gap:14px; grid-template-columns:1.35fr .65fr;}
+    @media (max-width:980px){ .main{grid-template-columns:1fr} }
+    .card{ border-radius:24px; border:1px solid rgba(255,255,255,.14); background: rgba(0,0,0,.20); padding:14px; width:100%; overflow-x:hidden; }
+    .label{font-size:11px; letter-spacing:2px; color: rgba(255,255,255,.70)}
+    .section-title{margin-top:6px; font-family:var(--font-display); font-size:18px}
+    .muted{color: rgba(255,255,255,.70); font-size:12px}
+    .tiny{display:flex; justify-content:space-between; gap:10px; color: rgba(255,255,255,.64); font-size:11px}
+    .card-row{display:flex; gap:12px; align-items:flex-end; justify-content:space-between; flex-wrap:wrap;}
+    .quote{margin-top:6px; font-family:var(--font-display); font-size:18px; color: rgba(255,255,255,.95);}
+    .progress-row{display:flex; gap:14px; align-items:flex-end; justify-content:space-between; flex-wrap:wrap;}
+    .big{margin-top:6px; font-family: var(--font-display); font-size:34px}
+    .progress-side{width:280px; max-width:100%}
+    .bar{width:100%; height:10px; border-radius:999px; background: rgba(255,255,255,.12); overflow:hidden;}
+    .fill{height:100%; width:0%; background:hsl(var(--chart-1)); box-shadow: 0 0 18px hsl(var(--chart-1)/.35); transition: width .25s ease; }
+    .task-list{margin-top:12px; display:grid; gap:10px;}
+    .task{border-radius:18px; border:1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.04); padding:12px;}
+    .task-top{display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;}
+    .tag{ display:inline-flex; align-items:center; gap:8px; border-radius:999px; border:1px solid rgba(255,255,255,.18); padding:6px 10px; font-size:11px; }
+    .tag.ph{background:hsl(var(--chart-3)/.16); color:hsl(var(--chart-3)); border-color:hsl(var(--chart-3)/.28)}
+    .tag.iq{background:hsl(var(--chart-1)/.16); color:hsl(var(--chart-1)); border-color:hsl(var(--chart-1)/.28)}
+    .tag.sp{background:hsl(var(--chart-2)/.16); color:hsl(var(--chart-2)); border-color:hsl(var(--chart-2)/.28)}
+    .tag.xx{background:hsl(var(--chart-5)/.16); color:hsl(var(--chart-5)); border-color:hsl(var(--chart-5)/.28)}
+    .task-title{font-family:var(--font-display); font-size:15px; color: rgba(255,255,255,.96); max-width:360px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+    .task-meta{margin-top:6px; display:flex; flex-wrap:wrap; gap:10px; font-size:11px; color: rgba(255,255,255,.70)}
+    .task-controls{display:flex; align-items:center; gap:8px;}
+    .input{ width:100%; padding:10px 12px; border-radius:16px; border:1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.06); color: rgba(255,255,255,.96); outline:none; }
+    .input:disabled{opacity:.6}
+    .small{width:92px; padding:8px 10px; border-radius:14px;}
+    .btn{ cursor:pointer; border:1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.06); color: rgba(255,255,255,.96); padding:10px 14px; border-radius:18px; transition:.15s; }
+    .btn:hover{background: rgba(255,255,255,.10)}
+    .btn:disabled{opacity:.55; cursor:not-allowed}
+    .btn-green{ width:44px; padding:10px 0; border-color:hsl(var(--chart-3)/.30); background:hsl(var(--chart-3)/.18); }
+    .btn-green:hover{background:hsl(var(--chart-3)/.24)}
+    .add-grid{margin-top:12px; display:grid; gap:10px; grid-template-columns: 1.4fr .6fr .6fr .6fr .2fr;}
+    @media (max-width:980px){ .add-grid{grid-template-columns:1fr 1fr;} .btn-green{width:100%} }
+    .radar-wrap{ margin-top:10px; width:100%; border-radius:18px; border:1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.04); overflow:hidden; display:flex; justify-content:center; align-items:center; padding:8px; }
+    .radar-wrap canvas{max-width:100%; height:auto; width:100%;}
+    .mini-stats{margin-top:10px; display:grid; grid-template-columns:repeat(3,1fr); gap:10px;}
+    .mini{border-radius:18px; border:1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.04); padding:10px;}
+    .mini-v{font-family:var(--font-display); font-size:20px;}
+    .mini-v span{font-size:12px; color: rgba(255,255,255,.55)}
+    .mini-l{margin-top:4px; font-size:11px; color: rgba(255,255,255,.68)}
+    .note{ margin-top:10px; border-radius:18px; border:1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.04); padding:10px; color: rgba(255,255,255,.78); font-size:13px; line-height:1.65; }
+    .chart-wrap{ margin-top:10px; width:100%; border-radius:18px; border:1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.04); overflow:hidden; padding:10px; }
+    .chart-wrap canvas{width:100%; height:auto; display:block;}
+    .footer{ margin-top:18px; padding-top:14px; border-top:1px solid rgba(255,255,255,.14); color: rgba(255,255,255,.70); font-size:12px; display:flex; flex-direction:column; gap:6px; }
+    .countdown{ margin-top:10px; display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 12px; border-radius:18px; border:1px solid rgba(255,255,255,.14); background: rgba(0,0,0,.18); }
+    .shame-panel{ margin-top:12px; border-radius:18px; border:1px solid hsl(var(--chart-5) / .35); background:hsl(var(--chart-5) / .12); padding:12px; }
+    .shame-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+    .shame-title{ font-size:11px; letter-spacing:2px; color: rgba(255,255,255,.75); }
+    .shame-value{ font-family:var(--font-display); font-size:28px; color:hsl(var(--chart-5)); text-shadow:0 0 16px hsl(var(--chart-5) / .30); min-width:72px; text-align:center; margin-inline-start:auto; padding-inline-start:10px; }
+    .shame-sub{ margin-top:6px; font-size:12px; color: rgba(255,255,255,.72); }
+    .manual-layout{ margin-top:22px; display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    @media (max-width:980px){ .manual-layout{grid-template-columns:1fr} }
+    .manual-list{display:grid; gap:10px; margin-top:12px;}
+    .manual-step{border-radius:18px; border:1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.04); padding:12px;}
+    .manual-step-title{font-family:var(--font-display); font-size:15px; margin-bottom:6px; color:rgba(255,255,255,.96);}
+    .manual-step-text{color:rgba(255,255,255,.76); font-size:13px; line-height:1.75;}
+    .manual-highlight{ border-radius:20px; border:1px solid hsl(var(--chart-1)/.30); background:hsl(var(--chart-1)/.10); padding:14px; margin-top:12px; color:rgba(255,255,255,.88); line-height:1.8; font-size:13px; }
+    .manual-warning{ border-radius:20px; border:1px solid hsl(var(--chart-5)/.34); background:hsl(var(--chart-5)/.12); padding:14px; margin-top:12px; color:rgba(255,255,255,.88); line-height:1.8; font-size:13px; }
+    .manual-grid{ margin-top:12px; display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+    @media (max-width:700px){ .manual-grid{grid-template-columns:1fr} }
+    .login-container{ min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+    .login-card{ max-width: 420px; width: 100%; border-radius: 36px; border: 1px solid rgba(255,255,255,.16); background: rgba(0,0,0,.55); backdrop-filter: blur(8px); padding: 32px 28px; text-align: center; box-shadow: 0 25px 45px rgba(0,0,0,.5); }
+    .login-title{ font-family: var(--font-display); font-size: 32px; margin-bottom: 8px; }
+    .login-sub{ color: rgba(255,255,255,.7); font-size: 14px; margin-bottom: 32px; }
+    .login-input{ width: 100%; margin-bottom: 18px; padding: 14px 18px; border-radius: 28px; border: 1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.05); color: white; font-size: 15px; outline: none; transition: .2s; }
+    .login-input:focus{ border-color: hsl(var(--chart-1)/.6); background: rgba(255,255,255,.08); }
+    .login-btn{ width: 100%; padding: 12px; border-radius: 40px; background: hsl(var(--chart-1)/.2); border: 1px solid hsl(var(--chart-1)/.5); color: white; font-size: 18px; font-weight: bold; cursor: pointer; transition: .2s; font-family: var(--font-display); }
+    .login-btn:hover{ background: hsl(var(--chart-1)/.4); box-shadow: 0 0 14px hsl(var(--chart-1)/.3); }
+    .login-error{ color: hsl(var(--chart-5)); margin-top: 12px; font-size: 13px; }
+    .loading{ text-align: center; padding: 40px; font-size: 18px; }
+    .error-loading{ color: hsl(var(--chart-5)); text-align: center; padding: 20px; font-size: 14px; background: rgba(0,0,0,0.5); border-radius: 20px; margin: 20px; }
+    @media (max-width: 768px) {
+      .wrap { width: 100%; max-width: 100%; padding: 16px 12px 32px; margin: 0 auto; }
+      .stats { width: 100%; grid-template-columns: 1fr; }
+      .radar-wrap canvas, .chart-wrap canvas { width: 100% !important; height: auto !important; max-width: 100%; }
+      .card { width: 100%; overflow-x: hidden; }
+      .top-row { flex-direction: column; align-items: stretch; }
+      .badge { align-self: flex-start; }
+      .header-actions { justify-content: center; }
+      .progress-row { flex-direction: column; align-items: flex-start; }
+      .progress-side { width: 100%; }
+      .add-grid { grid-template-columns: 1fr; }
+      .btn-green { width: 100%; padding: 10px; }
+      .task-top { flex-direction: column; align-items: flex-start; }
+      .task-controls { width: 100%; justify-content: space-between; }
+      .mini-stats { grid-template-columns: 1fr; }
+      .manual-layout { grid-template-columns: 1fr; }
+      .countdown { flex-direction: column; align-items: flex-start; }
+      .locked-row { flex-direction: column; align-items: flex-start; }
+    }
+    @media (max-width: 480px) {
+      .title { font-size: 24px; }
+      .glitch-word { font-size: 24px; }
+      .card { padding: 10px; }
+      .stat-v { font-size: 18px; }
+      .mini-v { font-size: 18px; }
     }
   </style>
 </head>
 
 <body>
-  <div class="bg-anim"></div>
-  <div id="root"></div>
 
-  <!-- شاشة القفل -->
-  <div id="lockScreen" class="lock-screen" style="display: none;">
-    <div class="lock-card">
-      <div class="lock-title">🔒 الدخول مقيد</div>
-      <div class="lock-sub">للوصول إلى RISE SYSTEM™، يجب المرور عبر بوابة التأكيد. هذا يساعد في دعم استمرار المنصة.</div>
-      <a href="https://ouo.io/Vx8JTrM" class="lock-btn">🚀 الدخول عبر البوابة</a>
-      <p style="color: rgba(255,255,255,0.3); font-size: 12px; margin-top: 20px;">بعد فتح الرابط، سيتم توجيهك تلقائياً للتطبيق</p>
-    </div>
+<!-- ===================== شاشة القفل (تبدأ العمل فوراً) ===================== -->
+<div id="lockScreen" style="position:fixed; inset:0; background:#05060f; display:none; justify-content:center; align-items:center; z-index:99999; flex-direction:column; text-align:center; padding:20px;">
+  <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(0,229,255,0.3); border-radius:24px; padding:40px 30px; max-width:480px; width:90%; backdrop-filter:blur(10px);">
+    <div style="font-family:'Oxanium',sans-serif; color:#0af; font-size:28px; margin-bottom:10px;">🔒 الدخول مقيد</div>
+    <div style="color:rgba(255,255,255,0.7); font-size:14px; margin-bottom:30px; line-height:1.7;">للوصول إلى RISE SYSTEM™، يجب المرور عبر بوابة التأكيد أولاً. هذا يدعم استمرار المنصة.</div>
+    <a href="https://ouo.io/Vx8JTrM" style="display:inline-block; background:linear-gradient(135deg, #0af, #a855f7); color:#fff; padding:16px 36px; border-radius:50px; font-size:18px; font-weight:bold; text-decoration:none; box-shadow:0 0 30px rgba(0,229,255,0.4); transition:0.3s; font-family:'Oxanium',sans-serif; letter-spacing:1px;">🚀 الدخول عبر البوابة</a>
+    <p style="color:rgba(255,255,255,0.3); font-size:12px; margin-top:20px;">بعد فتح الرابط، سيتم توجيهك تلقائياً للتطبيق</p>
   </div>
+</div>
 
-  <!-- Firebase JS SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+<!-- ===================== سكريبت القفل الذكي (صلاحية 24 ساعة) ===================== -->
+<script>
+  (function() {
+    var LOCK_ID = 'lockScreen';
+    var APP_ROOT_ID = 'root';
+    var STORAGE_KEY = 'rise_unlock_expiry';
+    var UNLOCK_DURATION_HOURS = 24;
 
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    var urlParams = new URLSearchParams(window.location.search);
+    var hasUnlockParam = urlParams.get('unlocked') === '1';
+    var now = Date.now();
 
-  <script>
-    // ================================================================
-    // نظام القفل: يسمح بالدخول فقط إذا جاء من الرابط المختصر ouo.io
-    // ================================================================
-    (function() {
-      const UNLOCK_PARAM = 'unlocked'; // المعلمة التي نضيفها بعد العودة
-      const LOCK_SCREEN_ID = 'lockScreen';
-      const ROOT_ID = 'root';
+    var storedExpiry = localStorage.getItem(STORAGE_KEY);
+    var hasValidSession = false;
 
-      // التحقق مما إذا كان قد تم فتح القفل مسبقاً (خلال نفس الجلسة)
-      const isUnlocked = sessionStorage.getItem('rise_allowed') === 'true';
-      
-      // التحقق من وجود المعلمة في الرابط (يعني أن المستخدم عاد من ouo.io)
-      const urlParams = new URLSearchParams(window.location.search);
-      const hasParam = urlParams.get(UNLOCK_PARAM) === '1';
-
-      if (hasParam) {
-        // تم الدخول من خلال الرابط الصحيح، افتح الجلسة
-        sessionStorage.setItem('rise_allowed', 'true');
-        // تنظيف الرابط لإخفاء المعلمة (اختياري)
-        if (window.history && window.history.replaceState) {
-          window.history.replaceState({}, document.title, window.location.pathname);
-        }
-      } else if (!isUnlocked) {
-        // لم يتم فتح القفل بعد، أظهر شاشة القفل وأخفِ التطبيق
-        document.getElementById(LOCK_SCREEN_ID).style.display = 'flex';
-        document.getElementById(ROOT_ID).style.display = 'none';
-        
-        // إيقاف تحميل React هنا (سيتم تحميله لاحقاً بعد العودة)
-        // نخرج من السكربت الحالي
-        return; // لا نكمل تحميل التطبيق
+    if (storedExpiry) {
+      var expiryTime = parseInt(storedExpiry, 10);
+      if (now < expiryTime) {
+        hasValidSession = true;
+      } else {
+        localStorage.removeItem(STORAGE_KEY);
       }
+    }
 
-      // إذا وصلنا هنا، إما أن المستخدم مخول أو عاد من الرابط
-      // تأكد من إخفاء شاشة القفل وإظهار التطبيق
-      document.getElementById(LOCK_SCREEN_ID).style.display = 'none';
-      document.getElementById(ROOT_ID).style.display = 'block';
-    })();
+    if (hasUnlockParam) {
+      var expiryTime = now + (UNLOCK_DURATION_HOURS * 60 * 60 * 1000);
+      localStorage.setItem(STORAGE_KEY, expiryTime.toString());
+      hasValidSession = true;
 
-    // ================== إعدادات Firebase ==================
+      if (window.history && window.history.replaceState) {
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    }
+
+    if (hasValidSession) {
+      document.getElementById(LOCK_ID).style.display = 'none';
+      document.getElementById(APP_ROOT_ID).style.display = 'block';
+    } else {
+      document.getElementById(LOCK_ID).style.display = 'flex';
+      document.getElementById(APP_ROOT_ID).style.display = 'none';
+    }
+  })();
+</script>
+
+<!-- ===================== باقي محتوى الصفحة الأصلي ===================== -->
+<div class="bg-anim"></div>
+<div id="root"></div>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+<script>
     const firebaseConfig = {
       apiKey: "AIzaSyBPsgxpBN57IMOhCVaKQe2_bwkZ3aEahjA",
       authDomain: "rise-system-a7135.firebaseapp.com",
@@ -162,11 +408,10 @@
     auth.setPersistence(firebase.auth.Auth.Persistence.NONE).catch(console.error);
     const db = firebase.firestore();
 
-    // ================== React Helpers ==================
     const h = React.createElement;
     const { useEffect, useMemo, useRef, useState } = React;
 
-    // ================== Helper Functions (كما هي) ==================
+    // Helper functions
     const TYPE_META = { PH: { label: "قوة جسدية", multiplier: 2.0 }, IQ: { label: "ذكاء وتعلّم", multiplier: 1.7 }, SP: { label: "انضباط وروحانية", multiplier: 1.5 }, XX: { label: "عادة سيئة", multiplier: 0 } };
     const GLITCH_WORDS = ["الأبطال", "الأنمي", "قدوتك", "نفسك"];
     const RANKS = [{ key: "E", days: 0, label: "E" },{ key: "D", days: 7, label: "D" },{ key: "C", days: 30, label: "C" },{ key: "B", days: 90, label: "B" },{ key: "A", days: 180, label: "A" },{ key: "S", days: 365, label: "S Elite" }];
@@ -203,7 +448,6 @@
       return totals;
     }
 
-    // ================== Canvas Components (كما هي) ==================
     function polygon(ctx,cx,cy,r,sides,rot){ ctx.beginPath(); for(let i=0;i<sides;i++){ const a=rot+i*(2*Math.PI/sides),x=cx+Math.cos(a)*r,y=cy+Math.sin(a)*r; if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); } ctx.closePath(); }
     function RadarCanvas(props){
       const ref=useRef(null),prevRef=useRef({PH:0,IQ:0,SP:0}),animRef=useRef(null);
@@ -246,7 +490,6 @@
       return h("div",{className:"chart-wrap"},h("canvas",{ref,width:720,height:280,style:{width:"100%",height:"auto"}}));
     }
 
-    // ================== State Management (كما هي) ==================
     function createInitialState() {
       return {
         day: todayKeyLocal(),
@@ -360,7 +603,6 @@
       return live;
     }
 
-    // ================== Components (كما هي) ==================
     function DashboardPage(props){
       const { state, setState, level, computed, rank, isLocked, lockRemaining, countdownMs, quote, radarLive, commitPoints, expPoints, expPenaltyPreview,
         newTitle, setNewTitle, newTarget, setNewTarget, newImportance, setNewImportance, newType, setNewType, addTask, updateTask, removeTask } = props;
@@ -541,11 +783,15 @@
       const [newImportance, setNewImportance] = useState(3);
       const [newType, setNewType] = useState("PH");
 
-      // ... (باقي App بدون تغيير) ...
-
       const forceSignOutIfDeleted = async (currentUser) => {
         if (!currentUser) return;
-        try { await currentUser.getIdToken(true); } catch (error) { if (error.code === 'auth/user-not-found' || error.code === 'auth/user-disabled') { await auth.signOut(); } }
+        try {
+          await currentUser.getIdToken(true);
+        } catch (error) {
+          if (error.code === 'auth/user-not-found' || error.code === 'auth/user-disabled') {
+            await auth.signOut();
+          }
+        }
       };
 
       useEffect(() => {
@@ -598,8 +844,12 @@
         if (!user || state === null) return;
         if (saveTimeout.current) clearTimeout(saveTimeout.current);
         saveTimeout.current = setTimeout(async () => {
-          try { await db.collection("users").doc(user.uid).update({ state: state }); }
-          catch(err) { console.error("Save error:", err); if (err.code === 'permission-denied') auth.signOut(); }
+          try {
+            await db.collection("users").doc(user.uid).update({ state: state });
+          } catch (err) {
+            console.error("Save error:", err);
+            if (err.code === 'permission-denied') auth.signOut();
+          }
         }, 500);
         return () => { if (saveTimeout.current) clearTimeout(saveTimeout.current); };
       }, [state, user]);
@@ -610,31 +860,59 @@
         return () => clearInterval(interval);
       }, [user]);
 
-      useEffect(() => { const t = setInterval(() => setCountdownMs(msToMidnight()), 1000); return () => clearInterval(t); }, []);
-      useEffect(() => { const iv = setInterval(() => setGlitchIndex(prev => (prev + 1) % GLITCH_WORDS.length), 1800); return () => clearInterval(iv); }, []);
+      useEffect(() => {
+        const t = setInterval(() => setCountdownMs(msToMidnight()), 1000);
+        return () => clearInterval(t);
+      }, []);
+      useEffect(() => {
+        const iv = setInterval(() => setGlitchIndex(prev => (prev + 1) % GLITCH_WORDS.length), 1800);
+        return () => clearInterval(iv);
+      }, []);
 
       const finalizeRef = useRef(() => {});
-      finalizeRef.current = () => { if (state !== null) setState(prev => finalizeDayNoMercy(prev)); };
+      finalizeRef.current = () => {
+        if (state !== null) setState(prev => finalizeDayNoMercy(prev));
+      };
       useEffect(() => {
         let to = null;
-        function schedule(){ if(to) clearTimeout(to); const ms = msToMidnight(); to = setTimeout(() => { finalizeRef.current(); schedule(); }, ms + 120); }
+        function schedule(){
+          if(to) clearTimeout(to);
+          const ms = msToMidnight();
+          to = setTimeout(() => { finalizeRef.current(); schedule(); }, ms + 120);
+        }
         schedule();
-        const iv = setInterval(() => { if (state !== null && todayKeyLocal() !== state.day) finalizeRef.current(); }, 20000);
-        const onVis = () => { if (document.visibilityState === "visible" && state !== null && todayKeyLocal() !== state.day) finalizeRef.current(); };
-        const onFocus = () => { if (state !== null && todayKeyLocal() !== state.day) finalizeRef.current(); };
+        const iv = setInterval(() => {
+          if (state !== null && todayKeyLocal() !== state.day) finalizeRef.current();
+        }, 20000);
+        const onVis = () => {
+          if (document.visibilityState === "visible" && state !== null && todayKeyLocal() !== state.day) finalizeRef.current();
+        };
+        const onFocus = () => {
+          if (state !== null && todayKeyLocal() !== state.day) finalizeRef.current();
+        };
         document.addEventListener("visibilitychange", onVis);
         window.addEventListener("focus", onFocus);
-        return () => { if(to) clearTimeout(to); clearInterval(iv); document.removeEventListener("visibilitychange", onVis); window.removeEventListener("focus", onFocus); };
+        return () => {
+          if(to) clearTimeout(to);
+          clearInterval(iv);
+          document.removeEventListener("visibilitychange", onVis);
+          window.removeEventListener("focus", onFocus);
+        };
       }, [state]);
 
       const updateTask = (id, patch) => setState(prev => prev ? { ...prev, tasks: prev.tasks.map(t => t.id === id ? { ...t, ...patch } : t) } : prev);
       const removeTask = (id) => setState(prev => prev ? { ...prev, tasks: prev.tasks.filter(t => t.id !== id) } : prev);
       const addTask = (title, target, importance, type) => {
-        const clean = String(title || "").trim(); if (!clean) return;
+        const clean = String(title || "").trim();
+        if (!clean) return;
         const targetNum = typeof target === "number" ? target : 1;
         setState(prev => prev ? { ...prev, tasks: [...prev.tasks, { id: `t${Math.random().toString(16).slice(2)}`, title: clean, target: clamp(targetNum,1,9999), importance: Number(importance), type, done: 0 }] } : prev);
       };
-      const handleLogout = async () => { await auth.signOut(); setUser(null); setState(null); };
+      const handleLogout = async () => {
+        await auth.signOut();
+        setUser(null);
+        setState(null);
+      };
 
       if (loading) return h("div", { className: "loading" }, "جاري التحميل...");
       if (loadError) return h("div", { className: "error-loading" }, loadError);
@@ -645,7 +923,12 @@
       const radarLive = computeLiveMomentum(state, computed);
       const rank = rankFromStreak(state.commitDays);
       const isLocked = state.lockedUntil ? Date.now() < state.lockedUntil : false;
-      const lockRemaining = (() => { if (!state.lockedUntil) return null; const ms = state.lockedUntil - Date.now(); if (ms <= 0) return null; return { hh: Math.floor(ms / 3600000), mm: Math.floor((ms % 3600000) / 60000) }; })();
+      const lockRemaining = (() => {
+        if (!state.lockedUntil) return null;
+        const ms = state.lockedUntil - Date.now();
+        if (ms <= 0) return null;
+        return { hh: Math.floor(ms / 3600000), mm: Math.floor((ms % 3600000) / 60000) };
+      })();
       const quote = randomQuote(state.day);
       const commitPoints = (state.commitHistory || []).map((x, i) => ({ x: i, y: Number(x.v || 0), d: x.d }));
       const expPoints = (state.expHistory || []).map((x, i) => ({ x: i, y: Number(x.v || 0), d: x.d }));
