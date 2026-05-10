@@ -4,50 +4,30 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=yes, viewport-fit=cover" />
   <title>RISE SYSTEM™ | No Mercy (Firestore)</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@200..800&family=IBM+Plex+Sans+Arabic:wght@100..700&display=swap" rel="stylesheet">
+
   <style>
     * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
     html,body { height:100%; min-height:100vh; min-height:100dvh; overflow-x:hidden; position:relative; scroll-behavior:smooth; }
     body { font-family:var(--font-sans); color:hsl(var(--foreground)); background:hsl(var(--background)); overflow-x:hidden; width:100%; position:relative; }
     #root { width:100%; max-width:100%; overflow-x:hidden; position:relative; min-height:100vh; min-height:100dvh; }
     :root{
-      --background:235 35% 6%; --foreground:210 40% 96%; --chart-1:195 100% 55%; --chart-2:280 85% 64%;
-      --chart-3:155 80% 48%; --chart-4:35 95% 58%; --chart-5:0 84% 60%;
+      --background:235 35% 6%; --foreground:210 40% 96%; --chart-1:195 100% 55%; --chart-2:280 85% 64%; --chart-3:155 80% 48%; --chart-4:35 95% 58%; --chart-5:0 84% 60%;
       --font-sans:"IBM Plex Sans Arabic", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       --font-display:"Oxanium", "IBM Plex Sans Arabic", system-ui, sans-serif;
     }
     .bg-anim{
-      position:fixed; inset:-18%; z-index:-2;
-      background:
-        radial-gradient(1200px 900px at 20% 25%, hsl(var(--chart-2)/0.22), transparent 60%),
-        radial-gradient(1100px 850px at 80% 30%, hsl(var(--chart-1)/0.22), transparent 62%),
-        radial-gradient(1000px 800px at 25% 85%, hsl(var(--chart-3)/0.18), transparent 60%),
-        radial-gradient(900px 700px at 85% 80%, hsl(var(--chart-4)/0.10), transparent 62%),
-        linear-gradient(to bottom, hsl(235 35% 6%), hsl(240 32% 7%));
-      background-size:140% 140%; animation:spaceDrift 18s ease-in-out infinite; pointer-events:none;
+      position:fixed; inset:-18%; z-index:-2; background: radial-gradient(1200px 900px at 20% 25%, hsl(var(--chart-2)/0.22), transparent 60%), radial-gradient(1100px 850px at 80% 30%, hsl(var(--chart-1)/0.22), transparent 62%), radial-gradient(1000px 800px at 25% 85%, hsl(var(--chart-3)/0.18), transparent 60%), radial-gradient(900px 700px at 85% 80%, hsl(var(--chart-4)/0.10), transparent 62%), linear-gradient(to bottom, hsl(235 35% 6%), hsl(240 32% 7%)); background-size:140% 140%; animation:spaceDrift 18s ease-in-out infinite; transform:translateZ(0); will-change:transform,filter,background-position; pointer-events:none;
     }
-    .bg-anim::before{
-      content:""; position:absolute; inset:0;
-      background: conic-gradient(from 210deg at 50% 50%, transparent 0deg, hsl(var(--chart-1)/0.07) 70deg, transparent 140deg, hsl(var(--chart-2)/0.07) 220deg, transparent 360deg);
-      filter:blur(20px); opacity:.95; animation:nebulaSpin 28s linear infinite; mix-blend-mode:screen; pointer-events:none;
-    }
-    .bg-anim::after{
-      content:""; position:absolute; inset:0;
-      background:
-        radial-gradient(circle at 10% 20%, rgba(255,255,255,.12) 0 1px, transparent 2px),
-        radial-gradient(circle at 35% 40%, rgba(255,255,255,.10) 0 1px, transparent 2px),
-        radial-gradient(circle at 70% 25%, rgba(255,255,255,.12) 0 1px, transparent 2px),
-        radial-gradient(circle at 85% 55%, rgba(255,255,255,.10) 0 1px, transparent 2px),
-        radial-gradient(circle at 20% 80%, rgba(255,255,255,.10) 0 1px, transparent 2px),
-        radial-gradient(circle at 55% 78%, rgba(255,255,255,.08) 0 1px, transparent 2px);
-      opacity:.55; filter:blur(.2px); animation:starsFloat 14s ease-in-out infinite; pointer-events:none;
-    }
+    .bg-anim::before{ content:""; position:absolute; inset:0; background:conic-gradient(from 210deg at 50% 50%, transparent 0deg, hsl(var(--chart-1)/0.07) 70deg, transparent 140deg, hsl(var(--chart-2)/0.07) 220deg, transparent 360deg); filter:blur(20px); opacity:.95; animation:nebulaSpin 28s linear infinite; mix-blend-mode:screen; pointer-events:none; }
+    .bg-anim::after{ content:""; position:absolute; inset:0; background: radial-gradient(circle at 10% 20%, rgba(255,255,255,.12) 0 1px, transparent 2px), radial-gradient(circle at 35% 40%, rgba(255,255,255,.10) 0 1px, transparent 2px), radial-gradient(circle at 70% 25%, rgba(255,255,255,.12) 0 1px, transparent 2px), radial-gradient(circle at 85% 55%, rgba(255,255,255,.10) 0 1px, transparent 2px), radial-gradient(circle at 20% 80%, rgba(255,255,255,.10) 0 1px, transparent 2px), radial-gradient(circle at 55% 78%, rgba(255,255,255,.08) 0 1px, transparent 2px); opacity:.55; filter:blur(.2px); animation:starsFloat 14s ease-in-out infinite; pointer-events:none; }
     @keyframes spaceDrift{ 0%{background-position:45% 55%;transform:scale(1);filter:hue-rotate(0deg)} 50%{background-position:60% 40%;transform:scale(1.03);filter:hue-rotate(10deg)} 100%{background-position:45% 55%;transform:scale(1);filter:hue-rotate(0deg)} }
     @keyframes nebulaSpin{ from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
     @keyframes starsFloat{ 0%{transform:translate(0px,0px);opacity:.50} 50%{transform:translate(14px,-10px);opacity:.60} 100%{transform:translate(0px,0px);opacity:.50} }
-    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;}
+    .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
     .wrap{max-width:1200px; margin:0 auto; padding:28px 16px 40px; width:100%;}
     .header{position:relative}
     .hero-glow{ position:absolute; top:-40px; left:50%; transform:translateX(-50%); width:760px; height:200px; border-radius:999px; background:radial-gradient(circle at center, hsl(var(--chart-1)/0.28), transparent 62%); filter:blur(22px); pointer-events:none; opacity:.9; }
@@ -58,7 +38,7 @@
     .brand-sub{color:rgba(255,255,255,.60)}
     .title{margin:12px 0 6px; font-family:var(--font-display); font-size:40px; line-height:1.1;}
     .subtitle{margin:0; max-width:760px; color:rgba(255,255,255,.78); font-size:14.5px; line-height:1.7;}
-    .glitch-word{ position:relative; display:inline-block; color:hsl(var(--foreground)); text-shadow:0 0 8px rgba(255,255,255,.08),0 0 18px hsl(var(--chart-1)/0.16); animation:glitch-skew 2.6s infinite ease-in-out; white-space:nowrap; }
+    .glitch-word{ position:relative; display:inline-block; color:hsl(var(--foreground)); text-shadow:0 0 8px rgba(255,255,255,.08),0 0 18px hsl(var(--chart-1)/.16); animation:glitch-skew 2.6s infinite ease-in-out; white-space:nowrap; }
     .glitch-word::before,.glitch-word::after{ content:attr(data-text); position:absolute; inset:0; pointer-events:none; opacity:.9; }
     .glitch-word::before{ color:hsl(var(--chart-1)); transform:translate(-2px,0); clip-path:inset(0 0 55% 0); animation:glitch-top 1.1s infinite linear alternate-reverse; mix-blend-mode:screen; }
     .glitch-word::after{ color:hsl(var(--chart-5)); transform:translate(2px,0); clip-path:inset(45% 0 0 0); animation:glitch-bottom 1.35s infinite linear alternate-reverse; mix-blend-mode:screen; }
@@ -73,7 +53,7 @@
     @keyframes self-glitch-skew{ 0%{transform:skewX(0deg) scale(1)} 20%{transform:skewX(5deg) scale(1.01)} 40%{transform:skewX(-4deg) scale(.995)} 60%{transform:skewX(3deg) scale(1.01)} 80%{transform:skewX(-5deg) scale(.995)} 100%{transform:skewX(0deg) scale(1)} }
     .chips{margin-top:12px; display:flex; flex-wrap:wrap; gap:8px;}
     .chip{ display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px; border:1px solid rgba(255,255,255,.14); background:rgba(0,0,0,.18); font-size:12px; color:rgba(255,255,255,.82); }
-    .chip-mono{font-family:ui-monospace,monospace; color:rgba(255,255,255,.92)}
+    .chip-mono{font-family:ui-monospace, monospace; color:rgba(255,255,255,.92)}
     .header-actions{ margin-top:16px; display:flex; flex-wrap:wrap; gap:10px; }
     .nav-btn{ cursor:pointer; border:1px solid rgba(255,255,255,.14); background:rgba(255,255,255,.06); color:rgba(255,255,255,.96); padding:10px 14px; border-radius:16px; font-size:13px; transition:.15s; }
     .nav-btn:hover{background:rgba(255,255,255,.10)}
@@ -152,14 +132,14 @@
     @media(max-width:700px){.manual-grid{grid-template-columns:1fr}}
     .login-container{ min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; }
     .login-card{ max-width:420px; width:100%; border-radius:36px; border:1px solid rgba(255,255,255,.16); background:rgba(0,0,0,.55); backdrop-filter:blur(8px); padding:32px 28px; text-align:center; box-shadow:0 25px 45px rgba(0,0,0,.5); }
-    .login-title{font-family:var(--font-display); font-size:32px; margin-bottom:8px;}
-    .login-sub{color:rgba(255,255,255,.7); font-size:14px; margin-bottom:32px;}
+    .login-title{ font-family:var(--font-display); font-size:32px; margin-bottom:8px; }
+    .login-sub{ color:rgba(255,255,255,.7); font-size:14px; margin-bottom:32px; }
     .login-input{ width:100%; margin-bottom:18px; padding:14px 18px; border-radius:28px; border:1px solid rgba(255,255,255,.2); background:rgba(255,255,255,.05); color:white; font-size:15px; outline:none; transition:.2s; }
     .login-input:focus{ border-color:hsl(var(--chart-1)/.6); background:rgba(255,255,255,.08); }
     .login-btn{ width:100%; padding:12px; border-radius:40px; background:hsl(var(--chart-1)/.2); border:1px solid hsl(var(--chart-1)/.5); color:white; font-size:18px; font-weight:bold; cursor:pointer; transition:.2s; font-family:var(--font-display); }
     .login-btn:hover{ background:hsl(var(--chart-1)/.4); box-shadow:0 0 14px hsl(var(--chart-1)/.3); }
-    .login-error{color:hsl(var(--chart-5)); margin-top:12px; font-size:13px;}
-    .loading{text-align:center; padding:40px; font-size:18px;}
+    .login-error{ color:hsl(var(--chart-5)); margin-top:12px; font-size:13px; }
+    .loading{ text-align:center; padding:40px; font-size:18px; }
     .error-loading{ color:hsl(var(--chart-5)); text-align:center; padding:20px; font-size:14px; background:rgba(0,0,0,0.5); border-radius:20px; margin:20px; }
     @media(max-width:768px){
       .wrap{padding:16px 12px 32px}
@@ -191,12 +171,13 @@
 <body>
   <div class="bg-anim"></div>
   <div id="root"></div>
-  <!-- Firebase SDKs -->
+
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyBPsgxpBN57IMOhCVaKQe2_bwkZ3aEahjA",
@@ -211,10 +192,11 @@
     const auth = firebase.auth();
     auth.setPersistence(firebase.auth.Auth.Persistence.NONE).catch(console.error);
     const db = firebase.firestore();
+
     const h = React.createElement;
     const { useEffect, useMemo, useRef, useState } = React;
 
-    // Helper functions
+    // Helper functions (باقي الدوال كما هي دون تغيير)
     const TYPE_META = { PH: { label: "قوة جسدية", multiplier: 2.0 }, IQ: { label: "ذكاء وتعلّم", multiplier: 1.7 }, SP: { label: "انضباط وروحانية", multiplier: 1.5 }, XX: { label: "عادة سيئة", multiplier: 0 } };
     const GLITCH_WORDS = ["الأبطال", "الأنمي", "قدوتك", "نفسك"];
     const RANKS = [{ key: "E", days: 0, label: "E" },{ key: "D", days: 7, label: "D" },{ key: "C", days: 30, label: "C" },{ key: "B", days: 90, label: "B" },{ key: "A", days: 180, label: "A" },{ key: "S", days: 365, label: "S Elite" }];
@@ -303,7 +285,8 @@
         ],
         totalExp: 0, hp: 100, commitDays: 0, shameDays: 0, perfectStreak: 0, lastCommitDay: null, lockedUntil: null, zeroLockUsed: true,
         lifetimeByType: { PH:0, IQ:0, SP:0 }, lifetimePotentialByType: { PH:0, IQ:0, SP:0 }, commitHistory: [], expHistory: [],
-        currentMomentum: { PH:0, IQ:0, SP:0 }, consecutiveNeglect: { PH:0, IQ:0, SP:0 }
+        currentMomentum: { PH:0, IQ:0, SP:0 },
+        consecutiveNeglect: { PH:0, IQ:0, SP:0 }
       };
     }
     function pushHistory(history, dateKey, value){
@@ -315,6 +298,7 @@
       const allTypes = ['PH','IQ','SP','XX'];
       const hasAllFourTypes = allTypes.every(type => prev.tasks.some(t => t.type === type));
       const finalQualifies = qualifies && hasAllFourTypes;
+
       const failHard = completion < 0.5;
       const delta = finalQualifies ? 6 : (failHard ? -12 : -4);
       const hp = clamp(prev.hp + delta, 0, 100);
@@ -339,6 +323,7 @@
       const tasks = prev.tasks.map(t => ({...t, done:0}));
       const commitHistory = pushHistory(prev.commitHistory, dayKeyToClose, commitDays);
       const expHistory = pushHistory(prev.expHistory, dayKeyToClose, totalExp);
+
       const types = ['PH','IQ','SP'];
       const newMomentum = {...(prev.currentMomentum || {PH:0,IQ:0,SP:0})};
       const newNeglect = {...(prev.consecutiveNeglect || {PH:0,IQ:0,SP:0})};
@@ -360,7 +345,10 @@
           newMomentum[t] = Math.min(100, newMomentum[t] + increase);
         }
       }
-      return {...prev, hp, lockedUntil, zeroLockUsed, commitDays, shameDays, perfectStreak, lastCommitDay, lifetimeByType, lifetimePotentialByType, totalExp, tasks, commitHistory, expHistory, currentMomentum: newMomentum, consecutiveNeglect: newNeglect };
+
+      return {...prev, hp, lockedUntil, zeroLockUsed, commitDays, shameDays, perfectStreak, lastCommitDay,
+        lifetimeByType, lifetimePotentialByType, totalExp, tasks, commitHistory, expHistory,
+        currentMomentum: newMomentum, consecutiveNeglect: newNeglect };
     }
     function finalizeDayNoMercy(prevState){
       const today = todayKeyLocal();
@@ -400,142 +388,72 @@
       return live;
     }
 
-    // ✅ دالة توليد رسالة النظام عبر Groq API (مصححة)
-    const GROQ_API_KEY = "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"; // استبدله بمفتاحك
-    async function generateSystemMessage(userStats) {
-      const prompt = `أنت "النظام" من أنمي Solo Leveling. اكتب رسالة واحدة بالعربية موجهة للمستخدم مباشرة (استخدم "أنت"). 
-طابع الرسالة يجب أن يكون:
-- إن كان أداءه سيئاً (<50%): تهديد، عتاب قاسٍ، سخرية
-- إن كان أداءه متوسطاً (50-69%): تحفيز، دفع للتحسن
-- إن كان أداءه ممتازاً (≥70%): مدح، احترام، تشجيع
-
-هذه إحصائياته الحالية:
-- نسبة إنجاز أمس: ${userStats.yesterdayCompletion}%
-- HP الحالية: ${userStats.hp}/100
-- أيام الالتزام المتواصلة: ${userStats.commitDays}
-- أيام الإهمال المتراكمة: ${userStats.shameDays}
-- الرتبة: ${userStats.rank}
-- المستوى: ${userStats.level}
-
-الرسالة يجب أن تكون 2-3 جمل كحد أقصى، بأسلوب Solo Leveling الملحمي والبارد. لا تكرر نفس الرسائل السابقة أبداً. كن مبتكراً كل مرة.`;
-
-      try {
-        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${GROQ_API_KEY}` },
-          body: JSON.stringify({ model: "gemma2-9b-it", messages: [{ role: "user", content: prompt }], max_tokens: 300, temperature: 1.0 })
-        });
-        const data = await response.json();
-        let msg = data?.choices?.[0]?.message?.content;
-        if (!msg || msg.trim().length < 10) msg = data?.choices?.[0]?.text;
-        if (!msg || msg.trim().length < 10) return "النظام يراقبك بصمت... استمر في التقدم.";
-        return msg.replace(/أنت "النظام".*/g, "").trim();
-      } catch (err) { console.error("فشل توليد رسالة AI:", err); return "النظام يواجه تداخلاً... لكنه لا يزال يراقبك. استمر."; }
-    }
-
-    // ⭐️ DashboardPage مع رسائل النظام (مرة واحدة يومياً)
     function DashboardPage(props){
       const { state, setState, level, computed, rank, isLocked, lockRemaining, countdownMs, quote, radarLive, commitPoints, expPoints, expPenaltyPreview,
         newTitle, setNewTitle, newTarget, setNewTarget, newImportance, setNewImportance, newType, setNewType, addTask, updateTask, removeTask } = props;
-
-      const [systemMessage, setSystemMessage] = useState(null);
-      const [showMessage, setShowMessage] = useState(false);
-      const messageTimer = useRef(null);
-
-      useEffect(()=>{
-        const today = todayKeyLocal();
-        const SHOWN_KEY = 'rise_msg_shown_date';
-        const MSG_KEY = 'rise_system_msg';
-        if (localStorage.getItem(SHOWN_KEY) === today) return;
-        const saved = localStorage.getItem(MSG_KEY);
-        if (saved) { const parsed = JSON.parse(saved); if (parsed.date === today && parsed.msg) { const t = setTimeout(()=>{ setSystemMessage(parsed.msg); setShowMessage(true); localStorage.setItem(SHOWN_KEY, today); }, 10000); return ()=> clearTimeout(t); } }
-        const msgTimer = setTimeout(async ()=>{
-          const msg = await generateSystemMessage({ yesterdayCompletion: pct(computed.completion), hp: state.hp, commitDays: state.commitDays, shameDays: state.shameDays || 0, rank: rank.label, level: level.level });
-          localStorage.setItem(MSG_KEY, JSON.stringify({ date: today, msg }));
-          localStorage.setItem(SHOWN_KEY, today);
-          setSystemMessage(msg);
-          setShowMessage(true);
-        }, 10000);
-        messageTimer.current = msgTimer;
-        return ()=> { if(messageTimer.current) clearTimeout(messageTimer.current); };
-      }, []);
-
-      useEffect(()=>{ if (showMessage) { const t = setTimeout(()=> setShowMessage(false), 8000); return ()=> clearTimeout(t); } }, [showMessage]);
-
-      return h("div", null,
-        showMessage && systemMessage && h("div", {
-          style: { position: "fixed", top: 20, left: "50%", transform: "translateX(-50%)", zIndex: 9999, background: "rgba(0,30,60,0.92)", border: "1px solid rgba(0,229,255,0.7)", borderRadius: 16, padding: "16px 22px", maxWidth: 500, width: "90%", boxShadow: "0 0 40px rgba(0,229,255,0.4), 0 0 80px rgba(0,0,0,0.5) inset", animation: "systemMsgIn 0.4s ease-out", color: "#e0f0ff", fontSize: 14, lineHeight: 1.7, textAlign: "right", fontFamily: "var(--font-sans)" }
-        },
-          h("div", {style:{display:"flex", alignItems:"center", gap:8, marginBottom:8, borderBottom:"1px solid rgba(0,229,255,0.3)", paddingBottom:8}}, h("span", {style:{fontFamily:"Oxanium", color:"#0af", fontSize:12, letterSpacing:2}}, "⬡ SYSTEM"), h("span", {style:{color:"rgba(255,255,255,0.4)", fontSize:10}}, "• رسالة اليوم")),
-          h("p", null, systemMessage),
-          h("button", { onClick: ()=> setShowMessage(false), style: {position:"absolute", top:8, left:12, background:"transparent", border:"none", color:"rgba(255,255,255,0.5)", cursor:"pointer", fontSize:16} }, "✕")
-        ),
-        h("style", null, `@keyframes systemMsgIn { from { opacity:0; transform: translateX(-50%) translateY(-20px) scale(0.95); } to { opacity:1; transform: translateX(-50%) translateY(0) scale(1); } }`),
-        h("main", {className:"main"},
-          h("section", null,
-            h("div", {className:"card"}, h("div", {className:"card-row"}, h("div", null, h("div", {className:"label"}, "QUOTE OF THE DAY"), h("div", {className:"quote"}, `“${quote}”`), h("div", {className:"muted", style:{marginTop:8}}, "اليوم يُغلق تلقائيًا عند 00:00. الغياب = عقوبة يومية.") ))),
-            h("div", {className:"card"},
-              h("div", {className:"progress-row"},
-                h("div", null, h("div", {className:"label"}, "TODAY PROGRESS"), h("div", {className:"big"}, `${pct(computed.completion)}%`), h("div", {className:"muted"}, `EXP اليوم (إذا ≥70%): +${Math.round(computed.exp)} / سقف اليوم: ${Math.round(computed.expMax)}`), h("div", {className:"muted", style:{marginTop:6}}, `عقوبة Net EXP إذا <70% (قاسية حسب Level): -${expPenaltyPreview}`), h("div", {style:{marginTop:8, color:"#f0b3ff", fontSize:12, background:"rgba(240,179,255,0.1)", padding:"6px 12px", borderRadius:"12px"}}, "⚠️ شرط أساسي: يجب أن يكون لديك مهمة واحدة على الأقل من كل نوع (PH, IQ, SP, XX) في قائمة اليوم، وإلا لن يُحتسب اليوم ناجحاً حتى لو وصلت 100%") ),
-                h("div", {className:"progress-side"}, h("div", {className:"bar"}, h("div", {className:"fill", style:{width:`${pct(computed.completion)}%`}})), h("div", {className:"tiny", style:{marginTop:8}}, h("span", null, "≥ 70% + كل الأنواع = يوم ناجح"), h("span", null, "أي نقص = خصم Net EXP")) )
-              ),
-              h("div", {className:"task-list"}, state.tasks.map(t=>{
-                const target = Math.max(1, Number(t.target||1)), done = clamp(Number(t.done||0),0,target), itemPct = target>0 ? (done/target)*100 : 0;
-                const typeClass = t.type==="PH" ? "ph" : (t.type==="IQ" ? "iq" : (t.type==="SP" ? "sp" : "xx"));
-                return h("div", {className:"task", key:t.id},
-                  h("div", {className:"task-top"},
-                    h("div", {style:{minWidth:0}}, h("div", {style:{display:"flex", alignItems:"center", gap:10, flexWrap:"wrap"}}, h("span", {className:`tag ${typeClass}`}, `${t.type} • imp ${t.importance}/5`), h("div", {className:"task-title", title:t.title}, t.title)), h("div", {className:"task-meta"}, h("span", null, `Target: ${t.target}`), h("span", null, `Done: ${t.done}`), h("span", null, `Progress: ${pct(itemPct/100)}%`) )),
-                    h("div", {className:"task-controls"}, h("div", {className:"bar", style:{width:160}}, h("div", {className:"fill", style:{width:`${itemPct}%`}})), h("input", {className:"input small", type:"number", min:0, step:1, value:t.done, disabled:isLocked, onChange:(e)=>updateTask(t.id, {done: clamp(Number(e.target.value||0), 0, 999999)})}), h("button", {className:"btn", disabled:isLocked, onClick:()=>removeTask(t.id), title:"Remove"}, "✕") )
-                  )
-                );
-              }))
+      return h("main", {className:"main"},
+        h("section", null,
+          h("div", {className:"card"}, h("div",{className:"card-row"}, h("div",null, h("div",{className:"label"},"QUOTE OF THE DAY"), h("div",{className:"quote"},`“${quote}”`), h("div",{className:"muted",style:{marginTop:8}},"اليوم يُغلق تلقائيًا عند 00:00. الغياب = عقوبة يومية.")))),
+          h("div", {className:"card"},
+            h("div",{className:"progress-row"},
+              h("div",null, h("div",{className:"label"},"TODAY PROGRESS"), h("div",{className:"big"},`${pct(computed.completion)}%`), h("div",{className:"muted"},`EXP اليوم (إذا ≥70%): +${Math.round(computed.exp)} / سقف اليوم: ${Math.round(computed.expMax)}`), h("div",{className:"muted",style:{marginTop:6}},`عقوبة Net EXP إذا <70% (قاسية حسب Level): -${expPenaltyPreview}`), h("div",{style:{marginTop:8, color:"#f0b3ff", fontSize:12, background:"rgba(240,179,255,0.1)", padding:"6px 12px", borderRadius:"12px"}},"⚠️ شرط أساسي: يجب أن يكون لديك مهمة واحدة على الأقل من كل نوع (PH, IQ, SP, XX) في قائمة اليوم، وإلا لن يُحتسب اليوم ناجحاً حتى لو وصلت 100%")),
+              h("div",{className:"progress-side"}, h("div",{className:"bar"},h("div",{className:"fill",style:{width:`${pct(computed.completion)}%`}})), h("div",{className:"tiny",style:{marginTop:8}}, h("span",null,"≥ 70% + كل الأنواع = يوم ناجح"), h("span",null,"أي نقص = خصم Net EXP")))
             ),
-            h("div", {className:"card"}, h("div", {className:"label"}, "ADD TASK"), h("div", {className:"section-title"}, "مهمة جديدة"), h("div", {className:"muted"}, "الأهمية هي التي تتحكم في الإنصاف."), h("div", {className:"add-grid"}, h("input", {className:"input", value:newTitle, disabled:isLocked, placeholder:"مثال: دراسة / قرآن / جري", onChange:(e)=>setNewTitle(e.target.value)}), h("input", {className:"input", type:"number", min:1, value:newTarget === "" ? "" : newTarget, disabled:isLocked, placeholder:"الهدف", onChange:(e)=>setNewTarget(e.target.value === "" ? "" : Number(e.target.value))}), h("select", {className:"input", value:String(newImportance), disabled:isLocked, onChange:(e)=>setNewImportance(Number(e.target.value))}, [1,2,3,4,5].map(v=>h("option",{key:v,value:String(v)},String(v)))), h("select", {className:"input", value:newType, disabled:isLocked, onChange:(e)=>setNewType(e.target.value)}, ["PH","IQ","SP","XX"].map(v=>h("option",{key:v,value:v},v))), h("button", {className:"btn btn-green", disabled:isLocked, onClick:()=>{ addTask(newTitle, newTarget === "" ? 1 : newTarget, newImportance, newType); setNewTitle(""); setNewTarget(1); setNewImportance(3); setNewType("PH"); }}, "+") )),
-            h("div", {className:"card"}, h("div", {className:"label"}, "COMMIT STATS"), h("div", {className:"section-title"}, "أيام الالتزام الحالية + منحناها"), h("div", {className:"mini-stats"}, h("div", {className:"mini"}, h("div", {className:"mini-v"}, state.commitDays, h("span", null, " يوم")), h("div", {className:"mini-l"}, "Commit Days (Live)")), h("div", {className:"mini"}, h("div", {className:"mini-v"}, rank.label), h("div", {className:"mini-l"}, "RANK الحالي")), h("div", {className:"mini"}, h("div", {className:"mini-v"}, `${commitPoints.length}`, h("span", null, " يوم")), h("div", {className:"mini-l"}, "أيام مسجلة بالمنحنى")) ), h(CommitChart, {points: commitPoints}) ),
-            h("div", {className:"card"}, h("div", {className:"label"}, "NET EXP"), h("div", {className:"section-title"}, "صافي EXP المتراكمة + منحناها"), h("div", {className:"muted"}, "تزيد إذا اليوم ≥70%، وتنقص إذا <70% بعقوبة قاسية + الغياب يُعاقَب يوميًا."), h("div", {className:"mini-stats"}, h("div", {className:"mini"}, h("div", {className:"mini-v"}, Math.round(state.totalExp)), h("div", {className:"mini-l"}, "Net EXP (Live)")), h("div", {className:"mini"}, h("div", {className:"mini-v"}, level.level), h("div", {className:"mini-l"}, "Level (يتأثر مباشرة)")), h("div", {className:"mini"}, h("div", {className:"mini-v"}, `-${expPenaltyPreview}`), h("div", {className:"mini-l"}, "عقوبة اليوم إذا فشل")) ), h(ExpChart, {points: expPoints}) )
+            h("div",{className:"task-list"}, state.tasks.map(t=>{
+              const target = Math.max(1, Number(t.target||1)), done = clamp(Number(t.done||0),0,target), itemPct = target>0 ? (done/target)*100 : 0;
+              const typeClass = t.type==="PH" ? "ph" : (t.type==="IQ" ? "iq" : (t.type==="SP" ? "sp" : "xx"));
+              return h("div",{className:"task",key:t.id},
+                h("div",{className:"task-top"},
+                  h("div",{style:{minWidth:0}}, h("div",{style:{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}, h("span",{className:`tag ${typeClass}`},`${t.type} • imp ${t.importance}/5`), h("div",{className:"task-title",title:t.title},t.title)), h("div",{className:"task-meta"}, h("span",null,`Target: ${t.target}`), h("span",null,`Done: ${t.done}`), h("span",null,`Progress: ${pct(itemPct/100)}%`))),
+                  h("div",{className:"task-controls"}, h("div",{className:"bar",style:{width:160}},h("div",{className:"fill",style:{width:`${itemPct}%`}})), h("input",{className:"input small",type:"number",min:0,step:1,value:t.done,disabled:isLocked,onChange:(e)=>updateTask(t.id,{done:clamp(Number(e.target.value||0),0,999999)})}), h("button",{className:"btn",disabled:isLocked,onClick:()=>removeTask(t.id),title:"Remove"},"✕"))
+                )
+              );
+            }))
           ),
-          h("aside", null,
-            h("div", {className:"card"}, h("div", {className:"label"}, "LIVE STATUS"), h("div", {className:"section-title"}, "ملخص فوري"), h("div", {className:"countdown"}, h("div", {className:"muted"}, "تحت منتصف الليل:"), h("div", {className:"mono"}, formatCountdown(countdownMs))), isLocked ? h("div", {className:"locked"}, h("div", {className:"locked-row"}, h("div", null, "تم قفل الدخول مؤقتًا بسبب HP = 0."), h("div", {className:"mono"}, lockRemaining ? `متبقي ${lockRemaining.hh}h ${lockRemaining.mm}m` : "..."))) : null, h("div", {className:"mini-stats"}, h("div", {className:"mini"}, h("div", {className:"mini-v"}, `${state.hp}`), h("div", {className:"mini-l"}, "HP")), h("div", {className:"mini"}, h("div", {className:"mini-v"}, `${level.level}`), h("div", {className:"mini-l"}, "LEVEL")), h("div", {className:"mini"}, h("div", {className:"mini-v"}, rank.label), h("div", {className:"mini-l"}, "RANK")) ) ),
-            h("div", {className:"card"}, h("div", {className:"label"}, "RADAR"), h("div", {className:"section-title"}, "قوة الرادار المتوقعة (Live)"), h("div", {className:"muted"}, "تأثير فوري لإنجازات اليوم وإهمال الأنواع."), h(RadarCanvas, {values: radarLive}), h("div", {className:"mini-stats"}, h("div", {className:"mini"}, h("div", {className:"mini-v"}, radarLive.PH, h("span", null, "%")), h("div", {className:"mini-l"}, TYPE_META.PH.label)), h("div", {className:"mini"}, h("div", {className:"mini-v"}, radarLive.IQ, h("span", null, "%")), h("div", {className:"mini-l"}, TYPE_META.IQ.label)), h("div", {className:"mini"}, h("div", {className:"mini-v"}, radarLive.SP, h("span", null, "%")), h("div", {className:"mini-l"}, TYPE_META.SP.label)) ) ),
-            h("div", {className:"shame-panel"}, h("div", {className:"shame-head"}, h("div", {className:"shame-title"}, "SHAME DAYS"), h("div", {className:"shame-value"}, String(state.shameDays || 0))), h("div", {className:"shame-sub"}, `سلسلة 100% الحالية: ${state.perfectStreak || 0}/10`), h("div", {className:"note", style:{marginTop:"10px"}}, "• أيام العار: هي الأيام التي ينتهي فيها اليوم و TODAY PROGRESS = 0%."), h("div", {className:"note"}, "• يزيد العداد +1 عند كل يوم عار، بما في ذلك الأيام التي لم يدخل فيها المستخدم للموقع عدة أيام."), h("div", {className:"note"}, "• إذا حققت 10 أيام متتالية كاملة 100% TODAY PROGRESS، يتم حذف 1 من SHAME DAYS.") ),
-            h("div", {className:"card"}, h("div", {className:"label"}, "SYSTEM NOTES"), h("div", {className:"note"}, "• اليوم يُغلق تلقائيًا عند 00:00 ويحفظ النتائج."), h("div", {className:"note"}, "• الغياب: يُحسب كفشل كامل لكل يوم فات (No-Mercy)، وهذا يشمل أيضًا SHAME DAYS."), h("div", {className:"note"}, "• HP Rule: إذا ≥ 70% ⇒ +6 HP + يُحسب يوم التزام. إذا بين 50% و 69% ⇒ -4 HP. إذا < 50% ⇒ -12 HP."), h("div", {className:"note"}, "• إذا HP وصل 0 ⇒ قفل 24 ساعة يبدأ عند عودتك."), h("div", {className:"note"}, "• Net EXP: إذا ≥70% تُضاف EXP اليوم، وإذا <70% تُخصم EXP بعقوبة قاسية تزيد مع الـ Level."), h("div", {className:"note"}, "• RANK حسب أيام الالتزام: D=7، C=30، B=90، A=180، S=365."), h("div", {className:"note"}, "• عقوبة الرانك عند عدم الالتزام: تنقص أيام الالتزام حسب رتبتك (E=0, D=1, C=3, B=7, A=14, S=30)."), h("div", {className:"note"}, "• XX: نوع مهام سيئ. عند تسجيله كمنجَز مرة واحدة على الأقل في نفس اليوم، يخصم 50% ثابتة مباشرة من TODAY PROGRESS."), h("div", {className:"note", style:{color:"#f0b3ff", borderColor:"rgba(240,179,255,0.5)", background:"rgba(240,179,255,0.08)"}}, "• شرط اليوم الناجح (مهم!): حتى لو تقدمك ≥70%، لن يُحتسب اليوم ناجحاً إذا لم يكن لديك مهمة واحدة على الأقل من كل نوع (PH, IQ, SP, XX) في قائمة اليوم."), h("div", {className:"note"}, "• الرادار الآن يعكس توقعات حية بناءً على ما أنجزته اليوم. الإهمال يظهر فوراً.") )
-          )
+          h("div",{className:"card"}, h("div",{className:"label"},"ADD TASK"), h("div",{className:"section-title"},"مهمة جديدة"), h("div",{className:"muted"},"الأهمية هي التي تتحكم في الإنصاف."), h("div",{className:"add-grid"}, h("input",{className:"input",value:newTitle,disabled:isLocked,placeholder:"مثال: دراسة / قرآن / جري",onChange:(e)=>setNewTitle(e.target.value)}), h("input",{className:"input",type:"number",min:1,value:newTarget===""?"":newTarget,disabled:isLocked,placeholder:"الهدف",onChange:(e)=>setNewTarget(e.target.value===""?"":Number(e.target.value))}), h("select",{className:"input",value:String(newImportance),disabled:isLocked,onChange:(e)=>setNewImportance(Number(e.target.value))}, [1,2,3,4,5].map(v=>h("option",{key:v,value:String(v)},String(v)))), h("select",{className:"input",value:newType,disabled:isLocked,onChange:(e)=>setNewType(e.target.value)}, ["PH","IQ","SP","XX"].map(v=>h("option",{key:v,value:v},v))), h("button",{className:"btn btn-green",disabled:isLocked,onClick:()=>{ addTask(newTitle,newTarget===""?1:newTarget,newImportance,newType); setNewTitle(""); setNewTarget(1); setNewImportance(3); setNewType("PH"); }},"+")) ),
+          h("div",{className:"card"}, h("div",{className:"label"},"COMMIT STATS"), h("div",{className:"section-title"},"أيام الالتزام الحالية + منحناها"), h("div",{className:"mini-stats"}, h("div",{className:"mini"},h("div",{className:"mini-v"},state.commitDays,h("span",null," يوم")),h("div",{className:"mini-l"},"Commit Days (Live)")), h("div",{className:"mini"},h("div",{className:"mini-v"},rank.label),h("div",{className:"mini-l"},"RANK الحالي")), h("div",{className:"mini"},h("div",{className:"mini-v"},`${commitPoints.length}`,h("span",null," يوم")),h("div",{className:"mini-l"},"أيام مسجلة بالمنحنى")) ), h(CommitChart,{points:commitPoints}) ),
+          h("div",{className:"card"}, h("div",{className:"label"},"NET EXP"), h("div",{className:"section-title"},"صافي EXP المتراكمة + منحناها"), h("div",{className:"muted"},"تزيد إذا اليوم ≥70%، وتنقص إذا <70% بعقوبة قاسية + الغياب يُعاقَب يوميًا."), h("div",{className:"mini-stats"}, h("div",{className:"mini"},h("div",{className:"mini-v"},Math.round(state.totalExp)),h("div",{className:"mini-l"},"Net EXP (Live)")), h("div",{className:"mini"},h("div",{className:"mini-v"},level.level),h("div",{className:"mini-l"},"Level (يتأثر مباشرة)")), h("div",{className:"mini"},h("div",{className:"mini-v"},`-${expPenaltyPreview}`),h("div",{className:"mini-l"},"عقوبة اليوم إذا فشل")) ), h(ExpChart,{points:expPoints}) )
+        ),
+        h("aside",null,
+          h("div",{className:"card"}, h("div",{className:"label"},"LIVE STATUS"), h("div",{className:"section-title"},"ملخص فوري"), h("div",{className:"countdown"}, h("div",{className:"muted"},"تحت منتصف الليل:"), h("div",{className:"mono"},formatCountdown(countdownMs))), isLocked ? h("div",{className:"locked"},h("div",{className:"locked-row"},h("div",null,"تم قفل الدخول مؤقتًا بسبب HP = 0."),h("div",{className:"mono"},lockRemaining?`متبقي ${lockRemaining.hh}h ${lockRemaining.mm}m`:"..."))) : null, h("div",{className:"mini-stats"}, h("div",{className:"mini"},h("div",{className:"mini-v"},`${state.hp}`),h("div",{className:"mini-l"},"HP")), h("div",{className:"mini"},h("div",{className:"mini-v"},`${level.level}`),h("div",{className:"mini-l"},"LEVEL")), h("div",{className:"mini"},h("div",{className:"mini-v"},rank.label),h("div",{className:"mini-l"},"RANK")) ) ),
+          h("div",{className:"card"}, h("div",{className:"label"},"RADAR"), h("div",{className:"section-title"},"قوة الرادار المتوقعة (Live)"), h("div",{className:"muted"},"تأثير فوري لإنجازات اليوم وإهمال الأنواع."), h(RadarCanvas,{values:radarLive}), h("div",{className:"mini-stats"}, h("div",{className:"mini"},h("div",{className:"mini-v"},radarLive.PH,h("span",null,"%")),h("div",{className:"mini-l"},TYPE_META.PH.label)), h("div",{className:"mini"},h("div",{className:"mini-v"},radarLive.IQ,h("span",null,"%")),h("div",{className:"mini-l"},TYPE_META.IQ.label)), h("div",{className:"mini"},h("div",{className:"mini-v"},radarLive.SP,h("span",null,"%")),h("div",{className:"mini-l"},TYPE_META.SP.label)) ) ),
+          h("div",{className:"shame-panel"}, h("div",{className:"shame-head"},h("div",{className:"shame-title"},"SHAME DAYS"),h("div",{className:"shame-value"},String(state.shameDays||0))), h("div",{className:"shame-sub"},`سلسلة 100% الحالية: ${state.perfectStreak||0}/10`), h("div",{className:"note",style:{marginTop:"10px"}},"• أيام العار: هي الأيام التي ينتهي فيها اليوم و TODAY PROGRESS = 0%."), h("div",{className:"note"},"• يزيد العداد +1 عند كل يوم عار، بما في ذلك الأيام التي لم يدخل فيها المستخدم للموقع عدة أيام."), h("div",{className:"note"},"• إذا حققت 10 أيام متتالية كاملة 100% TODAY PROGRESS، يتم حذف 1 من SHAME DAYS.") ),
+          h("div",{className:"card"}, h("div",{className:"label"},"SYSTEM NOTES"), h("div",{className:"note"},"• اليوم يُغلق تلقائيًا عند 00:00 ويحفظ النتائج."), h("div",{className:"note"},"• الغياب: يُحسب كفشل كامل لكل يوم فات (No-Mercy)، وهذا يشمل أيضًا SHAME DAYS."), h("div",{className:"note"},"• HP Rule: إذا ≥ 70% ⇒ +6 HP + يُحسب يوم التزام. إذا بين 50% و 69% ⇒ -4 HP. إذا < 50% ⇒ -12 HP."), h("div",{className:"note"},"• إذا HP وصل 0 ⇒ قفل 24 ساعة يبدأ عند عودتك."), h("div",{className:"note"},"• Net EXP: إذا ≥70% تُضاف EXP اليوم، وإذا <70% تُخصم EXP بعقوبة قاسية تزيد مع الـ Level."), h("div",{className:"note"},"• RANK حسب أيام الالتزام: D=7، C=30، B=90، A=180، S=365."), h("div",{className:"note"},"• عقوبة الرانك عند عدم الالتزام: تنقص أيام الالتزام حسب رتبتك (E=0, D=1, C=3, B=7, A=14, S=30)."), h("div",{className:"note"},"• XX: نوع مهام سيئ. عند تسجيله كمنجَز مرة واحدة على الأقل في نفس اليوم، يخصم 50% ثابتة مباشرة من TODAY PROGRESS."), h("div",{className:"note",style:{color:"#f0b3ff", borderColor:"rgba(240,179,255,0.5)", background:"rgba(240,179,255,0.08)"}},"• شرط اليوم الناجح (مهم!): حتى لو تقدمك ≥70%، لن يُحتسب اليوم ناجحاً إذا لم يكن لديك مهمة واحدة على الأقل من كل نوع (PH, IQ, SP, XX) في قائمة اليوم."), h("div",{className:"note"},"• الرادار الآن يعكس توقعات حية بناءً على ما أنجزته اليوم. الإهمال يظهر فوراً.") )
         )
       );
     }
 
     function ManualPage(){
-      return h("div", {className:"manual-layout"},
-        h("section", null,
-          h("div", {className:"card"}, h("div", {className:"label"}, "MANUAL"), h("div", {className:"section-title"}, "كتيب التعليمات"), h("div", {className:"manual-highlight"}, "هذا النظام ليس تطبيق ملاحظات عادي، بل نظام تقييم يومي صارم. كل يوم يُقاس بالنسبة المئوية، ثم تتحول النتيجة إلى HP و EXP و Commit Days و Shame Days."),
-            h("div", {className:"manual-list"},
-              h("div", {className:"manual-step"}, h("div", {className:"manual-step-title"}, "▸ الخطوة الأولى: إضافة المهام"), h("div", {className:"manual-step-text"}, "في لوحة النظام، ستجد قسمًا بعنوان \"ADD TASK\". حدد اسم المهمة، العدد المستهدف (مثل عدد الصفحات أو التكرارات)، الأهمية (من 1 إلى 5، حيث 5 هي الأعلى وزنًا)، ثم النوع المناسب (PH للجسم، IQ للعقل، SP للروح، أو XX للعادة السيئة). اضغط على زر + الأخضر لإضافتها إلى قائمة مهام اليوم.") ),
-              h("div", {className:"manual-step"}, h("div", {className:"manual-step-title"}, "▸ الخطوة الثانية: تحديث الإنجاز اليومي"), h("div", {className:"manual-step-text"}, "خلال يومك، عدّل قيمة \"Done\" بجانب كل مهمة. القيمة تتراوح من صفر حتى الهدف المحدد. النظام يحسب تلقائيًا النسبة المئوية لإنجاز كل مهمة ويزنها حسب أهميتها. شريط التقدم ونسبة TODAY PROGRESS ستتغير في الوقت الفعلي لتعكس مدى تقدمك الحقيقي.") ),
-              h("div", {className:"manual-step"}, h("div", {className:"manual-step-title"}, "▸ الخطوة الثالثة: فهم تأثير المهمة السلبية (XX)"), h("div", {className:"manual-step-text"}, "إذا أضفت مهمة من نوع XX (عادة سيئة) وسجلت فيها أي إنجاز (أي جعلت Done أكبر من صفر)، فسيتم خصم 50% مباشرة من نسبة TODAY PROGRESS. هذا يمثل تأثير هذه العادة السلبية على تقدمك العام. استخدم هذا النوع بحذر.") ),
-              h("div", {className:"manual-step"}, h("div", {className:"manual-step-title"}, "▸ الخطوة الرابعة: إغلاق اليوم التلقائي والحساب"), h("div", {className:"manual-step-text"}, "لا تحتاج إلى الضغط على زر حفظ. النظام يراقب الساعة. عند منتصف الليل تمامًا (00:00)، يتم إغلاق اليوم الحالي تلقائيًا. يتم حساب النتيجة النهائية لتقدم اليوم، وتُطبق جميع القوانين (تغيير HP، EXP، أيام الالتزام، أيام العار). تظهر النتائج فورًا في البطاقات والإحصائيات. إذا غبت عن الموقع لعدة أيام، سيقوم النظام عند عودتك بمحاكاة كل الأيام الفائتة ويعتبرها أيام فشل كامل.") ),
-              h("div", {className:"manual-step"}, h("div", {className:"manual-step-title"}, "▸ نظام الإهمال الجديد (Radar Decay)"), h("div", {className:"manual-step-text"}, "الرادار الآن يعكس قوة حية (currentMomentum) تنخفض إذا أهملت نوعًا معينًا. إذا لم تنجز أي مهمة من نوع PH, IQ, أو SP في يوم، يزداد عداد الإهمال وتنخفض القوة أُسياً. الإنجاز يعيد ضبط العداد ويرفع القوة تدريجياً.") )
+      return h("div",{className:"manual-layout"},
+        h("section",null,
+          h("div",{className:"card"}, h("div",{className:"label"},"MANUAL"), h("div",{className:"section-title"},"كتيب التعليمات"), h("div",{className:"manual-highlight"},"هذا النظام ليس تطبيق ملاحظات عادي، بل نظام تقييم يومي صارم. كل يوم يُقاس بالنسبة المئوية، ثم تتحول النتيجة إلى HP و EXP و Commit Days و Shame Days."),
+            h("div",{className:"manual-list"},
+              h("div",{className:"manual-step"},h("div",{className:"manual-step-title"},"▸ الخطوة الأولى: إضافة المهام"),h("div",{className:"manual-step-text"},"في لوحة النظام، ستجد قسمًا بعنوان \"ADD TASK\". حدد اسم المهمة، العدد المستهدف (مثل عدد الصفحات أو التكرارات)، الأهمية (من 1 إلى 5، حيث 5 هي الأعلى وزنًا)، ثم النوع المناسب (PH للجسم، IQ للعقل، SP للروح، أو XX للعادة السيئة). اضغط على زر + الأخضر لإضافتها إلى قائمة مهام اليوم.")),
+              h("div",{className:"manual-step"},h("div",{className:"manual-step-title"},"▸ الخطوة الثانية: تحديث الإنجاز اليومي"),h("div",{className:"manual-step-text"},"خلال يومك، عدّل قيمة \"Done\" بجانب كل مهمة. القيمة تتراوح من صفر حتى الهدف المحدد. النظام يحسب تلقائيًا النسبة المئوية لإنجاز كل مهمة ويزنها حسب أهميتها. شريط التقدم ونسبة TODAY PROGRESS ستتغير في الوقت الفعلي لتعكس مدى تقدمك الحقيقي.")),
+              h("div",{className:"manual-step"},h("div",{className:"manual-step-title"},"▸ الخطوة الثالثة: فهم تأثير المهمة السلبية (XX)"),h("div",{className:"manual-step-text"},"إذا أضفت مهمة من نوع XX (عادة سيئة) وسجلت فيها أي إنجاز (أي جعلت Done أكبر من صفر)، فسيتم خصم 50% مباشرة من نسبة TODAY PROGRESS. هذا يمثل تأثير هذه العادة السلبية على تقدمك العام. استخدم هذا النوع بحذر.")),
+              h("div",{className:"manual-step"},h("div",{className:"manual-step-title"},"▸ الخطوة الرابعة: إغلاق اليوم التلقائي والحساب"),h("div",{className:"manual-step-text"},"لا تحتاج إلى الضغط على زر حفظ. النظام يراقب الساعة. عند منتصف الليل تمامًا (00:00)، يتم إغلاق اليوم الحالي تلقائيًا. يتم حساب النتيجة النهائية لتقدم اليوم، وتُطبق جميع القوانين (تغيير HP، EXP، أيام الالتزام، أيام العار). تظهر النتائج فورًا في البطاقات والإحصائيات. إذا غبت عن الموقع لعدة أيام، سيقوم النظام عند عودتك بمحاكاة كل الأيام الفائتة ويعتبرها أيام فشل كامل.")),
+              h("div",{className:"manual-step"},h("div",{className:"manual-step-title"},"▸ نظام الإهمال الجديد (Radar Decay)"),h("div",{className:"manual-step-text"},"الرادار الآن يعكس قوة حية (currentMomentum) تنخفض إذا أهملت نوعًا معينًا. إذا لم تنجز أي مهمة من نوع PH, IQ, أو SP في يوم، يزداد عداد الإهمال وتنخفض القوة أُسياً. الإنجاز يعيد ضبط العداد ويرفع القوة تدريجياً."))
             )
           ),
-          h("div", {className:"card"}, h("div", {className:"label"}, "SCORING"), h("div", {className:"section-title"}, "آلية التقييم والنتائج"), h("div", {className:"manual-grid"}, h("div", {className:"note"}, "• الأهمية: تؤثر بشكل مباشر على وزن المهمة في حساب التقدم. مهمة بوزن 5 تساهم بخمسة أضعاف مهمة بوزن 1."), h("div", {className:"note"}, "• الهدف (Target): هو السقف الأعلى للإنجاز. أي زيادة عن الهدف لا تُحتسب."), h("div", {className:"note"}, "• الأنواع الإيجابية (PH, IQ, SP): تساهم في رفع نسبة التقدم وتُضاف إلى إحصائياتك الكلية في الرادار."), h("div", {className:"note"}, "• الأنواع السلبية (XX): لا تساهم في التقدم الإيجابي، بل تخصم من النسبة النهائية.") ), h("div", {className:"manual-highlight"}, "🔹 نقطة النجاح الحقيقية هي تحقيق 70% أو أكثر في TODAY PROGRESS. أي شيء أقل من ذلك يعتبر فشلًا يترتب عليه عقوبات على جميع الأصعدة (HP، EXP، أيام الالتزام).") ),
-          h("div", {className:"card"}, h("div", {className:"label"}, "HP / LOCK"), h("div", {className:"section-title"}, "نظام نقاط الحياة (HP) والقفل"), h("div", {className:"manual-list"}, h("div", {className:"manual-step"}, h("div", {className:"manual-step-title"}, "✓ النجاح (≥ 70%)"), h("div", {className:"manual-step-text"}, "يتم منحك +6 HP. وتزداد نقاط حياتك، مما يعكس استقرارك وتقدمك.") ), h("div", {className:"manual-step"}, h("div", {className:"manual-step-title"}, "⚠ الفشل المتوسط (50% - 69%)"), h("div", {className:"manual-step-text"}, "يتم خصم 4 HP. هذا مؤشر على وجود تقصير يحتاج إلى معالجة.") ), h("div", {className:"manual-step"}, h("div", {className:"manual-step-title"}, "❌ الفشل القاسي (< 50%)"), h("div", {className:"manual-step-text"}, "يتم خصم 12 HP. هذا يمثل انهيارًا في الأداء اليومي.") ), h("div", {className:"manual-step"}, h("div", {className:"manual-step-title"}, "🔒 القفل عند الوصول للصفر"), h("div", {className:"manual-step-text"}, "إذا وصلت HP إلى 0، يتم تفعيل القفل لمدة 24 ساعة كاملة. خلال هذه الفترة، لن تتمكن من تعديل أي مهمة أو إضافة مهام جديدة. ستظهر رسالة واضحة تخبرك بالوقت المتبقي لرفع القفل. هذه فترة إجبارية للتفكير والاستراحة.") ) ) )
+          h("div",{className:"card"}, h("div",{className:"label"},"SCORING"), h("div",{className:"section-title"},"آلية التقييم والنتائج"), h("div",{className:"manual-grid"}, h("div",{className:"note"},"• الأهمية: تؤثر بشكل مباشر على وزن المهمة في حساب التقدم. مهمة بوزن 5 تساهم بخمسة أضعاف مهمة بوزن 1."), h("div",{className:"note"},"• الهدف (Target): هو السقف الأعلى للإنجاز. أي زيادة عن الهدف لا تُحتسب."), h("div",{className:"note"},"• الأنواع الإيجابية (PH, IQ, SP): تساهم في رفع نسبة التقدم وتُضاف إلى إحصائياتك الكلية في الرادار."), h("div",{className:"note"},"• الأنواع السلبية (XX): لا تساهم في التقدم الإيجابي، بل تخصم من النسبة النهائية.") ), h("div",{className:"manual-highlight"},"🔹 نقطة النجاح الحقيقية هي تحقيق 70% أو أكثر في TODAY PROGRESS. أي شيء أقل من ذلك يعتبر فشلًا يترتب عليه عقوبات على جميع الأصعدة (HP، EXP، أيام الالتزام).") ),
+          h("div",{className:"card"}, h("div",{className:"label"},"HP / LOCK"), h("div",{className:"section-title"},"نظام نقاط الحياة (HP) والقفل"), h("div",{className:"manual-list"}, h("div",{className:"manual-step"},h("div",{className:"manual-step-title"},"✓ النجاح (≥ 70%)"),h("div",{className:"manual-step-text"},"يتم منحك +6 HP. وتزداد نقاط حياتك، مما يعكس استقرارك وتقدمك.")), h("div",{className:"manual-step"},h("div",{className:"manual-step-title"},"⚠ الفشل المتوسط (50% - 69%)"),h("div",{className:"manual-step-text"},"يتم خصم 4 HP. هذا مؤشر على وجود تقصير يحتاج إلى معالجة.")), h("div",{className:"manual-step"},h("div",{className:"manual-step-title"},"❌ الفشل القاسي (< 50%)"),h("div",{className:"manual-step-text"},"يتم خصم 12 HP. هذا يمثل انهيارًا في الأداء اليومي.")), h("div",{className:"manual-step"},h("div",{className:"manual-step-title"},"🔒 القفل عند الوصول للصفر"),h("div",{className:"manual-step-text"},"إذا وصلت HP إلى 0، يتم تفعيل القفل لمدة 24 ساعة كاملة. خلال هذه الفترة، لن تتمكن من تعديل أي مهمة أو إضافة مهام جديدة. ستظهر رسالة واضحة تخبرك بالوقت المتبقي لرفع القفل. هذه فترة إجبارية للتفكير والاستراحة.")) ) )
         ),
-        h("aside", null,
-          h("div", {className:"card"}, h("div", {className:"label"}, "EXP / LEVEL"), h("div", {className:"section-title"}, "الخبرة (EXP) والمستوى (Level)"), h("div", {className:"note"}, "• في حالة النجاح (≥70%): يتم إضافة قيمة EXP المحسوبة بناءً على تقدمك الفعلي إلى رصيد Net EXP الخاص بك."), h("div", {className:"note"}, "• في حالة الفشل (<70%): لا تُضاف EXP، بل يتم خصم عقوبة قاسية من Net EXP. قيمة هذه العقوبة تزداد كلما ارتفع مستواك، مما يجعل التقدم في المستويات العالية أكثر تحديًا."), h("div", {className:"note"}, "• المستوى (Level) يتم حسابه تلقائيًا بناءً على إجمالي Net EXP. كلما زاد EXP، ارتفع مستوى شخصيتك. الفشل المتكرر قد يؤدي إلى انخفاض المستوى.") ),
-          h("div", {className:"card"}, h("div", {className:"label"}, "COMMIT / RANK"), h("div", {className:"section-title"}, "أيام الالتزام والرتب"), h("div", {className:"note"}, "• عند تحقيق النجاح (≥70%): يزداد رصيد Commit Days الخاص بك بمقدار يوم واحد."), h("div", {className:"note"}, "• عند الفشل (<70%): لا تقتصر العقوبة على عدم إضافة يوم، بل يتم خصم أيام من Commit Days وفقًا لرتبتك الحالية:"), h("div", {className:"manual-grid"}, h("div", {className:"note"}, "الرتبة E ← خصم 0"), h("div", {className:"note"}, "الرتبة D ← خصم 1"), h("div", {className:"note"}, "الرتبة C ← خصم 3"), h("div", {className:"note"}, "الرتبة B ← خصم 7"), h("div", {className:"note"}, "الرتبة A ← خصم 14"), h("div", {className:"note"}, "الرتبة S ← خصم 30") ), h("div", {className:"manual-highlight"}, "كلما ارتفعت رتبتك، أصبح الحفاظ عليها أصعب. هذا يعني أن النجاح في الرتب العليا يتطلب التزامًا حقيقيًا وليس مجرد تقدم سطحي.") ),
-          h("div", {className:"card"}, h("div", {className:"label"}, "SHAME DAYS"), h("div", {className:"section-title"}, "أيام العار"), h("div", {className:"note"}, "• تُحتسب \"يوم عار\" (Shame Day) في حال انتهى اليوم وكانت نسبة TODAY PROGRESS صفرًا تمامًا (0%)."), h("div", {className:"note"}, "• أي غياب عن الموقع لعدة أيام سيؤدي إلى إضافة يوم عار عن كل يوم غياب، لأن النظام يعتبره يومًا بلا أي إنجاز."), h("div", {className:"note"}, "• يوجد نظام مكافأة لتقليص أيام العار: إذا استطعت تحقيق 10 أيام متتالية بنسبة 100% كاملة، سيتم حذف يوم عار واحد من سجلك."), h("div", {className:"manual-warning"}, "Shame Days ليست مجرد رقم. إنها تذكير صارم بعدد الأيام التي مرت دون أي جهد. الهدف هو تقليل هذا الرقم إلى أدنى حد.") ),
-          h("div", {className:"card"}, h("div", {className:"label"}, "STORAGE"), h("div", {className:"section-title"}, "حفظ البيانات"), h("div", {className:"note"}, "البيانات محفوظة في Cloud Firestore وتظل مرتبطة بحسابك."), h("div", {className:"note"}, "يمكنك تسجيل الدخول من أي جهاز واستعادة تقدمك بالكامل."), h("div", {className:"note"}, "لا يوجد حفظ محلي (localStorage)، كل شيء عبر السحابة.") )
+        h("aside",null,
+          h("div",{className:"card"}, h("div",{className:"label"},"EXP / LEVEL"), h("div",{className:"section-title"},"الخبرة (EXP) والمستوى (Level)"), h("div",{className:"note"},"• في حالة النجاح (≥70%): يتم إضافة قيمة EXP المحسوبة بناءً على تقدمك الفعلي إلى رصيد Net EXP الخاص بك."), h("div",{className:"note"},"• في حالة الفشل (<70%): لا تُضاف EXP، بل يتم خصم عقوبة قاسية من Net EXP. قيمة هذه العقوبة تزداد كلما ارتفع مستواك، مما يجعل التقدم في المستويات العالية أكثر تحديًا."), h("div",{className:"note"},"• المستوى (Level) يتم حسابه تلقائيًا بناءً على إجمالي Net EXP. كلما زاد EXP، ارتفع مستوى شخصيتك. الفشل المتكرر قد يؤدي إلى انخفاض المستوى.") ),
+          h("div",{className:"card"}, h("div",{className:"label"},"COMMIT / RANK"), h("div",{className:"section-title"},"أيام الالتزام والرتب"), h("div",{className:"note"},"• عند تحقيق النجاح (≥70%): يزداد رصيد Commit Days الخاص بك بمقدار يوم واحد."), h("div",{className:"note"},"• عند الفشل (<70%): لا تقتصر العقوبة على عدم إضافة يوم، بل يتم خصم أيام من Commit Days وفقًا لرتبتك الحالية:"), h("div",{className:"manual-grid"}, h("div",{className:"note"},"الرتبة E ← خصم 0"), h("div",{className:"note"},"الرتبة D ← خصم 1"), h("div",{className:"note"},"الرتبة C ← خصم 3"), h("div",{className:"note"},"الرتبة B ← خصم 7"), h("div",{className:"note"},"الرتبة A ← خصم 14"), h("div",{className:"note"},"الرتبة S ← خصم 30") ), h("div",{className:"manual-highlight"},"كلما ارتفعت رتبتك، أصبح الحفاظ عليها أصعب. هذا يعني أن النجاح في الرتب العليا يتطلب التزامًا حقيقيًا وليس مجرد تقدم سطحي.") ),
+          h("div",{className:"card"}, h("div",{className:"label"},"SHAME DAYS"), h("div",{className:"section-title"},"أيام العار"), h("div",{className:"note"},"• تُحتسب \"يوم عار\" (Shame Day) في حال انتهى اليوم وكانت نسبة TODAY PROGRESS صفرًا تمامًا (0%)."), h("div",{className:"note"},"• أي غياب عن الموقع لعدة أيام سيؤدي إلى إضافة يوم عار عن كل يوم غياب، لأن النظام يعتبره يومًا بلا أي إنجاز."), h("div",{className:"note"},"• يوجد نظام مكافأة لتقليص أيام العار: إذا استطعت تحقيق 10 أيام متتالية بنسبة 100% كاملة، سيتم حذف يوم عار واحد من سجلك."), h("div",{className:"manual-warning"},"Shame Days ليست مجرد رقم. إنها تذكير صارم بعدد الأيام التي مرت دون أي جهد. الهدف هو تقليل هذا الرقم إلى أدنى حد.") ),
+          h("div",{className:"card"}, h("div",{className:"label"},"STORAGE"), h("div",{className:"section-title"},"حفظ البيانات"), h("div",{className:"note"},"البيانات محفوظة في Cloud Firestore وتظل مرتبطة بحسابك."), h("div",{className:"note"},"يمكنك تسجيل الدخول من أي جهاز واستعادة تقدمك بالكامل."), h("div",{className:"note"},"لا يوجد حفظ محلي (localStorage)، كل شيء عبر السحابة.") )
         )
       );
     }
 
-    // ✅ صفحة تسجيل الدخول (تستخدم Ouo.io بعد الدخول الناجح)
+    // ✅ صفحة تسجيل الدخول (عادية بدون Smart Link)
     function LoginPage({ onLoginSuccess }) {
       const [email, setEmail] = useState("");
       const [password, setPassword] = useState("");
       const [error, setError] = useState("");
       const [loading, setLoading] = useState(false);
-      const OUO_GATE = "https://ouo.io/ZtsnI7";
-
+      
       const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
@@ -543,12 +461,14 @@
         setLoading(true);
         try {
           await auth.signInWithEmailAndPassword(email, password);
-          window.location.href = OUO_GATE; // التوجيه لـ Ouo.io بعد النجاح
-        } catch (err) {
+          onLoginSuccess();
+        } catch(err) {
           setError("فشل تسجيل الدخول: " + err.message);
+        } finally {
           setLoading(false);
         }
       };
+      
       return h("div", {className:"login-container"},
         h("div", {className:"login-card"},
           h("div", {className:"login-title"}, "RISE SYSTEM™"),
@@ -563,6 +483,7 @@
       );
     }
 
+    // ⭐️⭐️⭐️ دالة App المعدلة مع فحص Ouo.io ⭐️⭐️⭐️
     function App(){
       const [user, setUser] = useState(null);
       const [loading, setLoading] = useState(true);
@@ -576,72 +497,186 @@
       const [newImportance, setNewImportance] = useState(3);
       const [newType, setNewType] = useState("PH");
 
-      const forceSignOutIfDeleted = async (currentUser) => { if(!currentUser) return; try{ await currentUser.getIdToken(true); }catch(error){ if(error.code==='auth/user-not-found'||error.code==='auth/user-disabled') await auth.signOut(); } };
+      // ✅ فحص Ouo.io
+      const OUO_LINK = "https://ouo.io/Vx8JTrM";
+      const OuoGate = () => {
+        const [allowed, setAllowed] = useState(false);
+        const [checking, setChecking] = useState(true);
+        useEffect(() => {
+          const urlParams = new URLSearchParams(window.location.search);
+          const ouoVerified = urlParams.get('ouo') === 'verified';
+          const ouoSession = sessionStorage.getItem('rise_ouo_granted');
+          let sessionValid = false;
+          if (ouoSession) {
+            const sessionTime = parseInt(ouoSession);
+            const now = Date.now();
+            const twelveHours = 12 * 60 * 60 * 1000;
+            sessionValid = (now - sessionTime) < twelveHours;
+          }
+          if (ouoVerified) {
+            sessionStorage.setItem('rise_ouo_granted', Date.now().toString());
+            window.history.replaceState({}, document.title, window.location.pathname);
+            setAllowed(true);
+          } else if (sessionValid) {
+            setAllowed(true);
+          } else {
+            setAllowed(false);
+          }
+          setChecking(false);
+        }, []);
+        return { allowed, checking };
+      };
+      const { allowed, checking } = OuoGate();
+
+      const forceSignOutIfDeleted = async (currentUser) => {
+        if (!currentUser) return;
+        try { await currentUser.getIdToken(true); } catch (error) { if (error.code === 'auth/user-not-found' || error.code === 'auth/user-disabled') { await auth.signOut(); } }
+      };
+
       useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged(async (usr) => {
           setLoadError(null);
-          if(usr){ try{
-            setUser(usr);
-            const docRef = db.collection("users").doc(usr.uid);
-            const docSnap = await docRef.get();
-            let loadedState;
-            if(docSnap.exists){
-              loadedState = docSnap.data().state;
-              if(loadedState.tasks && Array.isArray(loadedState.tasks)) loadedState.tasks = loadedState.tasks.map(t => ({...t, done: t.done!==undefined ? t.done : 0}));
-              if(!loadedState.currentMomentum) loadedState.currentMomentum = {PH:0,IQ:0,SP:0};
-              if(!loadedState.consecutiveNeglect) loadedState.consecutiveNeglect = {PH:0,IQ:0,SP:0};
-              const today = todayKeyLocal();
-              if(loadedState.day !== today){ loadedState = finalizeDayNoMercy(loadedState); loadedState.day = today; }
-            } else { loadedState = createInitialState(); await docRef.set({ state: loadedState }); }
-            setState(loadedState);
-            // ✅ تحقق من علامة العبور من Ouo.io
-            if (sessionStorage.getItem('from_ouo') === 'yes') {
-              sessionStorage.removeItem('from_ouo');
-              setPage('dashboard');
-            }
-          }catch(err){ console.error("Load error:", err); setLoadError("فشل تحميل البيانات من Firestore. تأكد من الاتصال بالإنترنت."); } finally { setLoading(false); }
-          } else { setUser(null); setState(null); setLoading(false); }
+          if (usr) {
+            try {
+              setUser(usr);
+              const docRef = db.collection("users").doc(usr.uid);
+              const docSnap = await docRef.get();
+              let loadedState;
+              if (docSnap.exists) {
+                loadedState = docSnap.data().state;
+                if (loadedState.tasks && Array.isArray(loadedState.tasks)) {
+                  loadedState.tasks = loadedState.tasks.map(t => ({ ...t, done: t.done !== undefined ? t.done : 0 }));
+                }
+                if (!loadedState.currentMomentum) loadedState.currentMomentum = { PH:0, IQ:0, SP:0 };
+                if (!loadedState.consecutiveNeglect) loadedState.consecutiveNeglect = { PH:0, IQ:0, SP:0 };
+                const today = todayKeyLocal();
+                if (loadedState.day !== today) {
+                  loadedState = finalizeDayNoMercy(loadedState);
+                  loadedState.day = today;
+                }
+              } else {
+                loadedState = createInitialState();
+                await docRef.set({ state: loadedState });
+              }
+              setState(loadedState);
+            } catch (err) {
+              console.error("Load error:", err);
+              setLoadError("فشل تحميل البيانات من Firestore. تأكد من الاتصال بالإنترنت.");
+            } finally { setLoading(false); }
+          } else {
+            setUser(null); setState(null); setLoading(false);
+          }
         });
         return () => unsubscribe();
       }, []);
 
       const saveTimeout = useRef(null);
-      useEffect(()=>{ if(!user||state===null) return; if(saveTimeout.current) clearTimeout(saveTimeout.current); saveTimeout.current = setTimeout(async()=>{ try{ await db.collection("users").doc(user.uid).update({ state: state }); }catch(err){ console.error("Save error:", err); if(err.code==='permission-denied') auth.signOut(); } }, 500); return ()=>{ if(saveTimeout.current) clearTimeout(saveTimeout.current); }; }, [state,user]);
+      useEffect(() => {
+        if (!user || state === null) return;
+        if (saveTimeout.current) clearTimeout(saveTimeout.current);
+        saveTimeout.current = setTimeout(async () => {
+          try { await db.collection("users").doc(user.uid).update({ state: state }); }
+          catch(err) { console.error("Save error:", err); if (err.code === 'permission-denied') auth.signOut(); }
+        }, 500);
+        return () => { if (saveTimeout.current) clearTimeout(saveTimeout.current); };
+      }, [state, user]);
 
-      useEffect(()=>{ if(!user) return; const interval = setInterval(()=>forceSignOutIfDeleted(user), 5000); return ()=>clearInterval(interval); }, [user]);
-      useEffect(()=>{ const t=setInterval(()=>setCountdownMs(msToMidnight()),1000); return ()=>clearInterval(t); }, []);
-      useEffect(()=>{ const iv=setInterval(()=>setGlitchIndex(prev=>(prev+1)%GLITCH_WORDS.length),1800); return ()=>clearInterval(iv); }, []);
+      useEffect(() => { if (!user) return; const interval = setInterval(() => forceSignOutIfDeleted(user), 5000); return () => clearInterval(interval); }, [user]);
+      useEffect(() => { const t = setInterval(() => setCountdownMs(msToMidnight()), 1000); return () => clearInterval(t); }, []);
+      useEffect(() => { const iv = setInterval(() => setGlitchIndex(prev => (prev + 1) % GLITCH_WORDS.length), 1800); return () => clearInterval(iv); }, []);
 
-      const finalizeRef = useRef(()=>{});
-      finalizeRef.current = ()=>{ if(state!==null) setState(prev=>finalizeDayNoMercy(prev)); };
-      useEffect(()=>{ let to=null; function schedule(){ if(to)clearTimeout(to); const ms=msToMidnight(); to=setTimeout(()=>{finalizeRef.current();schedule();},ms+120); } schedule(); const iv=setInterval(()=>{ if(state!==null&&todayKeyLocal()!==state.day) finalizeRef.current(); },20000); const onVis=()=>{ if(document.visibilityState==="visible"&&state!==null&&todayKeyLocal()!==state.day) finalizeRef.current(); }; const onFocus=()=>{ if(state!==null&&todayKeyLocal()!==state.day) finalizeRef.current(); }; document.addEventListener("visibilitychange",onVis); window.addEventListener("focus",onFocus); return ()=>{ if(to)clearTimeout(to); clearInterval(iv); document.removeEventListener("visibilitychange",onVis); window.removeEventListener("focus",onFocus); }; },[state]);
+      const finalizeRef = useRef(() => {});
+      finalizeRef.current = () => { if (state !== null) setState(prev => finalizeDayNoMercy(prev)); };
+      useEffect(() => {
+        let to = null;
+        function schedule(){ if(to) clearTimeout(to); const ms = msToMidnight(); to = setTimeout(() => { finalizeRef.current(); schedule(); }, ms + 120); }
+        schedule();
+        const iv = setInterval(() => { if (state !== null && todayKeyLocal() !== state.day) finalizeRef.current(); }, 20000);
+        const onVis = () => { if (document.visibilityState === "visible" && state !== null && todayKeyLocal() !== state.day) finalizeRef.current(); };
+        const onFocus = () => { if (state !== null && todayKeyLocal() !== state.day) finalizeRef.current(); };
+        document.addEventListener("visibilitychange", onVis); window.addEventListener("focus", onFocus);
+        return () => { if(to) clearTimeout(to); clearInterval(iv); document.removeEventListener("visibilitychange", onVis); window.removeEventListener("focus", onFocus); };
+      }, [state]);
 
-      const updateTask = (id,patch) => setState(prev=>prev?{...prev, tasks:prev.tasks.map(t=>t.id===id?{...t,...patch}:t)}:prev);
-      const removeTask = (id) => setState(prev=>prev?{...prev, tasks:prev.tasks.filter(t=>t.id!==id)}:prev);
-      const addTask = (title,target,importance,type) => { const clean=String(title||"").trim(); if(!clean) return; const targetNum = typeof target==="number"?target:1; setState(prev=>prev?{...prev, tasks:[...prev.tasks, {id:`t${Math.random().toString(16).slice(2)}`, title:clean, target:clamp(targetNum,1,9999), importance:Number(importance), type, done:0}]}:prev); };
+      const updateTask = (id, patch) => setState(prev => prev ? { ...prev, tasks: prev.tasks.map(t => t.id === id ? { ...t, ...patch } : t) } : prev);
+      const removeTask = (id) => setState(prev => prev ? { ...prev, tasks: prev.tasks.filter(t => t.id !== id) } : prev);
+      const addTask = (title, target, importance, type) => {
+        const clean = String(title || "").trim(); if (!clean) return;
+        const targetNum = typeof target === "number" ? target : 1;
+        setState(prev => prev ? { ...prev, tasks: [...prev.tasks, { id: `t${Math.random().toString(16).slice(2)}`, title: clean, target: clamp(targetNum, 1, 9999), importance: Number(importance), type, done: 0 }] } : prev);
+      };
       const handleLogout = async () => { await auth.signOut(); setUser(null); setState(null); };
 
-      if(loading) return h("div",{className:"loading"},"جاري التحميل...");
-      if(loadError) return h("div",{className:"error-loading"},loadError);
-      if(!user||state===null) return h(LoginPage,{onLoginSuccess:()=>{}});
+      // ⚠️ عرض شاشة التحقق
+      if (checking) return h("div", { className: "loading" }, "جاري التحقق...");
+
+      // ⚠️ إذا لم يمر من Ouo.io وليس لديه جلسة صالحة
+      if (!allowed && !user) {
+        return h("div", {className:"login-container"},
+          h("div", {className:"login-card"},
+            h("div", {className:"login-title"}, "⚠️ مطلوب تأكيد"),
+            h("div", {style:{color:"rgba(255,255,255,0.7)",fontSize:"14px",marginBottom:"24px",lineHeight:"1.8"}},
+              "للدخول إلى لوحة التطوير، يجب المرور بإعلان قصير (5 ثوانٍ) لدعم استمرار المنصة مجاناً."
+            ),
+            h("a", {
+              href: OUO_LINK,
+              style:{
+                display:"inline-block", width:"100%", padding:"16px", borderRadius:"50px",
+                background:"linear-gradient(135deg, #f0b3ff, #c084fc)", color:"#000",
+                fontSize:"17px", fontWeight:"bold", textDecoration:"none",
+                fontFamily:"Oxanium, sans-serif", boxShadow:"0 0 30px rgba(192,132,252,0.5)"
+              }
+            }, "🔑 انتقل لمشاهدة الإعلان للدخول"),
+            h("p", {style:{marginTop:"14px",fontSize:"11px",color:"rgba(255,255,255,0.35)"}},
+              "• الإعلان يستغرق 5 ثوانٍ فقط • بعدها ستعود تلقائياً لتسجيل الدخول • التصريح صالح لمدة 12 ساعة"
+            )
+          )
+        );
+      }
+
+      if (loadError) return h("div", { className: "error-loading" }, loadError);
+      if (loading) return h("div", { className: "loading" }, "جاري التحميل...");
+      if (!user || state === null) return h(LoginPage, { onLoginSuccess: () => {} });
 
       const level = expToLevel(state.totalExp);
       const computed = computeToday(state.tasks, level.level);
       const radarLive = computeLiveMomentum(state, computed);
       const rank = rankFromStreak(state.commitDays);
       const isLocked = state.lockedUntil ? Date.now() < state.lockedUntil : false;
-      const lockRemaining = (()=>{ if(!state.lockedUntil) return null; const ms=state.lockedUntil-Date.now(); if(ms<=0) return null; return {hh:Math.floor(ms/3600000), mm:Math.floor((ms%3600000)/60000)}; })();
+      const lockRemaining = (() => { if (!state.lockedUntil) return null; const ms = state.lockedUntil - Date.now(); if (ms <= 0) return null; return { hh: Math.floor(ms / 3600000), mm: Math.floor((ms % 3600000) / 60000) }; })();
       const quote = randomQuote(state.day);
-      const commitPoints = (state.commitHistory||[]).map((x,i)=>({x:i, y:Number(x.v||0), d:x.d}));
-      const expPoints = (state.expHistory||[]).map((x,i)=>({x:i, y:Number(x.v||0), d:x.d}));
+      const commitPoints = (state.commitHistory || []).map((x, i) => ({ x: i, y: Number(x.v || 0), d: x.d }));
+      const expPoints = (state.expHistory || []).map((x, i) => ({ x: i, y: Number(x.v || 0), d: x.d }));
       const expPenaltyPreview = expPenaltyByLevel(level.level);
       const currentWord = GLITCH_WORDS[glitchIndex];
       const isSelfWord = currentWord === "نفسك";
 
-      return h("div",{className:"wrap"},
-        h("header",{className:"header"}, h("div",{className:"hero-glow"}), h("div",{className:"top-row"}, h("div",null, h("div",{className:"badge"}, h("span",{className:"dot"}), h("span",{className:"brand-name"},"RISE SYSTEM™"), h("span",{className:"brand-sub"},"No-Mercy Mode")), h("h1",{className:"title"},"طوّر شخصيتك… مثل ", h("span",{className:`glitch-word ${isSelfWord?"self-word":""}`,"data-text":currentWord},currentWord)), h("p",{className:"subtitle"},"لوحة التطوير اليومية – حفظ تلقائي في Cloud Firestore."), h("div",{className:"chips"}, h("div",{className:"chip"},h("span",null,"اليوم:"),h("span",{className:"chip-mono"},state.day)), state.lastCommitDay ? h("div",{className:"chip"},h("span",null,"آخر يوم محسوب:"),h("span",{className:"chip-mono"},state.lastCommitDay)) : null), h("div",{className:"header-actions"}, h("button",{className:`nav-btn ${page==="dashboard"?"active":""}`,onClick:()=>setPage("dashboard")},"لوحة النظام"), h("button",{className:`nav-btn ${page==="manual"?"active":""}`,onClick:()=>setPage("manual")},"كتيب التعليمات"), h("button",{className:"nav-btn",onClick:handleLogout},"تسجيل الخروج")) ), h("div",{className:"stats"}, h("div",{className:"stat stat-hp"}, h("div",{className:"stat-k"},"HP"), h("div",{className:"stat-v"},`${state.hp}/100`), h("div",{className:"stat-s"},state.hp===0?"قفل 24 ساعة":(state.hp>=70?"مستقر":"خطر"))), h("div",{className:"stat stat-level"}, h("div",{className:"stat-k"},"LEVEL"), h("div",{className:"stat-v"},String(level.level)), h("div",{className:"stat-s"},`${level.expIntoLevel}/${level.expForNext} EXP`)), h("div",{className:"stat stat-rank"}, h("div",{className:"stat-k"},"RANK"), h("div",{className:"stat-v"},rank.label), h("div",{className:"stat-s"},`${state.commitDays} يوم التزام`)) ) ) ),
-        page==="dashboard" ? h(DashboardPage,{ state, setState, level, computed, rank, isLocked, lockRemaining, countdownMs, quote, radarLive, commitPoints, expPoints, expPenaltyPreview, newTitle, setNewTitle, newTarget, setNewTarget, newImportance, setNewImportance, newType, setNewType, addTask, updateTask, removeTask }) : h(ManualPage),
-        h("footer",{className:"footer"}, h("div",null,`متصل كـ: ${user.email}`), h("div",null,"البيانات محفوظة في Cloud Firestore — تدوم بعد الرفريش."), h("div",null,"RISE SYSTEM™ — No-Mercy Mode."))
+      return h("div", {className:"wrap"},
+        h("header", {className:"header"},
+          h("div", {className:"hero-glow"}),
+          h("div", {className:"top-row"},
+            h("div", null,
+              h("div", {className:"badge"}, h("span", {className:"dot"}), h("span", {className:"brand-name"}, "RISE SYSTEM™"), h("span", {className:"brand-sub"}, "No-Mercy Mode")),
+              h("h1", {className:"title"}, "طوّر شخصيتك… مثل ", h("span", {className:`glitch-word ${isSelfWord ? "self-word" : ""}`, "data-text": currentWord}, currentWord)),
+              h("p", {className:"subtitle"}, "لوحة التطوير اليومية – حفظ تلقائي في Cloud Firestore."),
+              h("div", {className:"chips"}, h("div", {className:"chip"}, h("span", null, "اليوم:"), h("span", {className:"chip-mono"}, state.day)), state.lastCommitDay ? h("div", {className:"chip"}, h("span", null, "آخر يوم محسوب:"), h("span", {className:"chip-mono"}, state.lastCommitDay)) : null),
+              h("div", {className:"header-actions"},
+                h("button", {className:`nav-btn ${page==="dashboard" ? "active" : ""}`, onClick:()=>setPage("dashboard")}, "لوحة النظام"),
+                h("button", {className:`nav-btn ${page==="manual" ? "active" : ""}`, onClick:()=>setPage("manual")}, "كتيب التعليمات"),
+                h("button", {className:"nav-btn", onClick:handleLogout}, "تسجيل الخروج")
+              )
+            ),
+            h("div", {className:"stats"},
+              h("div", {className:"stat stat-hp"}, h("div", {className:"stat-k"}, "HP"), h("div", {className:"stat-v"}, `${state.hp}/100`), h("div", {className:"stat-s"}, state.hp===0 ? "قفل 24 ساعة" : (state.hp>=70 ? "مستقر" : "خطر"))),
+              h("div", {className:"stat stat-level"}, h("div", {className:"stat-k"}, "LEVEL"), h("div", {className:"stat-v"}, String(level.level)), h("div", {className:"stat-s"}, `${level.expIntoLevel}/${level.expForNext} EXP`)),
+              h("div", {className:"stat stat-rank"}, h("div", {className:"stat-k"}, "RANK"), h("div", {className:"stat-v"}, rank.label), h("div", {className:"stat-s"}, `${state.commitDays} يوم التزام`))
+            )
+          )
+        ),
+        page === "dashboard"
+          ? h(DashboardPage, { state, setState, level, computed, rank, isLocked, lockRemaining, countdownMs, quote, radarLive, commitPoints, expPoints, expPenaltyPreview, newTitle, setNewTitle, newTarget, setNewTarget, newImportance, setNewImportance, newType, setNewType, addTask, updateTask, removeTask })
+          : h(ManualPage),
+        h("footer", {className:"footer"}, h("div", null, `متصل كـ: ${user.email}`), h("div", null, "البيانات محفوظة في Cloud Firestore — تدوم بعد الرفريش."), h("div", null, "RISE SYSTEM™ — No-Mercy Mode."))
       );
     }
 
