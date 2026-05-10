@@ -196,7 +196,7 @@
     const h = React.createElement;
     const { useEffect, useMemo, useRef, useState } = React;
 
-    // Helper functions (باقي الدوال كما هي دون تغيير)
+    // Helper functions (جميع الدوال بدون تغيير)
     const TYPE_META = { PH: { label: "قوة جسدية", multiplier: 2.0 }, IQ: { label: "ذكاء وتعلّم", multiplier: 1.7 }, SP: { label: "انضباط وروحانية", multiplier: 1.5 }, XX: { label: "عادة سيئة", multiplier: 0 } };
     const GLITCH_WORDS = ["الأبطال", "الأنمي", "قدوتك", "نفسك"];
     const RANKS = [{ key: "E", days: 0, label: "E" },{ key: "D", days: 7, label: "D" },{ key: "C", days: 30, label: "C" },{ key: "B", days: 90, label: "B" },{ key: "A", days: 180, label: "A" },{ key: "S", days: 365, label: "S Elite" }];
@@ -447,7 +447,7 @@
       );
     }
 
-    // ✅ صفحة تسجيل الدخول (عادية بدون Smart Link)
+    // ✅ صفحة تسجيل الدخول (نظيفة)
     function LoginPage({ onLoginSuccess }) {
       const [email, setEmail] = useState("");
       const [password, setPassword] = useState("");
@@ -483,7 +483,7 @@
       );
     }
 
-    // ⭐️⭐️⭐️ دالة App المعدلة مع فحص Ouo.io ⭐️⭐️⭐️
+    // ⭐️⭐️⭐️ الوظيفة الرئيسية مع بوابة Ouo ⭐️⭐️⭐️
     function App(){
       const [user, setUser] = useState(null);
       const [loading, setLoading] = useState(true);
@@ -497,7 +497,7 @@
       const [newImportance, setNewImportance] = useState(3);
       const [newType, setNewType] = useState("PH");
 
-      // ✅ فحص Ouo.io
+      // 🚪 بوابة إعلان Ouo.io
       const OUO_LINK = "https://ouo.io/Vx8JTrM";
       const OuoGate = () => {
         const [allowed, setAllowed] = useState(false);
@@ -607,10 +607,9 @@
       };
       const handleLogout = async () => { await auth.signOut(); setUser(null); setState(null); };
 
-      // ⚠️ عرض شاشة التحقق
+      // فحص البوابة
       if (checking) return h("div", { className: "loading" }, "جاري التحقق...");
 
-      // ⚠️ إذا لم يمر من Ouo.io وليس لديه جلسة صالحة
       if (!allowed && !user) {
         return h("div", {className:"login-container"},
           h("div", {className:"login-card"},
