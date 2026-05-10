@@ -326,74 +326,18 @@
 </head>
 
 <body>
+  <div class="bg-anim"></div>
+  <div id="root"></div>
 
-<!-- ===================== شاشة القفل (تبدأ العمل فوراً) ===================== -->
-<div id="lockScreen" style="position:fixed; inset:0; background:#05060f; display:none; justify-content:center; align-items:center; z-index:99999; flex-direction:column; text-align:center; padding:20px;">
-  <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(0,229,255,0.3); border-radius:24px; padding:40px 30px; max-width:480px; width:90%; backdrop-filter:blur(10px);">
-    <div style="font-family:'Oxanium',sans-serif; color:#0af; font-size:28px; margin-bottom:10px;">🔒 الدخول مقيد</div>
-    <div style="color:rgba(255,255,255,0.7); font-size:14px; margin-bottom:30px; line-height:1.7;">للوصول إلى RISE SYSTEM™، يجب المرور عبر بوابة التأكيد أولاً. هذا يدعم استمرار المنصة.</div>
-    <a href="https://ouo.io/Vx8JTrM" style="display:inline-block; background:linear-gradient(135deg, #0af, #a855f7); color:#fff; padding:16px 36px; border-radius:50px; font-size:18px; font-weight:bold; text-decoration:none; box-shadow:0 0 30px rgba(0,229,255,0.4); transition:0.3s; font-family:'Oxanium',sans-serif; letter-spacing:1px;">🚀 الدخول عبر البوابة</a>
-    <p style="color:rgba(255,255,255,0.3); font-size:12px; margin-top:20px;">بعد فتح الرابط، سيتم توجيهك تلقائياً للتطبيق</p>
-  </div>
-</div>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
-<!-- ===================== سكريبت القفل الذكي (صلاحية 24 ساعة) ===================== -->
-<script>
-  (function() {
-    var LOCK_ID = 'lockScreen';
-    var APP_ROOT_ID = 'root';
-    var STORAGE_KEY = 'rise_unlock_expiry';
-    var UNLOCK_DURATION_HOURS = 24;
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 
-    var urlParams = new URLSearchParams(window.location.search);
-    var hasUnlockParam = urlParams.get('unlocked') === '1';
-    var now = Date.now();
-
-    var storedExpiry = localStorage.getItem(STORAGE_KEY);
-    var hasValidSession = false;
-
-    if (storedExpiry) {
-      var expiryTime = parseInt(storedExpiry, 10);
-      if (now < expiryTime) {
-        hasValidSession = true;
-      } else {
-        localStorage.removeItem(STORAGE_KEY);
-      }
-    }
-
-    if (hasUnlockParam) {
-      var expiryTime = now + (UNLOCK_DURATION_HOURS * 60 * 60 * 1000);
-      localStorage.setItem(STORAGE_KEY, expiryTime.toString());
-      hasValidSession = true;
-
-      if (window.history && window.history.replaceState) {
-        window.history.replaceState({}, document.title, window.location.pathname);
-      }
-    }
-
-    if (hasValidSession) {
-      document.getElementById(LOCK_ID).style.display = 'none';
-      document.getElementById(APP_ROOT_ID).style.display = 'block';
-    } else {
-      document.getElementById(LOCK_ID).style.display = 'flex';
-      document.getElementById(APP_ROOT_ID).style.display = 'none';
-    }
-  })();
-</script>
-
-<!-- ===================== باقي محتوى الصفحة الأصلي ===================== -->
-<div class="bg-anim"></div>
-<div id="root"></div>
-
-<!-- Firebase SDKs -->
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-
-<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-
-<script>
+  <script>
     const firebaseConfig = {
       apiKey: "AIzaSyBPsgxpBN57IMOhCVaKQe2_bwkZ3aEahjA",
       authDomain: "rise-system-a7135.firebaseapp.com",
@@ -729,6 +673,7 @@
       );
     }
 
+    // ✅ صفحة تسجيل الدخول (بدون Smart Link)
     function LoginPage({ onLoginSuccess }) {
       const [email, setEmail] = useState("");
       const [password, setPassword] = useState("");
