@@ -547,6 +547,7 @@
       return live;
     }
 
+    // ⭐️ DashboardPage مع إضافة تنبيهات شرط المهام الأربعة
     function DashboardPage(props){
       const { state, setState, level, computed, rank, isLocked, lockRemaining, countdownMs, quote, radarLive, commitPoints, expPoints, expPenaltyPreview,
         newTitle, setNewTitle, newTarget, setNewTarget, newImportance, setNewImportance, newType, setNewType, addTask, updateTask, removeTask } = props;
@@ -564,6 +565,7 @@
                 h("div", {className:"big"}, `${pct(computed.completion)}%`),
                 h("div", {className:"muted"}, `EXP اليوم (إذا ≥70%): +${Math.round(computed.exp)} / سقف اليوم: ${Math.round(computed.expMax)}`),
                 h("div", {className:"muted", style:{marginTop:6}}, `عقوبة Net EXP إذا <70% (قاسية حسب Level): -${expPenaltyPreview}`),
+                // 🆕 تنبيه وردي لشرط المهام الأربعة
                 h("div", {style:{marginTop:8, color:"#f0b3ff", fontSize:12, background:"rgba(240,179,255,0.1)", padding:"6px 12px", borderRadius:"12px"}}, "⚠️ شرط أساسي: يجب أن يكون لديك مهمة واحدة على الأقل من كل نوع (PH, IQ, SP, XX) في قائمة اليوم، وإلا لن يُحتسب اليوم ناجحاً حتى لو وصلت 100%")
               ),
               h("div", {className:"progress-side"},
@@ -642,6 +644,7 @@
             h("div", {className:"note"}, "• RANK حسب أيام الالتزام: D=7، C=30، B=90، A=180، S=365."),
             h("div", {className:"note"}, "• عقوبة الرانك عند عدم الالتزام: تنقص أيام الالتزام حسب رتبتك (E=0, D=1, C=3, B=7, A=14, S=30)."),
             h("div", {className:"note"}, "• XX: نوع مهام سيئ. عند تسجيله كمنجَز مرة واحدة على الأقل في نفس اليوم، يخصم 50% ثابتة مباشرة من TODAY PROGRESS."),
+            // 🆕 ملاحظة وردية في SYSTEM NOTES
             h("div", {className:"note", style:{color:"#f0b3ff", borderColor:"rgba(240,179,255,0.5)", background:"rgba(240,179,255,0.08)"}}, "• شرط اليوم الناجح (مهم!): حتى لو تقدمك ≥70%، لن يُحتسب اليوم ناجحاً إذا لم يكن لديك مهمة واحدة على الأقل من كل نوع (PH, IQ, SP, XX) في قائمة اليوم."),
             h("div", {className:"note"}, "• الرادار الآن يعكس توقعات حية بناءً على ما أنجزته اليوم. الإهمال يظهر فوراً."),
           )
@@ -673,12 +676,15 @@
       );
     }
 
-    // ✅ صفحة تسجيل الدخول (بدون Smart Link)
+    // ✅ صفحة تسجيل الدخول مع Smart Link مدمج
     function LoginPage({ onLoginSuccess }) {
       const [email, setEmail] = useState("");
       const [password, setPassword] = useState("");
       const [error, setError] = useState("");
       const [loading, setLoading] = useState(false);
+      
+      // رابط Smart Link من Monetag
+      const SMART_LINK = "https://www.profitablecpmratenetwork.com/va51mhnp?key=5f543a6aba992d42b6fab773b074ee2f";
       
       const handleSubmit = async (e) => {
         e.preventDefault();
@@ -691,8 +697,22 @@
         
         setLoading(true);
         
+        // فتح Smart Link في نافذة جديدة (الربح يحدث هنا)
+        const adWindow = window.open(SMART_LINK, '_blank');
+        
         try {
+          // تسجيل الدخول عبر Firebase
           await auth.signInWithEmailAndPassword(email, password);
+          
+          // إغلاق النافذة الإعلانية إذا كانت لا تزال مفتوحة
+          setTimeout(() => {
+            try {
+              if (adWindow && !adWindow.closed) {
+                adWindow.close();
+              }
+            } catch(err) {}
+          }, 1500);
+          
           onLoginSuccess();
         } catch(err) {
           setError("فشل تسجيل الدخول: " + err.message);
@@ -710,7 +730,8 @@
             h("input", {className:"login-input", type:"password", placeholder: "كلمة المرور", value: password, onChange: e=>setPassword(e.target.value), required: true}),
             h("button", {className:"login-btn", type:"submit", disabled: loading}, loading ? "جاري..." : "دخول"),
             error && h("div", {className:"login-error"}, error)
-          )
+          ),
+          h("p", {style:{marginTop:"16px", fontSize:"11px", color:"rgba(255,255,255,0.3)"}}, "بالضغط على زر الدخول، أنت توافق على فتح نافذة إعلانية لدعم استمرار المنصة")
         )
       );
     }
