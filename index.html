@@ -25,7 +25,7 @@
     html,body{ height:100%; }
     body{
       margin:0;
-      background: hsl(var(--bg));
+      background: #000; /* ✅ خلفية سوداء تماماً */
       color: hsl(var(--fg));
       overflow:hidden;
       font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
@@ -45,75 +45,6 @@
       .cursor-glow { display: none; }
     }
 
-    /* ===== Cinematic Nebula ===== */
-    .bg{
-      position:fixed; inset:-25%;
-      z-index:-10;
-      background:
-        radial-gradient(1200px 900px at 12% 18%, hsl(var(--c2)/.22), transparent 60%),
-        radial-gradient(1200px 900px at 88% 22%, hsl(var(--c1)/.22), transparent 60%),
-        radial-gradient(1100px 850px at 22% 86%, hsl(var(--c3)/.18), transparent 60%),
-        radial-gradient(900px 700px at 85% 80%, hsl(var(--c4)/.10), transparent 62%),
-        linear-gradient(to bottom, hsl(235 35% 6%), hsl(240 32% 7%));
-      background-size: 140% 140%;
-      animation: drift 16s ease-in-out infinite;
-      will-change: transform, filter, background-position;
-      transform: translateZ(0);
-    }
-    .bg::before{
-      content:"";
-      position:absolute; inset:0;
-      background:
-        conic-gradient(from 205deg at 50% 50%,
-          transparent 0deg,
-          hsl(var(--c1)/.08) 80deg,
-          transparent 140deg,
-          hsl(var(--c2)/.08) 240deg,
-          transparent 360deg);
-      filter: blur(22px);
-      opacity:.95;
-      animation: spin 28s linear infinite;
-      mix-blend-mode: screen;
-      pointer-events:none;
-    }
-    @keyframes drift{
-      0%   { background-position: 48% 55%; transform: scale(1); filter: hue-rotate(0deg); }
-      50%  { background-position: 62% 40%; transform: scale(1.05); filter: hue-rotate(16deg); }
-      100% { background-position: 48% 55%; transform: scale(1); filter: hue-rotate(0deg); }
-    }
-    @keyframes spin{ to{ transform: rotate(360deg);} }
-
-    .vignette{
-      position:fixed; inset:0; z-index:-8;
-      background:
-        radial-gradient(circle at 50% 42%, transparent 0 55%, rgba(0,0,0,.80) 92%),
-        linear-gradient(to bottom, rgba(0,0,0,.10), rgba(0,0,0,.55));
-      pointer-events:none;
-    }
-
-    .grid{
-      position:fixed; inset:0; z-index:-7;
-      background:
-        linear-gradient(to right, rgba(255,255,255,.06) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255,255,255,.06) 1px, transparent 1px);
-      background-size: 70px 70px;
-      opacity:.16;
-      pointer-events:none;
-      mask-image: radial-gradient(circle at 50% 35%, rgba(0,0,0,.95), rgba(0,0,0,.10) 62%, transparent 78%);
-      animation: gridShift 10s ease-in-out infinite;
-    }
-    @keyframes gridShift{
-      0%,100%{ transform: translate3d(0,0,0); opacity:.15; }
-      50%{ transform: translate3d(14px,-12px,0); opacity:.20; }
-    }
-
-    .noise{
-      position:fixed; inset:0; z-index:-6;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.25'/%3E%3C/svg%3E");
-      opacity:.055;
-      pointer-events:none;
-    }
-
     /* ===== Canvases (OBJECTS) ===== */
     canvas#fxA, canvas#fxB, canvas#fxC{
       position:fixed; inset:0;
@@ -123,6 +54,15 @@
     canvas#fxA{ z-index:-9; } /* ribbons */
     canvas#fxB{ z-index:-5; } /* sparks */
     canvas#fxC{ z-index:-4; } /* meteors */
+
+    /* ===== Vignette (إطار داكن خفيف) ===== */
+    .vignette{
+      position:fixed; inset:0; z-index:-8;
+      background:
+        radial-gradient(circle at 50% 42%, transparent 0 55%, rgba(0,0,0,.80) 92%),
+        linear-gradient(to bottom, rgba(0,0,0,.10), rgba(0,0,0,.55));
+      pointer-events:none;
+    }
 
     /* ===== Hologram Shards (CSS 3D) ===== */
     .shards{
@@ -511,17 +451,10 @@
 
     /* ================= PERFORMANCE MODE ================= */
     @media (max-width: 820px){
-      .bg{ animation-duration: 22s; filter:none !important; }
-      .bg::before{ filter: blur(16px); opacity:.75; animation-duration: 36s; }
-      .grid{ opacity:.10; background-size: 92px 92px; }
-      .noise{ opacity:.035; }
       .panel{ backdrop-filter: blur(7px); }
       .shard{ backdrop-filter: blur(5px); }
     }
     @media (prefers-reduced-motion: reduce){
-      .bg{ animation:none !important; }
-      .bg::before{ animation:none !important; }
-      .grid{ animation:none !important; }
       .scanline{ animation:none !important; opacity:.06; }
     }
   </style>
@@ -531,13 +464,10 @@
   <!-- مؤشر ضوئي مخصص -->
   <div class="cursor-glow" id="cursorGlow"></div>
 
-  <div class="bg"></div>
   <canvas id="fxA"></canvas>
   <canvas id="fxB"></canvas>
   <canvas id="fxC"></canvas>
   <div class="vignette"></div>
-  <div class="grid"></div>
-  <div class="noise"></div>
 
   <div class="shards" id="shards"></div>
 
