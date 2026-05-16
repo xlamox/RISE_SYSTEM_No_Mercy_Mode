@@ -322,6 +322,40 @@
       .stat-v { font-size: 18px; }
       .mini-v { font-size: 18px; }
     }
+    /* صفحة مرشد النظام */
+    .critic-page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+    .critic-page h2 {
+      font-family: var(--font-display);
+      color: hsl(var(--chart-5));
+      text-align: center;
+      margin-bottom: 2rem;
+      font-size: 2rem;
+      transition: color 0.3s;
+    }
+    .critic-message {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-right: 4px solid hsl(var(--chart-5));
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      white-space: pre-wrap;
+      line-height: 1.9;
+      font-size: 14px;
+      animation: fadeInUp 0.4s ease;
+    }
+    .critic-message .highlight { color: hsl(var(--chart-1)); font-weight: bold; }
+    .critic-message .critical { color: hsl(var(--chart-5)); font-weight: bold; }
+    .critic-message .good { color: hsl(var(--chart-3)); }
+    .critic-message .warn { color: hsl(var(--chart-4)); }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
   </style>
 </head>
 
@@ -338,6 +372,9 @@
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 
   <script>
+    // رابط Smart Link
+    const SMART_LINK = "https://omg10.com/4/10993602";
+
     const firebaseConfig = {
       apiKey: "AIzaSyBPsgxpBN57IMOhCVaKQe2_bwkZ3aEahjA",
       authDomain: "rise-system-a7135.firebaseapp.com",
@@ -445,7 +482,9 @@
         totalExp: 0, hp: 100, commitDays: 0, shameDays: 0, perfectStreak: 0, lastCommitDay: null, lockedUntil: null, zeroLockUsed: true,
         lifetimeByType: { PH:0, IQ:0, SP:0 }, lifetimePotentialByType: { PH:0, IQ:0, SP:0 }, commitHistory: [], expHistory: [],
         currentMomentum: { PH:0, IQ:0, SP:0 },
-        consecutiveNeglect: { PH:0, IQ:0, SP:0 }
+        consecutiveNeglect: { PH:0, IQ:0, SP:0 },
+        lastBotMessageDate: null,
+        botMessages: []
       };
     }
     function pushHistory(history, dateKey, value){
@@ -464,7 +503,15 @@
       let lockedUntil = prev.lockedUntil;
       let zeroLockUsed = (prev.zeroLockUsed === undefined) ? true : prev.zeroLockUsed;
       if(hp > 0){ zeroLockUsed = false; if(lockedUntil && Date.now() >= lockedUntil) lockedUntil = null; }
-      else{ if(!zeroLockUsed){ lockedUntil = Date.now() + 24*60*60*1000; zeroLockUsed = true; } }
+      else{
+        if(!zeroLockUsed){
+          const now = new Date();
+          const midnight = new Date(now);
+          midnight.setHours(24, 0, 0, 0);
+          lockedUntil = midnight.getTime() + 24 * 60 * 60 * 1000;
+          zeroLockUsed = true;
+        }
+      }
       const currentRank = rankFromStreak(prev.commitDays).key;
       const penaltyDays = finalQualifies ? 0 : (RANK_PENALTY[currentRank] ?? 0);
       const commitDays = finalQualifies ? (prev.commitDays + 1) : Math.max(0, prev.commitDays - penaltyDays);
@@ -547,7 +594,156 @@
       return live;
     }
 
-    // ⭐️ DashboardPage مع إضافة تنبيهات شرط المهام الأربعة
+    // ========== 🧠 مكتبة العبارات الضخمة ==========
+    function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+    const PHRASES = {
+      perfect: [
+        "أداء كامل. لكن لا تبتسم. اليوم فقط نجوت.",
+        "100% — أخيراً تحركت. هل ستستمر أم ستعود للنوم؟",
+        "كامل. هذا ما نتوقعه كل يوم. لا تصفيق.",
+        "اليوم كنت بطلاً. وغداً قد تكون الفاشل.",
+        "أداء خيالي. هل أنت متأكد أنك لم تغش؟",
+        "ممتاز. لو كنت تدفع إيجاراً لأيامك، اليوم دفعت.",
+        "أداء نادر الحدوث. لا تعتقد أنك وصلت.",
+        "كامل. لكن الأبطال الحقيقيين يكررون هذا. هل أنت منهم؟"
+      ],
+      good: [
+        "أداء جيد. نجوت. لكن النجاة وحدها لا تكفي.",
+        "مستوى مقبول. في الجيش كانوا يطردونك.",
+        "أداء فوق المتوسط بقليل. المتوسط قاتل الأحلام.",
+        "جيد. لكن كلمة 'جيد' هي عدو كلمة 'عظيم'.",
+        "نجحت اليوم. لا تفرح. غداً بداية جديدة.",
+        "أداء لا بأس به. المشكلة أن 'لا بأس' هو سبب فشلك."
+      ],
+      mid: [
+        "أداء متوسط. المتوسط يملأ المقابر.",
+        "أنت في المنتصف. المكان الأسوأ على الإطلاق.",
+        "نصف إنجاز. نصف حياة. نصف مستقبل.",
+        "متوسط. لا أحد يتذكر المتوسطين.",
+        "أداء هزيل. لم تفشل تماماً، لكنك لم تنجح.",
+        "في المنتصف. هذه هي المنطقة التي يموت فيها الطموح."
+      ],
+      disaster: [
+        "كارثة. لا كلمات تصف هذا الإهمال.",
+        "فشل ذريع. أنت تخسر حرب الأيام.",
+        "أداء صفري. هل أنت حي أصلاً؟",
+        "إهمال تام. هذا ليس فشلاً، هذا استسلام.",
+        "صفر. العدم أفضل من هذا.",
+        "كارثة بشرية. كل يوم هكذا يسرق عمرك."
+      ],
+      hpHigh: [
+        "HP في القمة. لكن القمة زلقة.",
+        "قوة كاملة. سقطة واحدة كفيلة بإسقاطك.",
+        "HP ممتاز. تذكر أن الجبابرة يسقطون.",
+        "أنت في أفضل حال. لا تنخدع."
+      ],
+      hpMid: [
+        "HP متوسط. الجروح بدأت تظهر.",
+        "نصف قوة. نصف هزيمة.",
+        "أنت تتآكل ببطء. هل تشعر بذلك؟",
+        "HP في المنتصف. هذا هو طريق السقوط."
+      ],
+      hpLow: [
+        "HP منهار. أنت على حافة القفل.",
+        "قوتك تحت الصفر فعلياً. أي خطأ ينهيك.",
+        "HP كارثي. جسد النظام يلفظك.",
+        "أنت تحتضر. والقفل ينتظر."
+      ],
+      taskPerfect: ["أنجزت كامل المهمة. أخيراً فعلت شيئاً.", "مهمة منتهية. لا تصفيق. هذا واجبك.", "أكملتها. هل هذا إنجاز؟"],
+      taskGood: ["نصف إنجاز. نصف رجولة.", "أديت جزءاً. والباقي؟ لا شيء.", "تحركت قليلاً. السلحفاة أسرع منك."],
+      taskLittle: ["بالكاد تحركت. هذا ليس إنجازاً.", "شيء أفضل من لا شيء. بالكاد.", "أداء ضئيل. لا تخدع نفسك."],
+      taskZero: ["صفر. العدم أفضل منك.", "لم تحرك ساكناً. كالجثة.", "لا شيء. الفراغ يملأ يومك."],
+      missingPH: ["أين التمارين؟ عضلاتك تذوي.", "نسيت الجسد. سجين الكسل.", "لا رياضة. جسدك يصرخ.", "PH مهمل. العضلات تبكي."],
+      missingIQ: ["لا قراءة. عقلك في إجازة.", "نسيت التعلم. الجهل رفيقك.", "IQ مهمل. الدماغ يصدا.", "لا تعلّم. الغباء اختيار."],
+      missingSP: ["روحانيات ميتة. حتى الشيطان يسخر.", "نسيت الروح. أنت آلة فارغة.", "SP مهمل. لا صلاة لا سلام.", "الجانب الروحي مدفون."],
+      missingXX: ["لا عادة سيئة تراقبها. هل أنت ملاك؟", "XX مهمل. الكمال المزيف.", "نسيت رذيلتك. النفاق بعينه.", "لا شيء تحاسب عليه. مريب."],
+      radarLowPH: ["جسدك يصرخ: حركني!", "عضلات تنادي.", "قوة جسدية منعدمة."],
+      radarLowIQ: ["عقلك نائم. استيقظ.", "ذكاء مهمل. اقرأ.", "دماغ في سبات."],
+      radarLowSP: ["روحك ميتة. صلِّ.", "انضباط روحي صفر.", "روحانيات منهارة."],
+      shameHigh: ["أيام عارك كثيرة. لا تتعلم.", "العار يتراكم. متى تستفيق؟", "سجل العار طويل. خجل."],
+      shameZero: ["لا أيام عار. نادر.", "صفر عار. هل هذا أنت؟"],
+      streakHigh: ["سلسلة 100% تقترب من القمة. لا تخرب.", "أنت على وشك رقم قياسي."],
+      streakZero: ["لا سلسلة. لا التزام.", "سلسلة ميتة. ابدأ."],
+      rankLow: ["رتبة E. القاع. ألا تخجل؟", "أدنى الرتب. لا شيء أقل منك.", "رتبة الصفر. من هنا فقط يمكنك الصعود."],
+      rankMid: ["رتبة متوسطة. لا فخر.", "رتبة عادية. الناس العاديون لا يُذكرون.", "في المنتصف. أخطر مكان."],
+      rankHigh: ["رتبة عالية. أخيراً شيء يُذكر.", "رتبة متقدمة. لا ترتاح.", "من الأوائل. السقوط مؤلم أكثر."]
+    };
+
+    function generateBotMessage(state, computed, level, rank, radarLive) {
+      const today = todayKeyLocal();
+      const completion = computed.completion;
+      const pctCompletion = pct(completion);
+      const hp = state.hp;
+      const totalExp = state.totalExp;
+      const commitDays = state.commitDays;
+      const shameDays = state.shameDays || 0;
+      const perfectStreak = state.perfectStreak || 0;
+
+      let msg = `📅 ${today}\n\n`;
+      msg += `📊 تقييم الأداء العام: ${pctCompletion}%\n`;
+      if (completion >= 1 && hp >= 90 && shameDays === 0) msg += pick(PHRASES.perfect);
+      else if (completion >= 0.7) msg += pick(PHRASES.good);
+      else if (completion >= 0.5) msg += pick(PHRASES.mid);
+      else msg += pick(PHRASES.disaster);
+
+      msg += `\n\n❤️ تقييم HP: ${hp}/100\n`;
+      if (hp >= 90) msg += pick(PHRASES.hpHigh);
+      else if (hp >= 50) msg += pick(PHRASES.hpMid);
+      else msg += pick(PHRASES.hpLow);
+
+      msg += `\n✨ Net EXP: ${Math.round(totalExp)} | المستوى: ${level.level} (${level.expIntoLevel}/${level.expForNext})`;
+      msg += `\n📅 أيام الالتزام: ${commitDays} | الرتبة: ${rank.label}`;
+
+      msg += `\n\n📋 تحليل المهام:`;
+      const missedTypes = [];
+      const presentTypes = new Set(state.tasks.map(t => t.type));
+      ['PH','IQ','SP','XX'].forEach(type => { if (!presentTypes.has(type)) missedTypes.push(type); });
+
+      state.tasks.forEach(t => {
+        const target = Math.max(1, Number(t.target||1));
+        const done = clamp(Number(t.done||0), 0, target);
+        const ratio = target>0 ? done/target : 0;
+        const pctDone = pct(ratio);
+        let emoji = '❌', phrase;
+        if (pctDone >= 100) { emoji = '✅'; phrase = pick(PHRASES.taskPerfect); }
+        else if (pctDone >= 60) { emoji = '⚠️'; phrase = pick(PHRASES.taskGood); }
+        else if (pctDone > 0) { emoji = '🔸'; phrase = pick(PHRASES.taskLittle); }
+        else { phrase = pick(PHRASES.taskZero); }
+        msg += `\n   ${emoji} ${t.title}: ${done}/${target} (${pctDone}%) – ${phrase}`;
+      });
+
+      if (missedTypes.length > 0) {
+        msg += `\n\n🚫 معايرة الأنواع المفقودة:`;
+        missedTypes.forEach(t => {
+          if (t === 'PH') msg += `\n   • ${pick(PHRASES.missingPH)}`;
+          else if (t === 'IQ') msg += `\n   • ${pick(PHRASES.missingIQ)}`;
+          else if (t === 'SP') msg += `\n   • ${pick(PHRASES.missingSP)}`;
+          else if (t === 'XX') msg += `\n   • ${pick(PHRASES.missingXX)}`;
+        });
+      }
+
+      msg += `\n\n📡 تحليل الرادار: 💪${radarLive.PH||0}% | 🧠${radarLive.IQ||0}% | 🌌${radarLive.SP||0}%`;
+      if ((radarLive.PH||0) < 30) msg += `\n   • ${pick(PHRASES.radarLowPH)}`;
+      if ((radarLive.IQ||0) < 30) msg += `\n   • ${pick(PHRASES.radarLowIQ)}`;
+      if ((radarLive.SP||0) < 30) msg += `\n   • ${pick(PHRASES.radarLowSP)}`;
+
+      msg += `\n\n💀 أيام العار: ${shameDays} | 🔥 سلسلة 100%: ${perfectStreak}/10`;
+      if (shameDays >= 5) msg += `\n   ${pick(PHRASES.shameHigh)}`;
+      else if (shameDays === 0) msg += `\n   ${pick(PHRASES.shameZero)}`;
+      if (perfectStreak >= 7) msg += `\n   ${pick(PHRASES.streakHigh)}`;
+      else if (perfectStreak === 0) msg += `\n   ${pick(PHRASES.streakZero)}`;
+
+      const rankKey = rank.key;
+      if (rankKey === 'E' || rankKey === 'D') msg += `\n\n🎖 الرتبة ${rank.label}: ${pick(PHRASES.rankLow)}`;
+      else if (rankKey === 'C' || rankKey === 'B') msg += `\n\n🎖 الرتبة ${rank.label}: ${pick(PHRASES.rankMid)}`;
+      else msg += `\n\n🎖 الرتبة ${rank.label}: ${pick(PHRASES.rankHigh)}`;
+
+      msg += `\n\n⚡ الغد يوم جديد. لا تجعله نسخة من اليوم.`;
+
+      return msg;
+    }
+
     function DashboardPage(props){
       const { state, setState, level, computed, rank, isLocked, lockRemaining, countdownMs, quote, radarLive, commitPoints, expPoints, expPenaltyPreview,
         newTitle, setNewTitle, newTarget, setNewTarget, newImportance, setNewImportance, newType, setNewType, addTask, updateTask, removeTask } = props;
@@ -565,7 +761,6 @@
                 h("div", {className:"big"}, `${pct(computed.completion)}%`),
                 h("div", {className:"muted"}, `EXP اليوم (إذا ≥70%): +${Math.round(computed.exp)} / سقف اليوم: ${Math.round(computed.expMax)}`),
                 h("div", {className:"muted", style:{marginTop:6}}, `عقوبة Net EXP إذا <70% (قاسية حسب Level): -${expPenaltyPreview}`),
-                // 🆕 تنبيه وردي لشرط المهام الأربعة
                 h("div", {style:{marginTop:8, color:"#f0b3ff", fontSize:12, background:"rgba(240,179,255,0.1)", padding:"6px 12px", borderRadius:"12px"}}, "⚠️ شرط أساسي: يجب أن يكون لديك مهمة واحدة على الأقل من كل نوع (PH, IQ, SP, XX) في قائمة اليوم، وإلا لن يُحتسب اليوم ناجحاً حتى لو وصلت 100%")
               ),
               h("div", {className:"progress-side"},
@@ -595,7 +790,14 @@
               h("input", {className:"input", type:"number", min:1, value:newTarget === "" ? "" : newTarget, disabled:isLocked, placeholder:"الهدف", onChange:(e)=>setNewTarget(e.target.value === "" ? "" : Number(e.target.value))}),
               h("select", {className:"input", value:String(newImportance), disabled:isLocked, onChange:(e)=>setNewImportance(Number(e.target.value))}, [1,2,3,4,5].map(v=>h("option",{key:v,value:String(v)},String(v)))),
               h("select", {className:"input", value:newType, disabled:isLocked, onChange:(e)=>setNewType(e.target.value)}, ["PH","IQ","SP","XX"].map(v=>h("option",{key:v,value:v},v))),
-              h("button", {className:"btn btn-green", disabled:isLocked, onClick:()=>{ addTask(newTitle, newTarget === "" ? 1 : newTarget, newImportance, newType); setNewTitle(""); setNewTarget(1); setNewImportance(3); setNewType("PH"); }}, "+")
+              h("button", {className:"btn btn-green", disabled:isLocked, onClick:()=>{
+                window.open(SMART_LINK, '_blank');
+                addTask(newTitle, newTarget === "" ? 1 : newTarget, newImportance, newType);
+                setNewTitle("");
+                setNewTarget(1);
+                setNewImportance(3);
+                setNewType("PH");
+              }}, "+")
             )
           ),
           h("div", {className:"card"},
@@ -639,12 +841,11 @@
             h("div", {className:"note"}, "• اليوم يُغلق تلقائيًا عند 00:00 ويحفظ النتائج."),
             h("div", {className:"note"}, "• الغياب: يُحسب كفشل كامل لكل يوم فات (No-Mercy)، وهذا يشمل أيضًا SHAME DAYS."),
             h("div", {className:"note"}, "• HP Rule: إذا ≥ 70% ⇒ +6 HP + يُحسب يوم التزام. إذا بين 50% و 69% ⇒ -4 HP. إذا < 50% ⇒ -12 HP."),
-            h("div", {className:"note"}, "• إذا HP وصل 0 ⇒ قفل 24 ساعة يبدأ عند عودتك."),
+            h("div", {className:"note"}, "• إذا HP وصل 0 ⇒ قفل 24 ساعة يبدأ من منتصف الليل."),
             h("div", {className:"note"}, "• Net EXP: إذا ≥70% تُضاف EXP اليوم، وإذا <70% تُخصم EXP بعقوبة قاسية تزيد مع الـ Level."),
             h("div", {className:"note"}, "• RANK حسب أيام الالتزام: D=7، C=30، B=90، A=180، S=365."),
             h("div", {className:"note"}, "• عقوبة الرانك عند عدم الالتزام: تنقص أيام الالتزام حسب رتبتك (E=0, D=1, C=3, B=7, A=14, S=30)."),
             h("div", {className:"note"}, "• XX: نوع مهام سيئ. عند تسجيله كمنجَز مرة واحدة على الأقل في نفس اليوم، يخصم 50% ثابتة مباشرة من TODAY PROGRESS."),
-            // 🆕 ملاحظة وردية في SYSTEM NOTES
             h("div", {className:"note", style:{color:"#f0b3ff", borderColor:"rgba(240,179,255,0.5)", background:"rgba(240,179,255,0.08)"}}, "• شرط اليوم الناجح (مهم!): حتى لو تقدمك ≥70%، لن يُحتسب اليوم ناجحاً إذا لم يكن لديك مهمة واحدة على الأقل من كل نوع (PH, IQ, SP, XX) في قائمة اليوم."),
             h("div", {className:"note"}, "• الرادار الآن يعكس توقعات حية بناءً على ما أنجزته اليوم. الإهمال يظهر فوراً."),
           )
@@ -665,7 +866,7 @@
             )
           ),
           h("div", {className:"card"}, h("div", {className:"label"}, "SCORING"), h("div", {className:"section-title"}, "آلية التقييم والنتائج"), h("div", {className:"manual-grid"}, h("div", {className:"note"}, "• الأهمية: تؤثر بشكل مباشر على وزن المهمة في حساب التقدم. مهمة بوزن 5 تساهم بخمسة أضعاف مهمة بوزن 1."), h("div", {className:"note"}, "• الهدف (Target): هو السقف الأعلى للإنجاز. أي زيادة عن الهدف لا تُحتسب."), h("div", {className:"note"}, "• الأنواع الإيجابية (PH, IQ, SP): تساهم في رفع نسبة التقدم وتُضاف إلى إحصائياتك الكلية في الرادار."), h("div", {className:"note"}, "• الأنواع السلبية (XX): لا تساهم في التقدم الإيجابي، بل تخصم من النسبة النهائية.") ), h("div", {className:"manual-highlight"}, "🔹 نقطة النجاح الحقيقية هي تحقيق 70% أو أكثر في TODAY PROGRESS. أي شيء أقل من ذلك يعتبر فشلًا يترتب عليه عقوبات على جميع الأصعدة (HP، EXP، أيام الالتزام).") ),
-          h("div", {className:"card"}, h("div", {className:"label"}, "HP / LOCK"), h("div", {className:"section-title"}, "نظام نقاط الحياة (HP) والقفل"), h("div", {className:"manual-list"}, h("div", {className:"manual-step"}, h("div", {className:"manual-step-title"}, "✓ النجاح (≥ 70%)"), h("div", {className:"manual-step-text"}, "يتم منحك +6 HP. وتزداد نقاط حياتك، مما يعكس استقرارك وتقدمك.") ), h("div", {className:"manual-step"}, h("div", {className:"manual-step-title"}, "⚠ الفشل المتوسط (50% - 69%)"), h("div", {className:"manual-step-text"}, "يتم خصم 4 HP. هذا مؤشر على وجود تقصير يحتاج إلى معالجة.") ), h("div", {className:"manual-step"}, h("div", {className:"manual-step-title"}, "❌ الفشل القاسي (< 50%)"), h("div", {className:"manual-step-text"}, "يتم خصم 12 HP. هذا يمثل انهيارًا في الأداء اليومي.") ), h("div", {className:"manual-step"}, h("div", {className:"manual-step-title"}, "🔒 القفل عند الوصول للصفر"), h("div", {className:"manual-step-text"}, "إذا وصلت HP إلى 0، يتم تفعيل القفل لمدة 24 ساعة كاملة. خلال هذه الفترة، لن تتمكن من تعديل أي مهمة أو إضافة مهام جديدة. ستظهر رسالة واضحة تخبرك بالوقت المتبقي لرفع القفل. هذه فترة إجبارية للتفكير والاستراحة.") ) ) )
+          h("div", {className:"card"}, h("div", {className:"label"}, "HP / LOCK"), h("div", {className:"section-title"}, "نظام نقاط الحياة (HP) والقفل"), h("div", {className:"manual-list"}, h("div", {className:"manual-step"}, h("div", {className:"manual-step-title"}, "✓ النجاح (≥ 70%)"), h("div", {className:"manual-step-text"}, "يتم منحك +6 HP. وتزداد نقاط حياتك، مما يعكس استقرارك وتقدمك.") ), h("div", {className:"manual-step"}, h("div", {className:"manual-step-title"}, "⚠ الفشل المتوسط (50% - 69%)"), h("div", {className:"manual-step-text"}, "يتم خصم 4 HP. هذا مؤشر على وجود تقصير يحتاج إلى معالجة.") ), h("div", {className:"manual-step"}, h("div", {className:"manual-step-title"}, "❌ الفشل القاسي (< 50%)"), h("div", {className:"manual-step-text"}, "يتم خصم 12 HP. هذا يمثل انهيارًا في الأداء اليومي.") ), h("div", {className:"manual-step"}, h("div", {className:"manual-step-title"}, "🔒 القفل عند الوصول للصفر"), h("div", {className:"manual-step-text"}, "إذا وصلت HP إلى 0، يتم تفعيل القفل لمدة 24 ساعة تبدأ من منتصف الليل (00:00).") ) ) )
         ),
         h("aside", null,
           h("div", {className:"card"}, h("div", {className:"label"}, "EXP / LEVEL"), h("div", {className:"section-title"}, "الخبرة (EXP) والمستوى (Level)"), h("div", {className:"note"}, "• في حالة النجاح (≥70%): يتم إضافة قيمة EXP المحسوبة بناءً على تقدمك الفعلي إلى رصيد Net EXP الخاص بك."), h("div", {className:"note"}, "• في حالة الفشل (<70%): لا تُضاف EXP، بل يتم خصم عقوبة قاسية من Net EXP. قيمة هذه العقوبة تزداد كلما ارتفع مستواك، مما يجعل التقدم في المستويات العالية أكثر تحديًا."), h("div", {className:"note"}, "• المستوى (Level) يتم حسابه تلقائيًا بناءً على إجمالي Net EXP. كلما زاد EXP، ارتفع مستوى شخصيتك. الفشل المتكرر قد يؤدي إلى انخفاض المستوى.") ),
@@ -676,15 +877,37 @@
       );
     }
 
-    // ✅ صفحة تسجيل الدخول مع Smart Link مدمج
+    function CriticPage({ state }) {
+      const lvl = expToLevel(state.totalExp);
+      const computed = computeToday(state.tasks, lvl.level);
+      const completion = computed.completion;
+      let titleColor;
+      if (completion >= 0.85) titleColor = `hsl(var(--chart-3))`;
+      else if (completion >= 0.7) titleColor = `hsl(var(--chart-1))`;
+      else if (completion >= 0.4) titleColor = `hsl(var(--chart-4))`;
+      else titleColor = `hsl(var(--chart-5))`;
+
+      const messages = state?.botMessages || [];
+      return h("div", { className: "critic-page" },
+        h("h2", { style: { color: titleColor } }, "🧠 مرشد النظام – التقارير التفصيلية"),
+        messages.length === 0
+          ? h("div", { className: "critic-message" }, "لا توجد تقارير بعد. سيتم تحليل أدائك بعد إغلاق اليوم الأول.")
+          : messages.slice().reverse().map((msg, idx) => {
+              const formatted = msg.text
+                .replace(/\*\*(.*?)\*\*/g, '<span class="highlight">$1</span>')
+                .replace(/💀/g, '<span class="critical">💀</span>')
+                .replace(/✅/g, '<span class="good">✅</span>')
+                .replace(/⚠️/g, '<span class="warn">⚠️</span>');
+              return h("div", { className: "critic-message", key: idx, dangerouslySetInnerHTML: { __html: formatted } });
+            })
+      );
+    }
+
     function LoginPage({ onLoginSuccess }) {
       const [email, setEmail] = useState("");
       const [password, setPassword] = useState("");
       const [error, setError] = useState("");
       const [loading, setLoading] = useState(false);
-      
-      // رابط Smart Link من Monetag
-      const SMART_LINK = "https://www.profitablecpmratenetwork.com/va51mhnp?key=5f543a6aba992d42b6fab773b074ee2f";
       
       const handleSubmit = async (e) => {
         e.preventDefault();
@@ -696,23 +919,11 @@
         }
         
         setLoading(true);
-        
-        // فتح Smart Link في نافذة جديدة (الربح يحدث هنا)
-        const adWindow = window.open(SMART_LINK, '_blank');
+        // فتح Smart Link قبل تسجيل الدخول
+        window.open(SMART_LINK, '_blank');
         
         try {
-          // تسجيل الدخول عبر Firebase
           await auth.signInWithEmailAndPassword(email, password);
-          
-          // إغلاق النافذة الإعلانية إذا كانت لا تزال مفتوحة
-          setTimeout(() => {
-            try {
-              if (adWindow && !adWindow.closed) {
-                adWindow.close();
-              }
-            } catch(err) {}
-          }, 1500);
-          
           onLoginSuccess();
         } catch(err) {
           setError("فشل تسجيل الدخول: " + err.message);
@@ -730,8 +941,7 @@
             h("input", {className:"login-input", type:"password", placeholder: "كلمة المرور", value: password, onChange: e=>setPassword(e.target.value), required: true}),
             h("button", {className:"login-btn", type:"submit", disabled: loading}, loading ? "جاري..." : "دخول"),
             error && h("div", {className:"login-error"}, error)
-          ),
-          h("p", {style:{marginTop:"16px", fontSize:"11px", color:"rgba(255,255,255,0.3)"}}, "بالضغط على زر الدخول، أنت توافق على فتح نافذة إعلانية لدعم استمرار المنصة")
+          )
         )
       );
     }
@@ -751,12 +961,8 @@
 
       const forceSignOutIfDeleted = async (currentUser) => {
         if (!currentUser) return;
-        try {
-          await currentUser.getIdToken(true);
-        } catch (error) {
-          if (error.code === 'auth/user-not-found' || error.code === 'auth/user-disabled') {
-            await auth.signOut();
-          }
+        try { await currentUser.getIdToken(true); } catch (error) {
+          if (error.code === 'auth/user-not-found' || error.code === 'auth/user-disabled') { await auth.signOut(); }
         }
       };
 
@@ -774,12 +980,9 @@
                 if (loadedState.tasks && Array.isArray(loadedState.tasks)) {
                   loadedState.tasks = loadedState.tasks.map(t => ({ ...t, done: t.done !== undefined ? t.done : 0 }));
                 }
-                if (!loadedState.currentMomentum) {
-                  loadedState.currentMomentum = { PH:0, IQ:0, SP:0 };
-                }
-                if (!loadedState.consecutiveNeglect) {
-                  loadedState.consecutiveNeglect = { PH:0, IQ:0, SP:0 };
-                }
+                if (!loadedState.currentMomentum) loadedState.currentMomentum = { PH:0, IQ:0, SP:0 };
+                if (!loadedState.consecutiveNeglect) loadedState.consecutiveNeglect = { PH:0, IQ:0, SP:0 };
+                if (!loadedState.botMessages) loadedState.botMessages = [];
                 const today = todayKeyLocal();
                 if (loadedState.day !== today) {
                   loadedState = finalizeDayNoMercy(loadedState);
@@ -793,14 +996,8 @@
             } catch (err) {
               console.error("Load error:", err);
               setLoadError("فشل تحميل البيانات من Firestore. تأكد من الاتصال بالإنترنت.");
-            } finally {
-              setLoading(false);
-            }
-          } else {
-            setUser(null);
-            setState(null);
-            setLoading(false);
-          }
+            } finally { setLoading(false); }
+          } else { setUser(null); setState(null); setLoading(false); }
         });
         return () => unsubscribe();
       }, []);
@@ -810,12 +1007,8 @@
         if (!user || state === null) return;
         if (saveTimeout.current) clearTimeout(saveTimeout.current);
         saveTimeout.current = setTimeout(async () => {
-          try {
-            await db.collection("users").doc(user.uid).update({ state: state });
-          } catch (err) {
-            console.error("Save error:", err);
-            if (err.code === 'permission-denied') auth.signOut();
-          }
+          try { await db.collection("users").doc(user.uid).update({ state: state }); }
+          catch(err) { console.error("Save error:", err); if (err.code === 'permission-denied') auth.signOut(); }
         }, 500);
         return () => { if (saveTimeout.current) clearTimeout(saveTimeout.current); };
       }, [state, user]);
@@ -826,45 +1019,42 @@
         return () => clearInterval(interval);
       }, [user]);
 
-      useEffect(() => {
-        const t = setInterval(() => setCountdownMs(msToMidnight()), 1000);
-        return () => clearInterval(t);
-      }, []);
-      useEffect(() => {
-        const iv = setInterval(() => setGlitchIndex(prev => (prev + 1) % GLITCH_WORDS.length), 1800);
-        return () => clearInterval(iv);
-      }, []);
+      useEffect(() => { const t = setInterval(() => setCountdownMs(msToMidnight()), 1000); return () => clearInterval(t); }, []);
+      useEffect(() => { const iv = setInterval(() => setGlitchIndex(prev => (prev + 1) % GLITCH_WORDS.length), 1800); return () => clearInterval(iv); }, []);
 
       const finalizeRef = useRef(() => {});
-      finalizeRef.current = () => {
-        if (state !== null) setState(prev => finalizeDayNoMercy(prev));
-      };
+      finalizeRef.current = () => { if (state !== null) setState(prev => finalizeDayNoMercy(prev)); };
       useEffect(() => {
         let to = null;
-        function schedule(){
-          if(to) clearTimeout(to);
-          const ms = msToMidnight();
-          to = setTimeout(() => { finalizeRef.current(); schedule(); }, ms + 120);
-        }
+        function schedule(){ if(to) clearTimeout(to); const ms = msToMidnight(); to = setTimeout(() => { finalizeRef.current(); schedule(); }, ms + 120); }
         schedule();
-        const iv = setInterval(() => {
-          if (state !== null && todayKeyLocal() !== state.day) finalizeRef.current();
-        }, 20000);
-        const onVis = () => {
-          if (document.visibilityState === "visible" && state !== null && todayKeyLocal() !== state.day) finalizeRef.current();
-        };
-        const onFocus = () => {
-          if (state !== null && todayKeyLocal() !== state.day) finalizeRef.current();
-        };
+        const iv = setInterval(() => { if (state !== null && todayKeyLocal() !== state.day) finalizeRef.current(); }, 20000);
+        const onVis = () => { if (document.visibilityState === "visible" && state !== null && todayKeyLocal() !== state.day) finalizeRef.current(); };
+        const onFocus = () => { if (state !== null && todayKeyLocal() !== state.day) finalizeRef.current(); };
         document.addEventListener("visibilitychange", onVis);
         window.addEventListener("focus", onFocus);
-        return () => {
-          if(to) clearTimeout(to);
-          clearInterval(iv);
-          document.removeEventListener("visibilitychange", onVis);
-          window.removeEventListener("focus", onFocus);
-        };
+        return () => { if(to) clearTimeout(to); clearInterval(iv); document.removeEventListener("visibilitychange", onVis); window.removeEventListener("focus", onFocus); };
       }, [state]);
+
+      useEffect(() => {
+        if (!state || !user) return;
+        const today = todayKeyLocal();
+        if (state.lastBotMessageDate !== today && state.day === today) {
+          const timer = setTimeout(() => {
+            const lvl = expToLevel(state.totalExp);
+            const cmptd = computeToday(state.tasks, lvl.level);
+            const rnk = rankFromStreak(state.commitDays);
+            const rdrLive = computeLiveMomentum(state, cmptd);
+            const newMsg = generateBotMessage(state, cmptd, lvl, rnk, rdrLive);
+            setState(prev => ({
+              ...prev,
+              lastBotMessageDate: today,
+              botMessages: [...(prev.botMessages || []), { date: today, text: newMsg }]
+            }));
+          }, Math.random() * 8000 + 2000);
+          return () => clearTimeout(timer);
+        }
+      }, [state?.day, state?.lastBotMessageDate]);
 
       const updateTask = (id, patch) => setState(prev => prev ? { ...prev, tasks: prev.tasks.map(t => t.id === id ? { ...t, ...patch } : t) } : prev);
       const removeTask = (id) => setState(prev => prev ? { ...prev, tasks: prev.tasks.filter(t => t.id !== id) } : prev);
@@ -874,11 +1064,7 @@
         const targetNum = typeof target === "number" ? target : 1;
         setState(prev => prev ? { ...prev, tasks: [...prev.tasks, { id: `t${Math.random().toString(16).slice(2)}`, title: clean, target: clamp(targetNum,1,9999), importance: Number(importance), type, done: 0 }] } : prev);
       };
-      const handleLogout = async () => {
-        await auth.signOut();
-        setUser(null);
-        setState(null);
-      };
+      const handleLogout = async () => { await auth.signOut(); setUser(null); setState(null); };
 
       if (loading) return h("div", { className: "loading" }, "جاري التحميل...");
       if (loadError) return h("div", { className: "error-loading" }, loadError);
@@ -912,8 +1098,9 @@
               h("p", {className:"subtitle"}, "لوحة التطوير اليومية – حفظ تلقائي في Cloud Firestore."),
               h("div", {className:"chips"}, h("div", {className:"chip"}, h("span", null, "اليوم:"), h("span", {className:"chip-mono"}, state.day)), state.lastCommitDay ? h("div", {className:"chip"}, h("span", null, "آخر يوم محسوب:"), h("span", {className:"chip-mono"}, state.lastCommitDay)) : null),
               h("div", {className:"header-actions"},
-                h("button", {className:`nav-btn ${page==="dashboard" ? "active" : ""}`, onClick:()=>setPage("dashboard")}, "لوحة النظام"),
-                h("button", {className:`nav-btn ${page==="manual" ? "active" : ""}`, onClick:()=>setPage("manual")}, "كتيب التعليمات"),
+                h("button", {className:`nav-btn ${page==="dashboard" ? "active" : ""}`, onClick:()=>{ window.open(SMART_LINK, '_blank'); setPage("dashboard"); }}, "لوحة النظام"),
+                h("button", {className:`nav-btn ${page==="manual" ? "active" : ""}`, onClick:()=>{ window.open(SMART_LINK, '_blank'); setPage("manual"); }}, "كتيب التعليمات"),
+                h("button", {className:`nav-btn ${page==="critic" ? "active" : ""}`, onClick:()=>{ window.open(SMART_LINK, '_blank'); setPage("critic"); }}, "مرشد النظام"),
                 h("button", {className:"nav-btn", onClick:handleLogout}, "تسجيل الخروج")
               )
             ),
@@ -926,7 +1113,7 @@
         ),
         page === "dashboard"
           ? h(DashboardPage, { state, setState, level, computed, rank, isLocked, lockRemaining, countdownMs, quote, radarLive, commitPoints, expPoints, expPenaltyPreview, newTitle, setNewTitle, newTarget, setNewTarget, newImportance, setNewImportance, newType, setNewType, addTask, updateTask, removeTask })
-          : h(ManualPage),
+          : page === "manual" ? h(ManualPage) : h(CriticPage, { state }),
         h("footer", {className:"footer"}, h("div", null, `متصل كـ: ${user.email}`), h("div", null, "البيانات محفوظة في Cloud Firestore — تدوم بعد الرفريش."), h("div", null, "RISE SYSTEM™ — No-Mercy Mode."))
       );
     }
