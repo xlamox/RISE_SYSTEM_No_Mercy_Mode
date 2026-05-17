@@ -323,38 +323,71 @@
       .mini-v { font-size: 18px; }
     }
     /* صفحة مرشد النظام */
-    .critic-page {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 2rem 1.5rem;
+    .critic-container {
+      max-width: 860px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
     }
-    .critic-page h2 {
+    .critic-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.8rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .critic-header h2 {
       font-family: var(--font-display);
-      color: hsl(var(--chart-5));
-      text-align: center;
-      margin-bottom: 2rem;
       font-size: 2rem;
+      margin: 0;
       transition: color 0.3s;
     }
-    .critic-message {
-      background: rgba(255,255,255,0.03);
+    .critic-date {
+      font-family: var(--font-display);
+      font-size: 0.95rem;
+      color: var(--muted);
+      background: rgba(255,255,255,0.04);
+      padding: 0.4rem 1rem;
+      border-radius: 20px;
       border: 1px solid rgba(255,255,255,0.1);
-      border-right: 4px solid hsl(var(--chart-5));
-      border-radius: 16px;
-      padding: 1.5rem;
-      margin-bottom: 1.5rem;
+    }
+    .critic-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 24px;
+      padding: 2rem;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+      backdrop-filter: blur(8px);
+      position: relative;
+      overflow: hidden;
+    }
+    .critic-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, hsl(var(--chart-5)), hsl(var(--chart-1)), hsl(var(--chart-3)));
+      opacity: 0.8;
+    }
+    .critic-content {
       white-space: pre-wrap;
       line-height: 1.9;
       font-size: 14px;
-      animation: fadeInUp 0.4s ease;
+      color: rgba(255,255,255,0.9);
     }
-    .critic-message .highlight { color: hsl(var(--chart-1)); font-weight: bold; }
-    .critic-message .critical { color: hsl(var(--chart-5)); font-weight: bold; }
-    .critic-message .good { color: hsl(var(--chart-3)); }
-    .critic-message .warn { color: hsl(var(--chart-4)); }
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(15px); }
-      to { opacity: 1; transform: translateY(0); }
+    .critic-content .highlight { color: hsl(var(--chart-1)); font-weight: bold; }
+    .critic-content .critical { color: hsl(var(--chart-5)); font-weight: bold; }
+    .critic-content .good { color: hsl(var(--chart-3)); }
+    .critic-content .warn { color: hsl(var(--chart-4)); }
+    .critic-placeholder {
+      text-align: center;
+      color: var(--muted);
+      padding: 3rem;
+      font-size: 1rem;
+      border: 1px dashed rgba(255,255,255,0.1);
+      border-radius: 16px;
     }
   </style>
 </head>
@@ -372,6 +405,7 @@
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 
   <script>
+    // لا توجد أي إعلانات (Smart Link محذوف نهائياً)
     const firebaseConfig = {
       apiKey: "AIzaSyBPsgxpBN57IMOhCVaKQe2_bwkZ3aEahjA",
       authDomain: "rise-system-a7135.firebaseapp.com",
@@ -481,7 +515,7 @@
         currentMomentum: { PH:0, IQ:0, SP:0 },
         consecutiveNeglect: { PH:0, IQ:0, SP:0 },
         lastBotMessageDate: null,
-        botMessages: []
+        botMessage: { date: null, text: "", completion: 0 }
       };
     }
     function pushHistory(history, dateKey, value){
@@ -502,11 +536,10 @@
       if(hp > 0){ zeroLockUsed = false; if(lockedUntil && Date.now() >= lockedUntil) lockedUntil = null; }
       else{
         if(!zeroLockUsed){
-          // 🔒 القفل يبدأ من منتصف الليل الحالي ويستمر 24 ساعة (حتى منتصف الليل التالي)
           const now = new Date();
           const midnight = new Date(now);
-          midnight.setHours(24, 0, 0, 0); // منتصف ليل اليوم (بداية اليوم التالي)
-          lockedUntil = midnight.getTime() + 24 * 60 * 60 * 1000; // 24 ساعة من منتصف الليل
+          midnight.setHours(24, 0, 0, 0);
+          lockedUntil = midnight.getTime() + 24 * 60 * 60 * 1000;
           zeroLockUsed = true;
         }
       }
@@ -592,7 +625,7 @@
       return live;
     }
 
-    // ========== 🧠 مكتبة العبارات الضخمة ==========
+    // ========== 🧠 مكتبة العبارات ==========
     function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
     const PHRASES = {
@@ -652,10 +685,12 @@
       taskGood: ["نصف إنجاز. نصف رجولة.", "أديت جزءاً. والباقي؟ لا شيء.", "تحركت قليلاً. السلحفاة أسرع منك."],
       taskLittle: ["بالكاد تحركت. هذا ليس إنجازاً.", "شيء أفضل من لا شيء. بالكاد.", "أداء ضئيل. لا تخدع نفسك."],
       taskZero: ["صفر. العدم أفضل منك.", "لم تحرك ساكناً. كالجثة.", "لا شيء. الفراغ يملأ يومك."],
+      xxAvoided: ["لم تقترفها اليوم. استمر في النظافة.", "نظيف من العادة. أحسنت.", "تغلبت على رغبتك. هذا قوة."],
+      xxFailed: ["وقعت في العادة. عقوبة -50%.", "فشلت في تجنبها. ضعيف.", "العادة السيئة انتصرت. تعلم."],
       missingPH: ["أين التمارين؟ عضلاتك تذوي.", "نسيت الجسد. سجين الكسل.", "لا رياضة. جسدك يصرخ.", "PH مهمل. العضلات تبكي."],
       missingIQ: ["لا قراءة. عقلك في إجازة.", "نسيت التعلم. الجهل رفيقك.", "IQ مهمل. الدماغ يصدا.", "لا تعلّم. الغباء اختيار."],
       missingSP: ["روحانيات ميتة. حتى الشيطان يسخر.", "نسيت الروح. أنت آلة فارغة.", "SP مهمل. لا صلاة لا سلام.", "الجانب الروحي مدفون."],
-      missingXX: ["لا عادة سيئة تراقبها. هل أنت ملاك؟", "XX مهمل. الكمال المزيف.", "نسيت رذيلتك. النفاق بعينه.", "لا شيء تحاسب عليه. مريب."],
+      missingXX: ["نسيت إضافة عادة سيئة. بدونها اليوم لا يكتمل.", "تحتاج نوع XX ليكتمل التقييم.", "أين العادة التي تراقبها؟ أضف واحدة."],
       radarLowPH: ["جسدك يصرخ: حركني!", "عضلات تنادي.", "قوة جسدية منعدمة."],
       radarLowIQ: ["عقلك نائم. استيقظ.", "ذكاء مهمل. اقرأ.", "دماغ في سبات."],
       radarLowSP: ["روحك ميتة. صلِّ.", "انضباط روحي صفر.", "روحانيات منهارة."],
@@ -704,10 +739,15 @@
         const ratio = target>0 ? done/target : 0;
         const pctDone = pct(ratio);
         let emoji = '❌', phrase;
-        if (pctDone >= 100) { emoji = '✅'; phrase = pick(PHRASES.taskPerfect); }
-        else if (pctDone >= 60) { emoji = '⚠️'; phrase = pick(PHRASES.taskGood); }
-        else if (pctDone > 0) { emoji = '🔸'; phrase = pick(PHRASES.taskLittle); }
-        else { phrase = pick(PHRASES.taskZero); }
+        if (t.type === 'XX') {
+          if (done === 0) { emoji = '✅'; phrase = pick(PHRASES.xxAvoided); }
+          else { emoji = '💀'; phrase = pick(PHRASES.xxFailed); }
+        } else {
+          if (pctDone >= 100) { emoji = '✅'; phrase = pick(PHRASES.taskPerfect); }
+          else if (pctDone >= 60) { emoji = '⚠️'; phrase = pick(PHRASES.taskGood); }
+          else if (pctDone > 0) { emoji = '🔸'; phrase = pick(PHRASES.taskLittle); }
+          else { phrase = pick(PHRASES.taskZero); }
+        }
         msg += `\n   ${emoji} ${t.title}: ${done}/${target} (${pctDone}%) – ${phrase}`;
       });
 
@@ -788,7 +828,13 @@
               h("input", {className:"input", type:"number", min:1, value:newTarget === "" ? "" : newTarget, disabled:isLocked, placeholder:"الهدف", onChange:(e)=>setNewTarget(e.target.value === "" ? "" : Number(e.target.value))}),
               h("select", {className:"input", value:String(newImportance), disabled:isLocked, onChange:(e)=>setNewImportance(Number(e.target.value))}, [1,2,3,4,5].map(v=>h("option",{key:v,value:String(v)},String(v)))),
               h("select", {className:"input", value:newType, disabled:isLocked, onChange:(e)=>setNewType(e.target.value)}, ["PH","IQ","SP","XX"].map(v=>h("option",{key:v,value:v},v))),
-              h("button", {className:"btn btn-green", disabled:isLocked, onClick:()=>{ addTask(newTitle, newTarget === "" ? 1 : newTarget, newImportance, newType); setNewTitle(""); setNewTarget(1); setNewImportance(3); setNewType("PH"); }}, "+")
+              h("button", {className:"btn btn-green", disabled:isLocked, onClick:()=>{
+                addTask(newTitle, newTarget === "" ? 1 : newTarget, newImportance, newType);
+                setNewTitle("");
+                setNewTarget(1);
+                setNewImportance(3);
+                setNewType("PH");
+              }}, "+")
             )
           ),
           h("div", {className:"card"},
@@ -839,6 +885,7 @@
             h("div", {className:"note"}, "• XX: نوع مهام سيئ. عند تسجيله كمنجَز مرة واحدة على الأقل في نفس اليوم، يخصم 50% ثابتة مباشرة من TODAY PROGRESS."),
             h("div", {className:"note", style:{color:"#f0b3ff", borderColor:"rgba(240,179,255,0.5)", background:"rgba(240,179,255,0.08)"}}, "• شرط اليوم الناجح (مهم!): حتى لو تقدمك ≥70%، لن يُحتسب اليوم ناجحاً إذا لم يكن لديك مهمة واحدة على الأقل من كل نوع (PH, IQ, SP, XX) في قائمة اليوم."),
             h("div", {className:"note"}, "• الرادار الآن يعكس توقعات حية بناءً على ما أنجزته اليوم. الإهمال يظهر فوراً."),
+            h("div", {className:"note"}, "• مرشد النظام يبدأ بعد 7 أيام من الالتزام.")
           )
         )
       );
@@ -869,29 +916,44 @@
     }
 
     function CriticPage({ state }) {
-      // حساب الأداء لتحديد لون العنوان ديناميكياً
-      const lvl = expToLevel(state.totalExp);
-      const computed = computeToday(state.tasks, lvl.level);
-      const completion = computed.completion;
-      let titleColor;
-      if (completion >= 0.85) titleColor = `hsl(var(--chart-3))`; // أخضر
-      else if (completion >= 0.7) titleColor = `hsl(var(--chart-1))`; // أزرق
-      else if (completion >= 0.4) titleColor = `hsl(var(--chart-4))`; // ذهبي
-      else titleColor = `hsl(var(--chart-5))`; // أحمر
+      const commitDays = state?.commitDays || 0;
+      
+      // لا يعمل إلا بعد 7 أيام التزام
+      if (commitDays < 7) {
+        return h("div", { className: "critic-container" },
+          h("div", { className: "critic-header" },
+            h("h2", { style: { color: `hsl(var(--chart-4))` } }, "🧠 مرشد النظام")
+          ),
+          h("div", { className: "critic-placeholder" },
+            `🕒 سيبدأ المرشد في تحليل أدائك بعد 7 أيام من الالتزام. (الحالي: ${commitDays}/7)`
+          )
+        );
+      }
 
-      const messages = state?.botMessages || [];
-      return h("div", { className: "critic-page" },
-        h("h2", { style: { color: titleColor } }, "🧠 مرشد النظام – التقارير التفصيلية"),
-        messages.length === 0
-          ? h("div", { className: "critic-message" }, "لا توجد تقارير بعد. سيتم تحليل أدائك بعد إغلاق اليوم الأول.")
-          : messages.slice().reverse().map((msg, idx) => {
-              const formatted = msg.text
-                .replace(/\*\*(.*?)\*\*/g, '<span class="highlight">$1</span>')
-                .replace(/💀/g, '<span class="critical">💀</span>')
-                .replace(/✅/g, '<span class="good">✅</span>')
-                .replace(/⚠️/g, '<span class="warn">⚠️</span>');
-              return h("div", { className: "critic-message", key: idx, dangerouslySetInnerHTML: { __html: formatted } });
-            })
+      const msg = state?.botMessage;
+      const hasMessage = msg?.date && msg?.text;
+      const lastCompletion = hasMessage ? msg.completion : 0;
+      let titleColor;
+      if (lastCompletion >= 0.85) titleColor = `hsl(var(--chart-3))`;
+      else if (lastCompletion >= 0.7) titleColor = `hsl(var(--chart-1))`;
+      else if (lastCompletion >= 0.4) titleColor = `hsl(var(--chart-4))`;
+      else titleColor = `hsl(var(--chart-5))`;
+
+      return h("div", { className: "critic-container" },
+        h("div", { className: "critic-header" },
+          h("h2", { style: { color: titleColor } }, "🧠 مرشد النظام"),
+          hasMessage ? h("div", { className: "critic-date" }, `📅 ${msg.date}`) : null
+        ),
+        hasMessage
+          ? h("div", { className: "critic-card" },
+              h("div", { className: "critic-content", dangerouslySetInnerHTML: { __html: msg.text
+                  .replace(/\*\*(.*?)\*\*/g, '<span class="highlight">$1</span>')
+                  .replace(/💀/g, '<span class="critical">💀</span>')
+                  .replace(/✅/g, '<span class="good">✅</span>')
+                  .replace(/⚠️/g, '<span class="warn">⚠️</span>')
+              }})
+            )
+          : h("div", { className: "critic-placeholder" }, "لا يوجد تقرير بعد. سيتم تحليل أدائك بعد إغلاق اليوم الأول.")
       );
     }
 
@@ -911,6 +973,7 @@
         }
         
         setLoading(true);
+        // لا توجد إعلانات
         
         try {
           await auth.signInWithEmailAndPassword(email, password);
@@ -972,7 +1035,7 @@
                 }
                 if (!loadedState.currentMomentum) loadedState.currentMomentum = { PH:0, IQ:0, SP:0 };
                 if (!loadedState.consecutiveNeglect) loadedState.consecutiveNeglect = { PH:0, IQ:0, SP:0 };
-                if (!loadedState.botMessages) loadedState.botMessages = [];
+                if (!loadedState.botMessage) loadedState.botMessage = { date: null, text: "", completion: 0 };
                 const today = todayKeyLocal();
                 if (loadedState.day !== today) {
                   loadedState = finalizeDayNoMercy(loadedState);
@@ -1028,6 +1091,7 @@
 
       useEffect(() => {
         if (!state || !user) return;
+        if (state.commitDays < 7) return; // لا ينشئ رسالة قبل 7 أيام
         const today = todayKeyLocal();
         if (state.lastBotMessageDate !== today && state.day === today) {
           const timer = setTimeout(() => {
@@ -1036,15 +1100,16 @@
             const rnk = rankFromStreak(state.commitDays);
             const rdrLive = computeLiveMomentum(state, cmptd);
             const newMsg = generateBotMessage(state, cmptd, lvl, rnk, rdrLive);
+            const completionPct = cmptd.completion;
             setState(prev => ({
               ...prev,
               lastBotMessageDate: today,
-              botMessages: [...(prev.botMessages || []), { date: today, text: newMsg }]
+              botMessage: { date: today, text: newMsg, completion: completionPct }
             }));
           }, Math.random() * 8000 + 2000);
           return () => clearTimeout(timer);
         }
-      }, [state?.day, state?.lastBotMessageDate]);
+      }, [state?.day, state?.lastBotMessageDate, state?.commitDays]);
 
       const updateTask = (id, patch) => setState(prev => prev ? { ...prev, tasks: prev.tasks.map(t => t.id === id ? { ...t, ...patch } : t) } : prev);
       const removeTask = (id) => setState(prev => prev ? { ...prev, tasks: prev.tasks.filter(t => t.id !== id) } : prev);
@@ -1088,9 +1153,9 @@
               h("p", {className:"subtitle"}, "لوحة التطوير اليومية – حفظ تلقائي في Cloud Firestore."),
               h("div", {className:"chips"}, h("div", {className:"chip"}, h("span", null, "اليوم:"), h("span", {className:"chip-mono"}, state.day)), state.lastCommitDay ? h("div", {className:"chip"}, h("span", null, "آخر يوم محسوب:"), h("span", {className:"chip-mono"}, state.lastCommitDay)) : null),
               h("div", {className:"header-actions"},
-                h("button", {className:`nav-btn ${page==="dashboard" ? "active" : ""}`, onClick:()=>setPage("dashboard")}, "لوحة النظام"),
-                h("button", {className:`nav-btn ${page==="manual" ? "active" : ""}`, onClick:()=>setPage("manual")}, "كتيب التعليمات"),
-                h("button", {className:`nav-btn ${page==="critic" ? "active" : ""}`, onClick:()=>setPage("critic")}, "مرشد النظام"),
+                h("button", {className:`nav-btn ${page==="dashboard" ? "active" : ""}`, onClick:()=> setPage("dashboard")}, "لوحة النظام"),
+                h("button", {className:`nav-btn ${page==="manual" ? "active" : ""}`, onClick:()=> setPage("manual")}, "كتيب التعليمات"),
+                h("button", {className:`nav-btn ${page==="critic" ? "active" : ""}`, onClick:()=> setPage("critic")}, "مرشد النظام"),
                 h("button", {className:"nav-btn", onClick:handleLogout}, "تسجيل الخروج")
               )
             ),
