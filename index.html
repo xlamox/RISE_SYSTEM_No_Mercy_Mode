@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=yes, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5, user-scalable=yes, viewport-fit=cover">
     <title>RISE SYSTEM™ – حمّل التطبيق الآن</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -25,9 +25,6 @@
             --border: rgba(255, 255, 255, 0.06);
             --neon-cyan: #00f0ff;
             --neon-purple: #b44dff;
-            --neon-green: #39ff8a;
-            --neon-red: #ff4d6a;
-            --neon-yellow: #ffd700;
             --text-primary: #f0f0f5;
             --text-secondary: #a0a0b8;
         }
@@ -39,6 +36,7 @@
             overflow-x: hidden;
             line-height: 1.6;
             min-height: 100vh;
+            padding-bottom: env(safe-area-inset-bottom);
         }
 
         /* خلفية النجوم والهالات */
@@ -69,11 +67,9 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 1.5rem 2rem;
+            padding: 1.5rem 1rem;
             max-width: 1300px;
             margin: 0 auto;
-            flex-wrap: wrap;
-            gap: 1rem;
         }
 
         .logo {
@@ -81,7 +77,7 @@
             align-items: center;
             gap: 0.8rem;
             font-family: 'Oxanium', sans-serif;
-            font-size: 1.8rem;
+            font-size: clamp(1.4rem, 5vw, 1.8rem);
             font-weight: 800;
             letter-spacing: 1px;
             background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
@@ -90,7 +86,7 @@
         }
 
         .logo i {
-            font-size: 2rem;
+            font-size: clamp(1.6rem, 6vw, 2rem);
             background: none;
             -webkit-text-fill-color: var(--neon-cyan);
             text-shadow: 0 0 20px var(--neon-cyan);
@@ -98,9 +94,9 @@
 
         /* القسم الرئيسي (Hero) */
         .hero {
-            max-width: 1300px;
-            margin: 3rem auto 0;
-            padding: 2rem 2rem 4rem;
+            max-width: 900px;
+            margin: clamp(1.5rem, 5vw, 4rem) auto 0;
+            padding: 0 1.2rem 3rem;
             text-align: center;
             position: relative;
         }
@@ -110,7 +106,7 @@
             top: -40px;
             left: 50%;
             transform: translateX(-50%);
-            width: 700px;
+            width: min(100%, 700px);
             height: 200px;
             border-radius: 999px;
             background: radial-gradient(circle at center, rgba(0, 240, 255, 0.12), transparent 65%);
@@ -128,14 +124,14 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
             background: rgba(10, 10, 25, 0.6);
             backdrop-filter: blur(8px);
-            font-size: 0.9rem;
+            font-size: clamp(0.8rem, 3vw, 0.9rem);
             color: #e0e0f0;
             margin-bottom: 1.5rem;
         }
 
         .hero-badge .dot {
-            width: 12px;
-            height: 12px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
             background: var(--neon-cyan);
             box-shadow: 0 0 12px var(--neon-cyan);
@@ -143,96 +139,97 @@
 
         .hero-title {
             font-family: 'Oxanium', sans-serif;
-            font-size: 3.5rem;
+            font-size: clamp(2rem, 7vw, 3.5rem);
             font-weight: 800;
-            line-height: 1.2;
-            margin-bottom: 1.5rem;
+            line-height: 1.25;
+            margin-bottom: 1.2rem;
             background: linear-gradient(to right, #ffffff, #c0c0ff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 30px rgba(0, 240, 255, 0.2);
+            text-shadow: 0 0 30px rgba(0, 240, 255, 0.15);
         }
 
         .hero-title .highlight {
             background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+            text-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
         }
 
         .hero-subtitle {
-            font-size: 1.2rem;
+            font-size: clamp(0.95rem, 3.5vw, 1.15rem);
             color: #aaaacc;
-            max-width: 700px;
+            max-width: 650px;
             margin: 0 auto 2.5rem;
-            line-height: 1.8;
+            line-height: 1.7;
         }
 
         .hero-actions {
             display: flex;
-            flex-wrap: wrap;
             justify-content: center;
-            gap: 1.5rem;
+            padding: 0 1rem;
         }
 
         .download-btn {
-            padding: 1rem 2.5rem;
-            font-size: 1.2rem;
+            padding: 1rem 2rem;
+            font-size: clamp(1rem, 4vw, 1.2rem);
             font-weight: 700;
             border-radius: 50px;
             background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
             border: none;
             color: #fff;
-            box-shadow: 0 0 25px rgba(0, 240, 255, 0.4);
-            transition: 0.3s;
+            box-shadow: 0 0 25px rgba(0, 240, 255, 0.35);
+            transition: transform 0.3s base, box-shadow 0.3s;
             cursor: pointer;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
             gap: 0.8rem;
-            max-width: 320px;
             width: 100%;
+            max-width: 340px;
             justify-content: center;
         }
 
-        .download-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 0 40px rgba(0, 240, 255, 0.7);
+        .download-btn:hover, .download-btn:active {
+            transform: translateY(-2px);
+            box-shadow: 0 0 35px rgba(0, 240, 255, 0.6);
         }
 
         .download-btn i {
-            font-size: 1.4rem;
+            font-size: clamp(1.2rem, 4.5vw, 1.4rem);
         }
 
-        /* قسم المميزات */
+        /* قسم المميزات المتجاوب */
         .features {
-            max-width: 1300px;
+            max-width: 1200px;
             margin: 0 auto;
-            padding: 4rem 2rem;
+            padding: 2rem 1.2rem 4rem;
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 2rem;
+            gap: 1.5rem;
         }
 
         .feature-card {
             background: var(--bg-card);
             border: 1px solid var(--border);
-            border-radius: 2rem;
-            padding: 2rem;
+            border-radius: 1.5rem;
+            padding: 2rem 1.5rem;
             backdrop-filter: blur(10px);
             text-align: center;
             transition: 0.3s;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
         }
 
-        .feature-card:hover {
-            border-color: rgba(255, 255, 255, 0.15);
-            transform: translateY(-5px);
+        @media (hover: hover) {
+            .feature-card:hover {
+                border-color: rgba(255, 255, 255, 0.15);
+                transform: translateY(-4px);
+            }
         }
 
         .feature-icon {
-            font-size: 2.8rem;
-            margin-bottom: 1.5rem;
+            font-size: clamp(2.2rem, 6vw, 2.6rem);
+            margin-bottom: 1.2rem;
             background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -240,36 +237,26 @@
 
         .feature-title {
             font-family: 'Oxanium', sans-serif;
-            font-size: 1.5rem;
+            font-size: clamp(1.2rem, 4vw, 1.4rem);
             font-weight: 700;
-            margin-bottom: 0.8rem;
+            margin-bottom: 0.6rem;
         }
 
         .feature-text {
             color: var(--text-secondary);
-            font-size: 0.95rem;
-            line-height: 1.7;
+            font-size: clamp(0.85rem, 3vw, 0.95rem);
+            line-height: 1.6;
         }
 
         /* تذييل */
         .footer {
             text-align: center;
-            padding: 2.5rem;
+            padding: 2rem 1rem 3rem;
             border-top: 1px solid rgba(255, 255, 255, 0.08);
             color: #8888aa;
-            font-size: 0.9rem;
-            max-width: 1300px;
+            font-size: 0.85rem;
+            max-width: 1200px;
             margin: 0 auto;
-        }
-
-        .footer a {
-            color: var(--neon-cyan);
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        .footer a:hover {
-            text-decoration: underline;
         }
 
         .social-link {
@@ -280,35 +267,21 @@
             border: 1px solid rgba(255, 255, 255, 0.12);
             padding: 0.5rem 1.2rem;
             border-radius: 30px;
-            margin-top: 0.8rem;
+            margin-top: 1rem;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-weight: 500;
             transition: 0.3s;
         }
 
         .social-link i {
             color: #e1306c;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
         }
 
         .social-link:hover {
             background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
-        }
-
-        /* استجابة للجوال */
-        @media (max-width: 768px) {
-            .hero-title {
-                font-size: 2.2rem;
-            }
-
-            .hero-subtitle {
-                font-size: 1rem;
-            }
-
-            .download-btn {
-                padding: 0.7rem 1.5rem;
-                font-size: 0.9rem;
-            }
+            border-color: rgba(255, 255, 255, 0.25);
         }
     </style>
 </head>
@@ -334,7 +307,7 @@
             نظام تقييم يومي صارم لبناء الانضباط والعادات. تتبع تقدمك، ارفع مستواك، وكافح من أجل البقاء في القمة. بدون رحمة.
         </p>
         <div class="hero-actions">
-            <a href="./_Rise_SYSTEM_19870733 (1).apk" class="download-btn" download="_Rise_SYSTEM_19870733 (1).apk">
+            <a href="https://drive.google.com/uc?export=download&id=1t8m9R5kZQe5cqzFaH9-fwRgk7ptwxYMU" class="download-btn" download="_Rise_SYSTEM_19870733 (1).apk">
                 <i class="fa-solid fa-download"></i> تحميل مباشر APK
             </a>
         </div>
