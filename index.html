@@ -39,6 +39,9 @@
             overflow-x: hidden;
             line-height: 1.6;
             min-height: 100vh;
+            /* تأكيد منع التمدد الجانبي */
+            width: 100%;
+            max-width: 100vw;
         }
 
         /* خلفية النجوم والهالات */
@@ -53,6 +56,8 @@
                 linear-gradient(135deg, #0a0a18, #0d0d22);
             background-size: 140% 140%;
             pointer-events: none;
+            width: 100%;
+            max-width: 100%;
         }
 
         .bg-anim::before {
@@ -69,28 +74,32 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 1.5rem 2rem;
-            max-width: 1300px;
+            padding: 1.5rem 1rem;
+            max-width: 100%;
             margin: 0 auto;
             flex-wrap: wrap;
             gap: 1rem;
+            width: 100%;
         }
 
         .logo {
             display: flex;
             align-items: center;
-            gap: 0.8rem;
+            gap: 0.5rem;
             font-family: 'Oxanium', sans-serif;
-            font-size: 1.8rem;
+            font-size: clamp(1.4rem, 5vw, 1.8rem);
             font-weight: 800;
             letter-spacing: 1px;
             background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            flex-wrap: wrap;
+            justify-content: center;
+            text-align: center;
         }
 
         .logo i {
-            font-size: 2rem;
+            font-size: clamp(1.6rem, 6vw, 2rem);
             background: none;
             -webkit-text-fill-color: var(--neon-cyan);
             text-shadow: 0 0 20px var(--neon-cyan);
@@ -98,9 +107,10 @@
 
         /* القسم الرئيسي (Hero) */
         .hero {
-            max-width: 1300px;
-            margin: 3rem auto 0;
-            padding: 2rem 1.5rem 4rem;
+            max-width: 100%;
+            width: 100%;
+            margin: 2rem auto 0;
+            padding: 1.5rem 1rem 3rem;
             text-align: center;
             position: relative;
         }
@@ -110,7 +120,7 @@
             top: -40px;
             left: 50%;
             transform: translateX(-50%);
-            width: 100%;
+            width: 90vw;
             max-width: 700px;
             height: 200px;
             border-radius: 999px;
@@ -123,20 +133,21 @@
         .hero-badge {
             display: inline-flex;
             align-items: center;
-            gap: 0.6rem;
-            padding: 0.5rem 1.2rem;
+            gap: 0.5rem;
+            padding: 0.4rem 1rem;
             border-radius: 40px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             background: rgba(10, 10, 25, 0.6);
             backdrop-filter: blur(8px);
-            font-size: 0.9rem;
+            font-size: clamp(0.8rem, 3vw, 0.9rem);
             color: #e0e0f0;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.2rem;
+            max-width: 100%;
         }
 
         .hero-badge .dot {
-            width: 12px;
-            height: 12px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
             background: var(--neon-cyan);
             box-shadow: 0 0 12px var(--neon-cyan);
@@ -144,10 +155,10 @@
 
         .hero-title {
             font-family: 'Oxanium', sans-serif;
-            font-size: 3.5rem;
+            font-size: clamp(2rem, 8vw, 3.5rem);
             font-weight: 800;
-            line-height: 1.25;
-            margin-bottom: 1.5rem;
+            line-height: 1.2;
+            margin-bottom: 1.2rem;
             background: linear-gradient(to right, #ffffff, #c0c0ff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -163,24 +174,27 @@
         }
 
         .hero-subtitle {
-            font-size: 1.2rem;
+            font-size: clamp(0.9rem, 3.5vw, 1.2rem);
             color: #aaaacc;
-            max-width: 700px;
-            margin: 0 auto 2.5rem;
+            max-width: 90%;
+            width: 100%;
+            margin: 0 auto 2rem;
             line-height: 1.8;
+            padding: 0 0.5rem;
         }
 
         .hero-actions {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 1.5rem;
+            gap: 1rem;
             width: 100%;
+            max-width: 100%;
         }
 
         .download-btn {
-            padding: 1rem 2.5rem;
-            font-size: 1.2rem;
+            padding: 0.9rem 1.8rem;
+            font-size: clamp(0.95rem, 4vw, 1.2rem);
             font-weight: 700;
             border-radius: 50px;
             background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
@@ -192,10 +206,11 @@
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 0.8rem;
+            gap: 0.6rem;
             max-width: 320px;
             width: 100%;
             justify-content: center;
+            white-space: nowrap;
         }
 
         .download-btn:hover {
@@ -204,16 +219,17 @@
         }
 
         .download-btn i {
-            font-size: 1.4rem;
+            font-size: 1.2rem;
         }
 
         /* قسم المميزات */
         .features {
-            max-width: 1300px;
+            max-width: 100%;
+            width: 100%;
             margin: 0 auto;
-            padding: 2rem 1.5rem 4rem;
+            padding: 2rem 1rem 3rem;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 1.5rem;
         }
 
@@ -221,11 +237,13 @@
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: 2rem;
-            padding: 2rem 1.5rem;
+            padding: 1.5rem;
             backdrop-filter: blur(10px);
             text-align: center;
             transition: 0.3s;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            max-width: 100%;
+            word-wrap: break-word;
         }
 
         .feature-card:hover {
@@ -234,8 +252,8 @@
         }
 
         .feature-icon {
-            font-size: 2.8rem;
-            margin-bottom: 1.5rem;
+            font-size: 2.2rem;
+            margin-bottom: 1rem;
             background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -243,25 +261,26 @@
 
         .feature-title {
             font-family: 'Oxanium', sans-serif;
-            font-size: 1.5rem;
+            font-size: clamp(1.2rem, 5vw, 1.5rem);
             font-weight: 700;
-            margin-bottom: 0.8rem;
+            margin-bottom: 0.6rem;
         }
 
         .feature-text {
             color: var(--text-secondary);
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             line-height: 1.7;
         }
 
         /* تذييل */
         .footer {
             text-align: center;
-            padding: 2.5rem 1.5rem;
+            padding: 1.8rem 1rem;
             border-top: 1px solid rgba(255, 255, 255, 0.08);
             color: #8888aa;
-            font-size: 0.9rem;
-            max-width: 1300px;
+            font-size: 0.85rem;
+            max-width: 100%;
+            width: 100%;
             margin: 0 auto;
         }
 
@@ -278,18 +297,20 @@
         .social-link {
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.4rem;
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.12);
-            padding: 0.5rem 1.2rem;
+            padding: 0.4rem 1rem;
             border-radius: 30px;
-            margin-top: 0.8rem;
+            margin-top: 0.6rem;
             transition: 0.3s;
+            font-size: 0.9rem;
+            max-width: 100%;
         }
 
         .social-link i {
             color: #e1306c;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
         }
 
         .social-link:hover {
@@ -298,43 +319,32 @@
             transform: translateY(-2px);
         }
 
-        /* نظام استجابة مرن ومتجاوب تماماً للهواتف الشائعة والضيقة */
-        @media (max-width: 768px) {
+        /* استجابة للشاشات الصغيرة جداً */
+        @media (max-width: 480px) {
             .navbar {
-                padding: 1rem 1.5rem;
+                padding: 1rem 0.5rem;
             }
-            .hero {
-                margin-top: 1.5rem;
-                padding-bottom: 2.5rem;
-            }
-            .hero-title {
-                font-size: 2.3rem;
-            }
-            .hero-subtitle {
-                font-size: 1rem;
-                margin-bottom: 2rem;
-            }
-            .download-btn {
-                padding: 0.9rem 2rem;
-                font-size: 1.1rem;
-                max-width: 100%; /* تمدد متناسق على شاشات الجوال الصغيرة */
-            }
-            .features {
-                grid-template-columns: 1fr; /* عرض كرت واحد ممتد بالكامل عمودياً في الجوال */
-                padding-top: 1rem;
-                gap: 1.2rem;
-            }
-            .feature-card {
-                padding: 1.8rem 1.2rem;
-            }
-        }
 
-        @media (max-width: 380px) {
-            .hero-title {
-                font-size: 1.9rem; /* دعم خاص للهواتف الصغيرة جداً مثل iPhone SE */
+            .hero {
+                padding: 1rem 0.8rem 2rem;
             }
-            .logo {
-                font-size: 1.5rem;
+
+            .hero-actions {
+                gap: 0.8rem;
+            }
+
+            .download-btn {
+                padding: 0.7rem 1.2rem;
+                font-size: 0.9rem;
+            }
+
+            .features {
+                grid-template-columns: 1fr;
+                padding: 1.5rem 0.8rem 2rem;
+            }
+
+            .feature-card {
+                padding: 1.2rem;
             }
         }
     </style>
